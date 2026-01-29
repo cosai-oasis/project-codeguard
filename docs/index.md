@@ -61,6 +61,3 @@ Get started in minutes:
 - **💬 Discussions**: [Join the conversation](https://github.com/cosai-oasis/project-codeguard/discussions)
 - **🤝 Contributing**: [Learn how to contribute](https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md)
 
-## Note
-
-This is a strategic move by Cisco to raise the security posture of the entire ecosystem—not just Cisco itself. The health of the broader software community impacts everyone's products, and by sharing this information, we fortify the entire chain. The goal is to create a more secure environment for everyone.
