@@ -5,10 +5,9 @@ on:
   push:
     branches:
       - main
-      - docs/deploy-website
-    # paths:
-    #   - 'docs/**'
-    #   - 'mkdocs.yml'
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
   workflow_dispatch:
 
 permissions:
