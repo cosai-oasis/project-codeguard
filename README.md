@@ -1,5 +1,72 @@
-# README
+# Project CodeGuard: Security Skills and Rules for AI Coding Agents
+![Securing](https://img.shields.io/badge/Securing%20AI%20Generated%20Code-green)
+![Open Source](https://img.shields.io/badge/Now-Open%20Source-brightgreen)
+[![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
 This repository is for the work of the **Coalition for Secure AI (CoSAI)**. CoSAI is an [OASIS Open Project](https://www.oasis-open.org/open-projects/) and an open ecosystem of AI and security experts from industry-leading organizations. We are dedicated to sharing best practices for secure AI deployment and collaborating on AI security research and tool development.
 
 For more information on CoSAI, please visit the [CoSAI website](https://www.oasis-open.org/projects/cosai/) and the [Open Project repository](https://github.com/cosai-oasis/oasis-open-project), which contains our governance information and project charter.
+
+
+## What is Project CodeGuard?
+[Project CodeGuard](https://project-codeguard.org/) is an AI model-agnostic security framework and ruleset (internally nicknamed "Project CodeGuard" when developed at Cisco) that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.
+
+
+## Why Project CodeGuard?
+
+AI coding agents are transforming software engineering, but this speed can introduce security vulnerabilities. Is your AI coding agent implementation introducing security vulnerabilities?
+
+- Skipping input validation
+- Hardcoding secrets and credentials
+- Using weak cryptographic algorithms
+- Relying on unsafe functions
+- Missing authentication/authorization checks
+- Missing any other security best practice
+
+Project CodeGuard solves this by embedding security best practices directly into AI coding agent workflows. 
+
+**During and After Code Generation.**
+
+Project CodeGuard is designed to integrate seamlessly across the entire AI coding lifecycle. 
+- **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development. You can use the rules in the “planning phase” of an AI coding agent to steer models toward secure patterns from the start.
+- **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
+- **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, and Claude Code can use the rules for code review. 
+
+
+## Security Coverage
+
+Project CodeGuard skills and rules cover essential security domains:
+
+- **Cryptography**: Safe algorithms (including post-quantum cryptography), secure key management, certificate validation
+- **Input Validation**: SQL injection prevention, XSS protection, command injection defense
+- **Authentication**: MFA best practices, OAuth/OIDC, secure session management
+- **Authorization**: RBAC/ABAC, access control, IDOR prevention
+- **Supply Chain**: Dependency security, SBOM generation, vulnerability management
+- **Cloud Security**: IaC hardening, container security, Kubernetes best practices
+- **Platform Security**: Mobile apps, web services, API security
+- **Data Protection**: Privacy, encryption at rest/transit, secure storage
+
+## Quick Start
+
+Get started in minutes:
+
+1. **Download the skills and rules** from our [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
+2. **Copy to your project** - Place AI agent and IDE specific skills and rules in your repository
+3. **Start coding** - AI assistants will automatically follow security best practices
+
+- Additional details in the [Get Started →](https://project-codeguard.org/getting-started/)
+
+
+## How It Works
+
+1. **Security skills and rules** are written in unified markdown format (`sources/` directory)
+2. **Conversion tools** translate skills and rules to IDE-specific formats (Cursor, Windsurf, Copilot, Agent Skills, Antigravity)
+3. **Release automation** packages skills and rules into downloadable ZIP files
+4. **AI assistants** reference these skills and rules when generating or reviewing code
+5. **Secure code** is produced automatically without developer intervention
+
+
+
+
+
+
