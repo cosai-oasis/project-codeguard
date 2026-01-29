@@ -8,7 +8,7 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
 
 ## Q: Where can I access the rules?
 
-**A:** You can access the rules in the [Project CodeGuard GitHub repository](https://github.com/project-codeguard/rules). The latest stable release is available on the [releases page](https://github.com/project-codeguard/rules/releases).
+**A:** You can access the rules in the [Project CodeGuard GitHub repository](https://github.com/cosai-oasis/project-codeguard). The latest stable release is available on the [releases page](https://github.com/cosai-oasis/project-codeguard/releases).
 
 ---
 
@@ -16,7 +16,7 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
 
 **A:** Detailed installation instructions are available in our [Getting Started guide](getting-started.md). In summary:
 
-1. Download the latest release from the [releases page](https://github.com/project-codeguard/rules/releases)
+1. Download the latest release from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
 2. Extract the archive and copy the IDE-specific rules to your project:
    - **Cursor**: Copy `.cursor/` directory to your project root
    - **Windsurf**: Copy `.windsurf/` directory to your project root
@@ -50,7 +50,7 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
 
 ## Q: How can I use the rules in my own AI agent?
 
-**A:** You can use the rules in your own AI agent by creating a custom ruleset. You can create a custom ruleset by creating a new file in the `.cursor/rules`, `.windsurf/rules`, `.github/instructions`, or `.agent/rules` directories and adding the rules you want to apply. You can also use the `project-codeguard/rules` repository as a template to create your own ruleset.
+**A:** You can use the rules in your own AI agent by creating a custom ruleset. You can create a custom ruleset by creating a new file in the `.cursor/rules`, `.windsurf/rules`, `.github/instructions`, or `.agent/rules` directories and adding the rules you want to apply. You can also use the `cosai-oasis/project-codeguard` repository as a template to create your own ruleset.
 
 ---
 
@@ -85,7 +85,7 @@ Once hidden files are visible, you can copy the appropriate directory (`.cursor/
 **A:** Yes! Install the Project CodeGuard Claude Code plugin (Agent Skill) and Claude will apply the security rules automatically while you code.
 
 ```bash
-/plugin marketplace add project-codeguard/rules
+/plugin marketplace add cosai-oasis/project-codeguard
 /plugin install codeguard-security@project-codeguard
 ```
 
@@ -96,7 +96,7 @@ For team/repo defaults, add the plugin in `.claude/settings.json` so it’s enab
 
 **A:** You can report problems, successes, or suggest enhancements to any of the rules by:
 
-1. **Creating a GitHub issue**: [Open an issue here](https://github.com/project-codeguard/rules/issues)
+1. **Creating a GitHub issue**: [Open an issue here](https://github.com/cosai-oasis/project-codeguard/issues)
 2. **Provide details**: Include which rule(s) are affected, the issue you encountered, and your suggested improvement
 3. **Be specific**: If reporting a bug, include steps to reproduce and example code if possible
 
@@ -113,7 +113,7 @@ We welcome all feedback - whether it's a bug report, success story, or enhanceme
 3. **Participating in discussions**: Share your experience and help other users
 4. **Improving documentation**: Help make our docs clearer and more comprehensive
 
-See [CONTRIBUTING.md](https://github.com/project-codeguard/rules/blob/main/CONTRIBUTING.md) for detailed guidelines on our contribution process.
+See [CONTRIBUTING.md](https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md) for detailed guidelines on our contribution process.
 
 ---
 
@@ -127,8 +127,8 @@ See [CONTRIBUTING.md](https://github.com/project-codeguard/rules/blob/main/CONTR
 
 **Can't find your answer?** 
 
-- [Open an issue](https://github.com/project-codeguard/rules/issues) with your question
-- [Start a discussion](https://github.com/project-codeguard/rules/discussions) to chat with the community
+- [Open an issue](https://github.com/cosai-oasis/project-codeguard/issues) with your question
+- [Start a discussion](https://github.com/cosai-oasis/project-codeguard/discussions) to chat with the community
 
 
 

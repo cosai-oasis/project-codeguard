@@ -21,7 +21,7 @@ Agent Skills are model-invoked capabilities that Claude autonomously uses based 
 
 1. **Add the Project CodeGuard marketplace:**
    ```bash
-   /plugin marketplace add project-codeguard/rules
+   /plugin marketplace add cosai-oasis/project-codeguard
    ```
 
 2. **Install the security plugin:**
@@ -135,7 +135,7 @@ For organizations, deploy CodeGuard to all developers automatically:
 1. Add to your project's `.claude/settings.json`:
    ```json
    {
-     "marketplaces": [{"source": "project-codeguard/rules"}],
+     "marketplaces": [{"source": "cosai-oasis/project-codeguard"}],
      "plugins": [
        {
          "name": "codeguard-security",
@@ -281,7 +281,7 @@ Look for `codeguard-security@project-codeguard` and note the version number.
 If you're contributing to Project CodeGuard or need to rebuild the plugin:
 
 ```bash
-cd /path/to/project-codeguard/rules
+cd /path/to/cosai-oasis/project-codeguard
 
 # Regenerate the Claude Code plugin (always uses core rules only)
 uv run python src/convert_to_ide_formats.py
@@ -331,7 +331,7 @@ Use CodeGuard rules to guide the architecture.
 ### File Structure
 
 ```
-project-codeguard/rules/
+cosai-oasis/project-codeguard/
 ├── .claude-plugin/
 │   ├── plugin.json                  # Plugin metadata
 │   └── marketplace.json             # Marketplace catalog
@@ -378,9 +378,9 @@ When you write or review code, Claude follows this workflow:
 
 Found an issue with the plugin or want to improve it?
 
-1. **Report issues**: [GitHub Issues](https://github.com/project-codeguard/rules/issues)
-2. **Suggest rules**: [GitHub Discussions](https://github.com/project-codeguard/rules/discussions)
-3. **Contribute**: [Contributing Guide](https://github.com/project-codeguard/rules/blob/main/CONTRIBUTING.md)
+1. **Report issues**: [GitHub Issues](https://github.com/cosai-oasis/project-codeguard/issues)
+2. **Suggest rules**: [GitHub Discussions](https://github.com/cosai-oasis/project-codeguard/discussions)
+3. **Contribute**: [Contributing Guide](https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md)
 
 ## Version History
 
@@ -400,9 +400,9 @@ Found an issue with the plugin or want to improve it?
 ## Resources
 
 - **Project Website**: [https://project-codeguard.org](https://project-codeguard.org)
-- **GitHub Repository**: [https://github.com/project-codeguard/rules](https://github.com/project-codeguard/rules)
+- **GitHub Repository**: [https://github.com/cosai-oasis/project-codeguard](https://github.com/cosai-oasis/project-codeguard)
 - **Documentation**: [https://project-codeguard.org/getting-started/](https://project-codeguard.org/getting-started/)
-- **Issue Tracker**: [https://github.com/project-codeguard/rules/issues](https://github.com/project-codeguard/rules/issues)
+- **Issue Tracker**: [https://github.com/cosai-oasis/project-codeguard/issues](https://github.com/cosai-oasis/project-codeguard/issues)
 
 ## License
 
@@ -414,7 +414,7 @@ Found an issue with the plugin or want to improve it?
 Need help? We're here for you:
 
 1. **Documentation**: Start with [Getting Started Guide](https://project-codeguard.org/getting-started/)
-2. **Community**: Join [GitHub Discussions](https://github.com/project-codeguard/rules/discussions)
-3. **Issues**: Report bugs via [GitHub Issues](https://github.com/project-codeguard/rules/issues)
+2. **Community**: Join [GitHub Discussions](https://github.com/cosai-oasis/project-codeguard/discussions)
+3. **Issues**: Report bugs via [GitHub Issues](https://github.com/cosai-oasis/project-codeguard/issues)
 
 
