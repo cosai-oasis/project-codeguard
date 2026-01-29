@@ -1,6 +1,6 @@
 # Project CodeGuard: Security Rules for AI Coding Agents
 
-[Project CodeGuard](https://github.com/project-codeguard/rules) is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides comprehensive security rules that guide AI assistants to generate more secure code automatically.
+[Project CodeGuard](https://github.com/cosai-oasis/project-codeguard) is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides comprehensive security rules that guide AI assistants to generate more secure code automatically.
 
 ## Why Project CodeGuard?
 
@@ -41,12 +41,12 @@ Our rules cover essential security domains:
 
 Get started in minutes:
 
-1. **Download the rules** from our [releases page](https://github.com/project-codeguard/rules/releases)
+1. **Download the rules** from our [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
 2. **Copy to your project** - Place IDE-specific rules in your repository
 3. **Start coding** - AI assistants will automatically follow security best practices
 
 [Get Started →](getting-started.md){ .md-button .md-button--primary }
-[View on GitHub :material-github:](https://github.com/project-codeguard/rules){ .md-button }
+[View on GitHub :material-github:](https://github.com/cosai-oasis/project-codeguard){ .md-button }
 
 ## How It Works
 
@@ -57,9 +57,9 @@ Get started in minutes:
 
 ## Community
 
-- **📋 Issues**: [Report bugs or request features](https://github.com/project-codeguard/rules/issues)
-- **💬 Discussions**: [Join the conversation](https://github.com/project-codeguard/rules/discussions)
-- **🤝 Contributing**: [Learn how to contribute](https://github.com/project-codeguard/rules/blob/main/CONTRIBUTING.md)
+- **📋 Issues**: [Report bugs or request features](https://github.com/cosai-oasis/project-codeguard/issues)
+- **💬 Discussions**: [Join the conversation](https://github.com/cosai-oasis/project-codeguard/discussions)
+- **🤝 Contributing**: [Learn how to contribute](https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md)
 
 ## Note
 

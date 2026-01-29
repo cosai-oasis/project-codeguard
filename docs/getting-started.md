@@ -40,7 +40,7 @@ Before you begin, familiarize yourself with how rules work in your IDE:
 
 ### Option 1: Download Pre-built Rules (Recommended)
 
-1. **Download**: Visit the [Releases page](https://github.com/project-codeguard/rules/releases) and download the IDE-specific ZIP file:
+1. **Download**: Visit the [Releases page](https://github.com/cosai-oasis/project-codeguard/releases) and download the IDE-specific ZIP file:
     - `ide-rules-all.zip` - All IDE formats (recommended for teams using multiple tools)
     - `ide-rules-cursor.zip` - Cursor only
     - `ide-rules-windsurf.zip` - Windsurf only
@@ -69,7 +69,7 @@ Claude Code uses a plugin system instead of manual file installation:
 
 ```bash
 # Add the Project CodeGuard marketplace
-/plugin marketplace add project-codeguard/rules
+/plugin marketplace add cosai-oasis/project-codeguard
 
 # Install the security plugin
 /plugin install codeguard-security@project-codeguard
@@ -87,7 +87,7 @@ OpenAI Codex uses [agent skills](https://agentskills.io/) to extend capabilities
 To install Project CodeGuard as a Codex skill, open Codex and use the built-in skill installer:
 
 ```
-$skill-installer install from https://github.com/project-codeguard/rules/tree/main/skills/software-security
+$skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
 ```
 
 Alternatively, you can manually clone the skill to your project:
@@ -96,7 +96,7 @@ Alternatively, you can manually clone the skill to your project:
 # Clone to your project's .codex/skills directory
 mkdir -p .codex/skills
 cd .codex/skills
-git clone https://github.com/project-codeguard/rules.git temp
+git clone https://github.com/cosai-oasis/project-codeguard.git temp
 mv temp/skills/software-security ./
 rm -rf temp
 
@@ -114,7 +114,7 @@ If you want to customize or contribute to the rules:
 
 ```bash
 # Clone the repository
-git clone https://github.com/project-codeguard/rules.git
+git clone https://github.com/cosai-oasis/project-codeguard.git
 cd rules
 
 # Install dependencies (requires Python 3.11+)
@@ -197,8 +197,8 @@ To verify the rules are working:
 
 - **Review Rules**: Explore the security rules in your IDE's rules directory
 - **Test Integration**: Generate some code and see the security guidance in action
-- **Share Feedback**: Help us improve by [opening an issue](https://github.com/project-codeguard/rules/issues)
-- **Contribute**: See [CONTRIBUTING.md](https://github.com/project-codeguard/rules/blob/main/CONTRIBUTING.md) to contribute new rules or improvements
+- **Share Feedback**: Help us improve by [opening an issue](https://github.com/cosai-oasis/project-codeguard/issues)
+- **Contribute**: See [CONTRIBUTING.md](https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md) to contribute new rules or improvements
 
 !!! success "You're Ready!"
     Project CodeGuard is now protecting your development workflow. The security rules will automatically guide AI assistants to generate more secure code.
@@ -220,11 +220,11 @@ The rules have minimal performance impact, but if you experience issues:
 
 - **Reduce rule count**: Start with core rules (cryptography, input validation, authentication)
 - **Combine rules**: Merge related rules into fewer files
-- **Report issues**: Let us know via [GitHub Issues](https://github.com/project-codeguard/rules/issues)
+- **Report issues**: Let us know via [GitHub Issues](https://github.com/cosai-oasis/project-codeguard/issues)
 
 ## Getting Help
 
 - **Documentation**: You're reading it! Check the [FAQ](faq.md) for common questions
-- **GitHub Issues**: [Report bugs or ask questions](https://github.com/project-codeguard/rules/issues)
-- **Discussions**: [Join the community discussion](https://github.com/project-codeguard/rules/discussions)
+- **GitHub Issues**: [Report bugs or ask questions](https://github.com/cosai-oasis/project-codeguard/issues)
+- **Discussions**: [Join the community discussion](https://github.com/cosai-oasis/project-codeguard/discussions)
 
