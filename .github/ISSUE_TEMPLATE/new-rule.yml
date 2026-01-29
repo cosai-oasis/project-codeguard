@@ -1,0 +1,67 @@
+name: ✨ New Rule Request
+description: Share your new rule request
+labels: ["new-rule"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your new rule request! Please provide as much detail as possible. Use any of the existing rules as a reference. You only have to provide the rule contents (markdown), not the rule metadata. We will handle the rest. In other words, convert your rule into all the formats (Cursor, Windsurf, Copilot, Antigravity).
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide the new rule contents (markdown).
+      placeholder: Enter the new rule contents (markdown) here...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: language
+    attributes:
+      label: What language(s) are the rule for?
+      multiple: true
+      options:
+        - 'python'
+        - 'javascript'
+        - 'typescript'
+        - 'java'
+        - 'c'
+        - 'c++'
+        - 'go'
+        - 'rust'
+        - 'ruby'
+        - 'php'
+        - 'swift'
+        - 'kotlin'
+        - 'scala'
+        - 'r'
+        - 'matlab'
+        - 'julia'
+        - 'dart'
+        - 'lua'
+        - 'perl'
+        - 'shell'
+        - 'powershell'
+        - 'fsharp'
+        - 'erlang'
+        - 'ocaml'
+        - 'yaml'
+        - 'docker'
+        - 'xml'
+        - 'vue'
+        - 'elm'
+        - 'cuda'
+        - 'opencl'
+        - 'other (please specify)'
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: Other
+      description: Please specify the language(s) you are requesting. Only specify this if the language is not listed above.
+      placeholder: Add the language(s) here...
+    validations:
+      required: false

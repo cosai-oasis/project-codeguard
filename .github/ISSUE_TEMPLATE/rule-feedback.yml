@@ -1,0 +1,55 @@
+---
+name: 📝 Rule Feedback
+description: Share your feedback, suggestions, or report issues
+labels: ["rule-feedback"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your feedback! Please provide as much detail as possible.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide detailed feedback.
+      placeholder: Describe your feedback here... Add any additional context, such as screenshots, related issues, or why this matters.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ai-coding-tool
+    attributes:
+      label: What AI Coding Tool are you Using?
+      options:
+        - Cursor
+        - GitHub Copilot
+        - Windsurf
+        - Antigravity
+        - Codex
+        - Augment Code
+        - Sourcegraph
+        - Claude Code
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: ai-model
+    attributes:
+      label: AI Model Used
+      description: What AI model are you using?
+      placeholder: Add the model name... (e.g. GPT-5, Claude 4.5 Sonnet, Gemini 2.5 Pro, etc.)
+
+  - type: dropdown
+    id: feedback-type
+    attributes:
+      label: The feedback pertains to which aspect of the project?
+      options:
+        - Rule definition
+        - Rule invocation or execution
+        - Rule distribution
+        - Other
+    validations:
+      required: true
