@@ -50,7 +50,7 @@ Project CodeGuard skills and rules cover essential security domains:
 
 Get started in minutes:
 
-1. **Download the skills and rules** from our [releases page](https://github.com/project-codeguard/rules/releases)
+1. **Download the skills and rules** from our [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
 2. **Copy to your project** - Place AI agent and IDE specific skills and rules in your repository
 3. **Start coding** - AI assistants will automatically follow security best practices
 
@@ -65,43 +65,8 @@ Get started in minutes:
 4. **AI assistants** reference these skills and rules when generating or reviewing code
 5. **Secure code** is produced automatically without developer intervention
 
-## Repository Structure
-
-```
-sources/           # Source rules
-skills/            # Agent Skills format (generated, committed)
-src/               # Conversion and validation tools
-dist/              # Other IDE bundles (generated, not committed)
-```
-
-## For Developers
-
-```bash
-git clone https://github.com/project-codeguard/rules.git && cd rules
-uv sync
-python src/validate_unified_rules.py sources/  # Validate rules
-python src/convert_to_ide_formats.py  # Generate skills/ and dist/
-```
-
-**More options**: `python src/convert_to_ide_formats.py --help`  
-**Custom rules**: Create your own rules — see [Custom Rules](https://project-codeguard.org/custom-rules/)  
-**Maintainers**: See [CONTRIBUTING.md](CONTRIBUTING.md) for release process.
-
-## Community
-
-- **📋 Issues**: [Report bugs or request features](https://github.com/project-codeguard/rules/issues)
-- **💬 Discussions**: [Join the conversation](https://github.com/project-codeguard/rules/discussions)
-- **🤝 Contributing**: [Learn how to contribute](https://github.com/project-codeguard/rules/blob/main/CONTRIBUTING.md)
 
 
-## Licensing
-
-This project uses dual licensing:
-
-- **Security Rules & Documentation**: Licensed under [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) - includes all rule files, documentation, and project content
-- **Source Code & Tools**: The `src/` directory is licensed under [Apache License 2.0](src/LICENSE.md) - includes conversion tools, validators, and other software components
-
-This licensing approach ensures the security rules remain freely accessible and reusable while providing appropriate terms for software components.
 
 
-Copyright © 2026 Cisco Systems, Inc.
+
