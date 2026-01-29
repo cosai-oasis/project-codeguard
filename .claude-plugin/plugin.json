@@ -1,0 +1,18 @@
+{
+  "name": "codeguard-security",
+  "description": "Security code review skill based on Project CodeGuard's comprehensive security rules. Helps AI coding agents write secure code and prevent common vulnerabilities.",
+  "version": "1.2.0",
+  "author": {
+    "name": "Project CodeGuard",
+    "url": "https://project-codeguard.org"
+  },
+  "homepage": "https://github.com/cosai-oasis/project-codeguard",
+  "repository": "https://github.com/cosai-oasis/project-codeguard.git",
+  "keywords": [
+    "security",
+    "secure-coding",
+    "vulnerability-prevention",
+    "code-review",
+    "appsec"
+  ]
+}

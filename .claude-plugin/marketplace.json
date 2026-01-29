@@ -1,0 +1,25 @@
+{
+  "name": "project-codeguard",
+  "metadata": {
+    "description": "Official Project CodeGuard plugins for secure AI-assisted coding"
+  },
+  "owner": {
+    "name": "Project CodeGuard",
+    "url": "https://project-codeguard.org",
+    "email": "contact@project-codeguard.org"
+  },
+  "plugins": [
+    {
+      "name": "codeguard-security",
+      "source": "./",
+      "description": "Comprehensive security rules for AI coding agents",
+      "version": "1.2.0",
+      "repository": "https://github.com/cosai-oasis/project-codeguard.git",
+      "tags": [
+        "security",
+        "code-review",
+        "vulnerability-prevention"
+      ]
+    }
+  ]
+}
