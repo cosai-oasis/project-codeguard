@@ -37,8 +37,8 @@ theme:
     - search.suggest
     - content.code.copy
     - content.code.select
-repo_url: https://github.com/project-codeguard/rules
-repo_name: project-codeguard/rules
+repo_url: https://github.com/cosai-oasis/project-codeguard
+repo_name: cosai-oasis/project-codeguard
 # edit_uri: ""
 
 nav:
