@@ -9,7 +9,7 @@ For more information on CoSAI, please visit the [CoSAI website](https://www.oasi
 
 
 ## What is Project CodeGuard?
-[Project CodeGuard](https://project-codeguard.org/) is an AI model-agnostic security framework and ruleset (internally nicknamed "Project CodeGuard" when developed at Cisco) that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.
+[Project CodeGuard](https://project-codeguard.org/) is an AI model-agnostic security coding agent skills framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security skills and rules, translators for popular coding agents, and validators to test skills and rule compliance.
 
 
 ## Why Project CodeGuard?
@@ -28,7 +28,7 @@ Project CodeGuard solves this by embedding security best practices directly into
 **During and After Code Generation.**
 
 Project CodeGuard is designed to integrate seamlessly across the entire AI coding lifecycle. 
-- **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development. You can use the rules in the “planning phase” of an AI coding agent to steer models toward secure patterns from the start.
+- **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development. You can use the skills and rules in the “planning phase” of an AI coding agent to steer models toward secure patterns from the start.
 - **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
 - **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, and Claude Code can use the rules for code review. 
 
@@ -64,9 +64,3 @@ Get started in minutes:
 3. **Release automation** packages skills and rules into downloadable ZIP files
 4. **AI assistants** reference these skills and rules when generating or reviewing code
 5. **Secure code** is produced automatically without developer intervention
-
-
-
-
-
-
