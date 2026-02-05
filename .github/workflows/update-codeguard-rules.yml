@@ -1,0 +1,168 @@
+---
+name: Update CodeGuard Rules
+
+on:
+  schedule:
+    - cron: "0 9 1 * *" # Monthly on the 1st at 9:00 UTC
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force update even if version matches"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Update CodeGuard rules
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE: ${{ inputs.force }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+
+          # Format configurations: directory -> zip asset name
+          declare -A FORMATS=(
+            [".cursor/rules"]="ide-rules-cursor.zip"
+            [".windsurf/rules"]="ide-rules-windsurf.zip"
+            [".github/instructions"]="ide-rules-copilot.zip"
+            [".agent/rules"]="ide-rules-antigravity.zip"
+          )
+
+          # File patterns for each format
+          declare -A PATTERNS=(
+            [".cursor/rules"]="codeguard-*.mdc"
+            [".windsurf/rules"]="codeguard-*.md"
+            [".github/instructions"]="codeguard-*.instructions.md"
+            [".agent/rules"]="codeguard-*.md"
+          )
+
+          # Detect which formats exist
+          DETECTED_DIRS=""
+          for dir in "${!FORMATS[@]}"; do
+            pattern="${PATTERNS[$dir]}"
+            if [ -d "$dir" ] && ls "$dir"/$pattern 1>/dev/null 2>&1; then
+              DETECTED_DIRS="$DETECTED_DIRS $dir"
+              echo "Found: $dir"
+            fi
+          done
+          DETECTED_DIRS=$(echo "$DETECTED_DIRS" | xargs)
+
+          if [ -z "$DETECTED_DIRS" ]; then
+            echo "No CodeGuard rules directories found. Nothing to update."
+            exit 0
+          fi
+
+          # Get current version from any rule file
+          CURRENT_VERSION=$(grep -rh "^version:" $DETECTED_DIRS 2>/dev/null | head -1 | awk '{print $2}') || true
+          CURRENT_VERSION="${CURRENT_VERSION:-0.0.0}"
+          echo "Current version: $CURRENT_VERSION"
+
+          # Fetch latest release info
+          RELEASE=$(curl -sfS "https://api.github.com/repos/cosai-oasis/project-codeguard/releases/latest") || {
+            echo "::error::Failed to fetch latest release from GitHub API"
+            exit 1
+          }
+          LATEST_VERSION=$(echo "$RELEASE" | jq -r '.tag_name' | sed 's/^v//')
+          RELEASE_URL=$(echo "$RELEASE" | jq -r '.html_url')
+
+          if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "null" ]; then
+            echo "::error::Invalid release data from GitHub API"
+            exit 1
+          fi
+          echo "Latest version: $LATEST_VERSION"
+
+          # Check if update needed
+          if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ] && [ "$FORCE" != "true" ]; then
+            echo "Already up to date (v$CURRENT_VERSION)"
+            exit 0
+          fi
+          echo "Updating: v$CURRENT_VERSION -> v$LATEST_VERSION"
+
+          # Download and extract each format's zip asset
+          UPDATED=""
+          for dir in $DETECTED_DIRS; do
+            asset="${FORMATS[$dir]}"
+            pattern="${PATTERNS[$dir]}"
+            
+            # Get download URL for this asset
+            ASSET_URL=$(echo "$RELEASE" | jq -r ".assets[] | select(.name == \"$asset\") | .browser_download_url")
+            
+            if [ -z "$ASSET_URL" ] || [ "$ASSET_URL" = "null" ]; then
+              echo "Warning: Asset $asset not found in release"
+              continue
+            fi
+
+            echo "Downloading $asset..."
+            mkdir -p /tmp/codeguard-update
+            curl -sfSL "$ASSET_URL" -o "/tmp/codeguard-update/$asset" || {
+              echo "Warning: Failed to download $asset"
+              continue
+            }
+
+            # Extract and update
+            rm -f "$dir"/$pattern 2>/dev/null || true
+            unzip -q -o "/tmp/codeguard-update/$asset" -d /tmp/codeguard-update/
+
+            # Copy rules from extracted zip
+            SOURCE_DIR="/tmp/codeguard-update/$dir"
+            if [ -d "$SOURCE_DIR" ] && cp "$SOURCE_DIR"/$pattern "$dir/" 2>/dev/null; then
+              UPDATED="$UPDATED $dir"
+              echo "Updated: $dir"
+            else
+              echo "Warning: No files found in $SOURCE_DIR"
+            fi
+
+            rm -rf /tmp/codeguard-update/*
+          done
+          UPDATED=$(echo "$UPDATED" | xargs)
+
+          if [ -z "$UPDATED" ]; then
+            echo "No formats were updated"
+            exit 0
+          fi
+
+          if git diff --quiet; then
+            echo "No file changes detected"
+            exit 0
+          fi
+
+          # Create branch and commit
+          BRANCH="codeguard-rules-update"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add .
+          git commit -m "chore: Update CodeGuard rules to v$LATEST_VERSION"
+          git push -f origin "$BRANCH"
+
+          # Create or update PR
+          UPDATED_BULLETS=$(echo "$UPDATED" | tr ' ' '\n' | sed 's/^/- /')
+          PR_BODY=$(printf '%s\n\n%s\n%s\n\n%s\n\n%s\n%s' \
+            "Updates CodeGuard security rules to **v$LATEST_VERSION**." \
+            "**Updated:**" \
+            "${UPDATED_BULLETS}" \
+            "**Release notes:** ${RELEASE_URL}" \
+            "---" \
+            "*Auto-generated by [update-codeguard-rules](.github/workflows/update-codeguard-rules.yml)*")
+
+          if gh pr list --head "$BRANCH" --state open | grep -q .; then
+            gh pr edit "$BRANCH" --title "chore: Update CodeGuard rules to v$LATEST_VERSION" --body "$PR_BODY"
+          else
+            gh pr create --base "${DEFAULT_BRANCH:-main}" --head "$BRANCH" \
+              --title "chore: Update CodeGuard rules to v$LATEST_VERSION" --body "$PR_BODY"
+          fi
+
+          echo "Done! PR created/updated for v$LATEST_VERSION"

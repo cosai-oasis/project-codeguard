@@ -136,6 +136,25 @@ cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agent/ /path/to/your/project/
 ```
 
+## Keeping Rules Updated (Automated)
+
+For GitHub repositories, you can automate rule updates with a workflow that runs monthly and creates PRs when new versions are available.
+
+### Supported Formats
+
+- Cursor (`.cursor/rules/`)
+- Windsurf (`.windsurf/rules/`)
+- GitHub Copilot (`.github/instructions/`)
+- Antigravity (`.agent/rules/`)
+
+### Setup
+
+1. Download [`update-codeguard-rules.yml`](https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/.github/workflows/update-codeguard-rules.yml)
+2. Save to `.github/workflows/update-codeguard-rules.yml` in your repository
+3. Commit and push
+
+The workflow runs monthly (1st at 9:00 UTC) and can also be triggered manually from the **Actions** tab.
+
 ## Verify Installation
 
 After installation, your project structure should include:
