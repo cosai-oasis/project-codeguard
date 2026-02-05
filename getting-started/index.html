@@ -403,6 +403,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keeping-rules-updated-automated" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keeping Rules Updated (Automated)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keeping Rules Updated (Automated)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported Formats
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#verify-installation" class="md-nav__link">
     <span class="md-ellipsis">
       Verify Installation
@@ -650,6 +683,39 @@
   <a href="#option-2-build-from-source" class="md-nav__link">
     <span class="md-ellipsis">
       Option 2: Build from Source
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keeping-rules-updated-automated" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keeping Rules Updated (Automated)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keeping Rules Updated (Automated)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      Supported Formats
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
     </span>
   </a>
   
@@ -909,6 +975,22 @@ cp -r dist/.windsurf/ /path/to/your/project/
 cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agent/ /path/to/your/project/
 </code></pre>
+<h2 id="keeping-rules-updated-automated">Keeping Rules Updated (Automated)</h2>
+<p>For GitHub repositories, you can automate rule updates with a workflow that runs monthly and creates PRs when new versions are available.</p>
+<h3 id="supported-formats">Supported Formats</h3>
+<ul>
+<li>Cursor (<code>.cursor/rules/</code>)</li>
+<li>Windsurf (<code>.windsurf/rules/</code>)</li>
+<li>GitHub Copilot (<code>.github/instructions/</code>)</li>
+<li>Antigravity (<code>.agent/rules/</code>)</li>
+</ul>
+<h3 id="setup">Setup</h3>
+<ol>
+<li>Download <a href="https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/.github/workflows/update-codeguard-rules.yml"><code>update-codeguard-rules.yml</code></a></li>
+<li>Save to <code>.github/workflows/update-codeguard-rules.yml</code> in your repository</li>
+<li>Commit and push</li>
+</ol>
+<p>The workflow runs monthly (1st at 9:00 UTC) and can also be triggered manually from the <strong>Actions</strong> tab.</p>
 <h2 id="verify-installation">Verify Installation</h2>
 <p>After installation, your project structure should include:</p>
 <pre><code>your-project/
