@@ -136,6 +136,22 @@ cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agent/ /path/to/your/project/
 ```
 
+## Core vs OWASP Sources
+
+Project CodeGuard has two source rule sets:
+
+- `sources/core/`: Official Project CodeGuard rules. These are the main rules packaged in releases and enabled by default.
+- `sources/owasp/`: Supplementary rules originally derived from OWASP guidance. These are optional and are not enabled by default.
+
+Use OWASP supplementary rules when you explicitly want broader coverage, such as deeper security reviews or reference-driven review workflows.
+
+## Rule Types: Always-On vs Glob-Scoped
+
+Project CodeGuard supports two rule activation types:
+
+- **Always-on rules**: Apply to all files in the project. These rules are for baseline safeguards that should always be in context.
+- **Glob-scoped rules**: Apply only to matching file patterns (derived from `languages` in source frontmatter). These rules are for language- or framework-specific guidance.
+
 ## Keeping Rules Updated (Automated)
 
 For GitHub repositories, you can automate rule updates with a workflow that runs monthly and creates PRs when new versions are available.
