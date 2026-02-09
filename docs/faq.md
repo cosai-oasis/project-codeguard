@@ -40,11 +40,26 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
   </sub>
 </center>
 
+---
+
+## Q: What is the difference between always-on rules and glob-scoped rules?
+
+**A:** They are two activation types:
+
+- **Always-on** rules apply to all files and provide a baseline security guardrail.
+- **Glob-scoped** rules apply only to files matching their language/file patterns.
 
 ---
+
 ## Q: What are the OWASP supplementary rules?
 
-**A:** The `sources/owasp/` folder contains supplementary rules based on OWASP cheat sheets. These rules supplement the core security rules and can be optionally included when building from source. By default, only core rules (22 files) are included in standard builds.
+**A:** The `sources/owasp/` folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.
+
+The official release bundles package the main `sources/core/` rules. If you [build from source](getting-started.md#option-2-build-from-source) and want the OWASP supplementary set too, include it explicitly:
+
+```bash
+uv run python src/convert_to_ide_formats.py --source core owasp
+```
 
 ---
 
