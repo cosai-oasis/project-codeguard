@@ -412,6 +412,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#q-what-is-the-difference-between-always-on-rules-and-glob-scoped-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Q: What is the difference between always-on rules and glob-scoped rules?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#q-what-are-the-owasp-supplementary-rules" class="md-nav__link">
     <span class="md-ellipsis">
       Q: What are the OWASP supplementary rules?
@@ -554,6 +563,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#q-what-is-the-difference-between-always-on-rules-and-glob-scoped-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      Q: What is the difference between always-on rules and glob-scoped rules?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#q-what-are-the-owasp-supplementary-rules" class="md-nav__link">
     <span class="md-ellipsis">
       Q: What are the OWASP supplementary rules?
@@ -677,8 +695,18 @@
 </center>
 
 <hr />
+<h2 id="q-what-is-the-difference-between-always-on-rules-and-glob-scoped-rules">Q: What is the difference between always-on rules and glob-scoped rules?</h2>
+<p><strong>A:</strong> They are two activation types:</p>
+<ul>
+<li><strong>Always-on</strong> rules apply to all files and provide a baseline security guardrail.</li>
+<li><strong>Glob-scoped</strong> rules apply only to files matching their language/file patterns.</li>
+</ul>
+<hr />
 <h2 id="q-what-are-the-owasp-supplementary-rules">Q: What are the OWASP supplementary rules?</h2>
-<p><strong>A:</strong> The <code>sources/owasp/</code> folder contains supplementary rules based on OWASP cheat sheets. These rules supplement the core security rules and can be optionally included when building from source. By default, only core rules (22 files) are included in standard builds.</p>
+<p><strong>A:</strong> The <code>sources/owasp/</code> folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.</p>
+<p>The official release bundles package the main <code>sources/core/</code> rules. If you <a href="../getting-started/#option-2-build-from-source">build from source</a> and want the OWASP supplementary set too, include it explicitly:</p>
+<pre><code class="language-bash">uv run python src/convert_to_ide_formats.py --source core owasp
+</code></pre>
 <hr />
 <h2 id="q-how-can-i-use-the-rules-in-my-own-ai-agent">Q: How can I use the rules in my own AI agent?</h2>
 <p><strong>A:</strong> You can use the rules in your own AI agent by creating a custom ruleset. You can create a custom ruleset by creating a new file in the <code>.cursor/rules</code>, <code>.windsurf/rules</code>, <code>.github/instructions</code>, or <code>.agent/rules</code> directories and adding the rules you want to apply. You can also use the <code>cosai-oasis/project-codeguard</code> repository as a template to create your own ruleset.</p>

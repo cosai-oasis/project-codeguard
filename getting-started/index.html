@@ -403,6 +403,24 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#core-vs-owasp-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core vs OWASP Sources
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rule-types-always-on-vs-glob-scoped" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule Types: Always-On vs Glob-Scoped
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#keeping-rules-updated-automated" class="md-nav__link">
     <span class="md-ellipsis">
       Keeping Rules Updated (Automated)
@@ -694,6 +712,24 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#core-vs-owasp-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core vs OWASP Sources
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rule-types-always-on-vs-glob-scoped" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule Types: Always-On vs Glob-Scoped
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#keeping-rules-updated-automated" class="md-nav__link">
     <span class="md-ellipsis">
       Keeping Rules Updated (Automated)
@@ -975,6 +1011,19 @@ cp -r dist/.windsurf/ /path/to/your/project/
 cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agent/ /path/to/your/project/
 </code></pre>
+<h2 id="core-vs-owasp-sources">Core vs OWASP Sources</h2>
+<p>Project CodeGuard has two source rule sets:</p>
+<ul>
+<li><code>sources/core/</code>: Official Project CodeGuard rules. These are the main rules packaged in releases and enabled by default.</li>
+<li><code>sources/owasp/</code>: Supplementary rules originally derived from OWASP guidance. These are optional and are not enabled by default.</li>
+</ul>
+<p>Use OWASP supplementary rules when you explicitly want broader coverage, such as deeper security reviews or reference-driven review workflows.</p>
+<h2 id="rule-types-always-on-vs-glob-scoped">Rule Types: Always-On vs Glob-Scoped</h2>
+<p>Project CodeGuard supports two rule activation types:</p>
+<ul>
+<li><strong>Always-on rules</strong>: Apply to all files in the project. These rules are for baseline safeguards that should always be in context.</li>
+<li><strong>Glob-scoped rules</strong>: Apply only to matching file patterns (derived from <code>languages</code> in source frontmatter). These rules are for language- or framework-specific guidance.</li>
+</ul>
 <h2 id="keeping-rules-updated-automated">Keeping Rules Updated (Automated)</h2>
 <p>For GitHub repositories, you can automate rule updates with a workflow that runs monthly and creates PRs when new versions are available.</p>
 <h3 id="supported-formats">Supported Formats</h3>
