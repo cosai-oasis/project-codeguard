@@ -2,8 +2,9 @@
 Convert Unified Rules to IDE Formats
 
 Transforms the unified markdown sources into IDE-specific bundles (Cursor,
-Windsurf, Copilot, Agent Skills, Antigravity). This script is the main entry point
-for producing distributable rule packs from the sources/ directory.
+Windsurf, Copilot, Agent Skills, Antigravity, OpenCode). This script is the
+main entry point for producing distributable rule packs from the sources/
+directory.
 """
 
 import re
@@ -18,7 +19,9 @@ from formats import (
     CopilotFormat,
     AgentSkillsFormat,
     AntigravityFormat,
+    OpenCodeFormat,
 )
+from formats.opencode import validate_opencode_name, truncate_description
 from utils import get_version_from_pyproject
 from validate_versions import set_plugin_version, set_marketplace_version
 
@@ -100,6 +103,74 @@ def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: str) ->
     print(f"Updated SKILL.md with language mappings")
 
 
+def generate_opencode_skill_md(
+    language_to_rules: dict[str, list[str]],
+    output_dir: Path,
+    template_path: Path,
+    version: str,
+    skill_name: str = "software-security",
+) -> None:
+    """
+    Generate an OpenCode-compliant SKILL.md with validated frontmatter.
+
+    Creates the directory structure .opencode/skills/<skill-name>/SKILL.md
+    with YAML frontmatter that conforms to the OpenCode skill specification:
+    - name: validated against ^[a-z0-9]+(-[a-z0-9]+)*$ (1-64 chars)
+    - description: 1-1024 chars
+    - license, compatibility, and metadata fields
+
+    Args:
+        language_to_rules: Dictionary mapping languages to rule files
+        output_dir: Base output directory (e.g., dist/)
+        template_path: Path to the SKILL.md template
+        version: Version string from pyproject.toml
+        skill_name: OpenCode skill directory name (default: software-security)
+
+    Raises:
+        ValueError: If skill_name fails OpenCode name validation
+        FileNotFoundError: If the template file does not exist
+    """
+    validate_opencode_name(skill_name)
+
+    skill_dir = output_dir / ".opencode" / "skills" / skill_name
+    skill_dir.mkdir(parents=True, exist_ok=True)
+    skill_path = skill_dir / "SKILL.md"
+
+    template_content = template_path.read_text(encoding="utf-8")
+
+    _, body = template_content.split("---\n", 2)[1:]
+    body = "---\n".join(["", body])
+
+    description = (
+        "A software security skill that integrates with Project CodeGuard "
+        "to help AI coding agents write secure code and prevent common "
+        "vulnerabilities. Use this skill when writing, reviewing, or "
+        "modifying code to ensure secure-by-default practices are followed."
+    )
+    description = truncate_description(description)
+
+    opencode_frontmatter = (
+        f"---\n"
+        f"name: {skill_name}\n"
+        f"description: >-\n"
+        f"  {description}\n"
+        f"license: CC-BY-4.0\n"
+        f"compatibility: opencode\n"
+        f"metadata:\n"
+        f'  framework: "Project CodeGuard"\n'
+        f'  codeguard-version: "{version}"\n'
+        f"---"
+    )
+
+    body_after_frontmatter = body.split("---\n", 1)[1] if "---\n" in body else body
+    full_content = opencode_frontmatter + "\n" + body_after_frontmatter
+
+    skill_path.write_text(full_content, encoding="utf-8")
+
+    update_skill_md(language_to_rules, str(skill_path))
+    print(f"Generated OpenCode SKILL.md at {skill_path}")
+
+
 def convert_rules(
     input_path: str,
     output_dir: str = "dist",
@@ -139,9 +210,10 @@ def convert_rules(
         AntigravityFormat(version),
     ]
 
-    # Only include Agent Skills format for core rules (committed as skills)
+    # Only include Agent Skills and OpenCode formats for core rules
     if include_agentskills:
         all_formats.append(AgentSkillsFormat(version))
+        all_formats.append(OpenCodeFormat(version))
 
     converter = RuleConverter(formats=all_formats)
     path = Path(input_path)
@@ -259,6 +331,14 @@ def convert_rules(
 
         update_skill_md(language_to_rules, str(output_skill_path))
 
+        # Generate OpenCode SKILL.md with OpenCode-compliant frontmatter
+        generate_opencode_skill_md(
+            language_to_rules,
+            Path(output_dir),
+            template_path,
+            version,
+        )
+
     return results
 
 
@@ -339,7 +419,7 @@ if __name__ == "__main__":
         )
         if not template_path.exists():
             print(f"❌ SKILL.md template not found at {template_path}")
-            print("This file is required for Agent Skills generation.")
+            print("This file is required for Agent Skills and OpenCode generation.")
             sys.exit(1)
 
     # Clean output directories once before processing
@@ -359,7 +439,7 @@ if __name__ == "__main__":
         sources_list = ", ".join(p.name for p in source_paths)
         print(f"\nConverting {len(source_paths)} sources: {sources_list}")
         if has_core:
-            print("(Agent Skills will include only core rules)")
+            print("(Agent Skills and OpenCode will include only core rules)")
         print()
 
     # Convert all sources

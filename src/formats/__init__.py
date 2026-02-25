@@ -9,9 +9,10 @@ Available Formats:
 - CopilotFormat: Generates .instructions.md files for GitHub Copilot
 - AgentSkillsFormat: Generates .md files for Agent Skills (OpenAI Codex, Claude Code, other AI coding tools)
 - AntigravityFormat: Generates .md files for Google Antigravity
+- OpenCodeFormat: Generates .md files for OpenCode AI coding agent
 
 Usage:
-    from formats import BaseFormat, ProcessedRule, CursorFormat, WindsurfFormat, CopilotFormat, AgentSkillsFormat, AntigravityFormat
+    from formats import BaseFormat, ProcessedRule, CursorFormat, WindsurfFormat, CopilotFormat, AgentSkillsFormat, AntigravityFormat, OpenCodeFormat
 
     version = "1.0.0"
     formats = [
@@ -20,6 +21,7 @@ Usage:
         CopilotFormat(version),
         AgentSkillsFormat(version),
         AntigravityFormat(version),
+        OpenCodeFormat(version),
     ]
 """
 
@@ -29,6 +31,7 @@ from formats.windsurf import WindsurfFormat
 from formats.copilot import CopilotFormat
 from formats.agentskills import AgentSkillsFormat
 from formats.antigravity import AntigravityFormat
+from formats.opencode import OpenCodeFormat
 
 __all__ = [
     "BaseFormat",
@@ -38,4 +41,5 @@ __all__ = [
     "CopilotFormat",
     "AgentSkillsFormat",
     "AntigravityFormat",
+    "OpenCodeFormat",
 ]
