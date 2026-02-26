@@ -2,8 +2,9 @@
 Convert Unified Rules to IDE Formats
 
 Transforms the unified markdown sources into IDE-specific bundles (Cursor,
-Windsurf, Copilot, Agent Skills, Antigravity). This script is the main entry point
-for producing distributable rule packs from the sources/ directory.
+Windsurf, Copilot, Agent Skills, Antigravity, OpenCode). This script is the
+main entry point for producing distributable rule packs from the sources/
+directory.
 """
 
 import re
@@ -18,6 +19,7 @@ from formats import (
     CopilotFormat,
     AgentSkillsFormat,
     AntigravityFormat,
+    OpenCodeFormat,
 )
 from utils import get_version_from_pyproject
 from validate_versions import set_plugin_version, set_marketplace_version
@@ -55,7 +57,7 @@ def matches_tag_filter(rule_tags: list[str], filter_tags: list[str]) -> bool:
     return all(tag in rule_tags for tag in filter_tags)
 
 
-def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: str) -> None:
+def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: Path) -> None:
     """
     Update SKILL.md with language-to-rules mapping table.
 
@@ -63,7 +65,6 @@ def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: str) ->
         language_to_rules: Dictionary mapping languages to rule files
         skill_path: Path to SKILL.md file
     """
-    # Generate markdown table
     table_lines = [
         "| Language | Rule Files to Apply |",
         "|----------|---------------------|",
@@ -76,27 +77,22 @@ def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: str) ->
 
     table = "\n".join(table_lines)
 
-    # Markers for the language mappings section
     start_marker = "<!-- LANGUAGE_MAPPINGS_START -->"
     end_marker = "<!-- LANGUAGE_MAPPINGS_END -->"
 
-    # Read SKILL.md
-    skill_file = Path(skill_path)
-    content = skill_file.read_text(encoding="utf-8")
+    content = skill_path.read_text(encoding="utf-8")
 
     if start_marker not in content or end_marker not in content:
         raise RuntimeError(
-            "Invalid template: Language mappings section not found in codeguard-SKILLS.md.template"
+            f"Invalid SKILL.md: language mappings section markers not found in {skill_path}"
         )
 
-    # Replace entire section including markers with just the table
     start_idx = content.index(start_marker)
     end_idx = content.index(end_marker) + len(end_marker)
     new_section = f"\n\n{table}\n\n"
     updated_content = content[:start_idx] + new_section + content[end_idx:]
 
-    # Write back to SKILL.md
-    skill_file.write_text(updated_content, encoding="utf-8")
+    skill_path.write_text(updated_content, encoding="utf-8")
     print(f"Updated SKILL.md with language mappings")
 
 
@@ -139,9 +135,10 @@ def convert_rules(
         AntigravityFormat(version),
     ]
 
-    # Only include Agent Skills format for core rules (committed as skills)
+    # Only include Agent Skills and OpenCode formats for core rules
     if include_agentskills:
         all_formats.append(AgentSkillsFormat(version))
+        all_formats.append(OpenCodeFormat(version))
 
     converter = RuleConverter(formats=all_formats)
     path = Path(input_path)
@@ -240,7 +237,7 @@ def convert_rules(
         if not template_path.exists():
             raise FileNotFoundError(
                 f"SKILL.md template not found at {template_path}. "
-                "This file is required for Agent Skills generation."
+                "This file is required for skill-based format generation."
             )
 
         output_skill_dir = PROJECT_ROOT / "skills" / "software-security"
@@ -257,7 +254,15 @@ def convert_rules(
         )
         output_skill_path.write_text(template_content, encoding="utf-8")
 
-        update_skill_md(language_to_rules, str(output_skill_path))
+        update_skill_md(language_to_rules, output_skill_path)
+
+        # Copy the populated Agent Skills SKILL.md to the OpenCode skill directory.
+        # OpenCode ignores unknown frontmatter fields, and the existing SKILL.md
+        # already has the required `name` and `description` fields.
+        opencode_skill_dir = Path(output_dir) / ".opencode" / "skills" / "software-security"
+        opencode_skill_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(output_skill_path, opencode_skill_dir / "SKILL.md")
+        print(f"Copied SKILL.md to {opencode_skill_dir / 'SKILL.md'}")
 
     return results
 
@@ -339,7 +344,7 @@ if __name__ == "__main__":
         )
         if not template_path.exists():
             print(f"❌ SKILL.md template not found at {template_path}")
-            print("This file is required for Agent Skills generation.")
+            print("This file is required for Agent Skills and OpenCode generation.")
             sys.exit(1)
 
     # Clean output directories once before processing
@@ -359,7 +364,7 @@ if __name__ == "__main__":
         sources_list = ", ".join(p.name for p in source_paths)
         print(f"\nConverting {len(source_paths)} sources: {sources_list}")
         if has_core:
-            print("(Agent Skills will include only core rules)")
+            print("(Agent Skills and OpenCode will include only core rules)")
         print()
 
     # Convert all sources

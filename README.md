@@ -60,7 +60,7 @@ Get started in minutes:
 ## How It Works
 
 1. **Security skills and rules** are written in unified markdown format (`sources/` directory)
-2. **Conversion tools** translate skills and rules to IDE-specific formats (Cursor, Windsurf, Copilot, Agent Skills, Antigravity)
+2. **Conversion tools** translate skills and rules into formats for popular coding agents
 3. **Release automation** packages skills and rules into downloadable ZIP files
 4. **AI assistants** reference these skills and rules when generating or reviewing code
 5. **Secure code** is produced automatically without developer intervention

@@ -36,7 +36,7 @@ Agent Skills are model-invoked capabilities that Claude autonomously uses based 
 
 ## How It Works
 
-The CodeGuard skill integrates **22 security rule files** covering all major security domains across languages, frameworks, and technology stacks. The skill follows a simple but powerful workflow:
+The CodeGuard skill integrates **23 security rule files** covering all major security domains across languages, frameworks, and technology stacks. The skill follows a simple but powerful workflow:
 
 ### Skill Activation
 
@@ -289,10 +289,10 @@ uv run python src/convert_to_ide_formats.py
 
 This command:
 - Converts unified rules from `sources/` to IDE-specific formats
-- Generates `skills/` directory with the 22 core security rules (Claude Code plugin)
-- Creates `dist/` with IDE-specific formats (Cursor, Windsurf, Copilot, Antigravity)
+- Generates `skills/` directory with the 23 core security rules (Claude Code plugin)
+- Creates `dist/` with all supported agent-specific formats
 
-**Note:** The Claude Code plugin (`skills/`) always contains only the 22 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.
+**Note:** The Claude Code plugin (`skills/`) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.
 
 ## Advanced Usage
 

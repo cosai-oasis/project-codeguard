@@ -12,16 +12,13 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
 
 ---
 
-## Q: How can I use the rules in Windsurf, Cursor, or GitHub Copilot?
+## Q: How do I install the rules?
 
 **A:** Detailed installation instructions are available in our [Getting Started guide](getting-started.md). In summary:
 
 1. Download the latest release from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
-2. Extract the archive and copy the IDE-specific rules to your project:
-   - **Cursor**: Copy `.cursor/` directory to your project root
-   - **Windsurf**: Copy `.windsurf/` directory to your project root
-   - **GitHub Copilot**: Copy `.github/instructions/` directory to your project root
-3. Restart your IDE and start coding - the AI assistant will automatically follow the security rules
+2. Extract the archive and copy the appropriate rules directory to your project root (e.g. `.cursor/` for Cursor, `.opencode/` for OpenCode)
+3. Restart your AI coding tool and start coding - the AI assistant will automatically follow the security rules
 
 ---
 ## Q: Will these rules consume a lot of the AI agent's **context window**?
@@ -63,21 +60,21 @@ uv run python src/convert_to_ide_formats.py --source core owasp
 
 ---
 
-## Q: How can I use the rules in my own AI agent?
+## Q: Can I create my own custom rules?
 
-**A:** You can use the rules in your own AI agent by creating a custom ruleset. You can create a custom ruleset by creating a new file in the `.cursor/rules`, `.windsurf/rules`, `.github/instructions`, or `.agent/rules` directories and adding the rules you want to apply. You can also use the `cosai-oasis/project-codeguard` repository as a template to create your own ruleset.
+**A:** Yes. See the [Custom Rules](custom-rules.md) documentation for a full guide.
 
 ---
 
 ## Q: Why does the downloaded release folder appear empty?
 
-**A:** After downloading and extracting the release, the folders may appear empty because the rule directories (`.cursor/`, `.windsurf/`, `.github/`, `.agent/`) start with a dot (`.`) and are hidden by default on most operating systems.
+**A:** After downloading and extracting the release, the folders may appear empty because the rule directories start with a dot (`.`) and are hidden by default on most operating systems.
 
 **To show hidden files:**
 
 === "macOS"
     
-    In Finder, navigate to the extracted folder and press ++cmd+shift+period++ to toggle the visibility of hidden files. You should now see the `.cursor/`, `.windsurf/`, `.github/`, and `.agent/` directories.
+    In Finder, navigate to the extracted folder and press ++cmd+shift+period++ to toggle the visibility of hidden files.
 
 === "Windows"
     
@@ -91,7 +88,7 @@ uv run python src/convert_to_ide_formats.py --source core owasp
     
     In your file manager, press ++ctrl+h++ to toggle hidden files, or use `ls -la` in the terminal to view all files including hidden ones.
 
-Once hidden files are visible, you can copy the appropriate directory (`.cursor/`, `.windsurf/`, `.github/`, or `.agent/`) to your project root.
+Once hidden files are visible, copy the appropriate directory to your project root. See [Getting Started](getting-started.md) for supported formats.
 
 ---
 
