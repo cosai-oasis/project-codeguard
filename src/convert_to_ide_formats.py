@@ -312,7 +312,7 @@ def convert_rules(
         if not template_path.exists():
             raise FileNotFoundError(
                 f"SKILL.md template not found at {template_path}. "
-                "This file is required for Agent Skills generation."
+                "This file is required for skill-based format generation."
             )
 
         output_skill_dir = PROJECT_ROOT / "skills" / "software-security"

@@ -13,7 +13,7 @@ See: https://opencode.ai/docs/skills/
 
 import re
 
-from formats.base import BaseFormat, ProcessedRule
+from formats.agentskills import AgentSkillsFormat
 
 OPENCODE_NAME_REGEX = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 OPENCODE_NAME_MAX_LENGTH = 64
@@ -75,7 +75,7 @@ def truncate_description(description: str, max_length: int = OPENCODE_DESCRIPTIO
     return description[: max_length - 3] + "..."
 
 
-class OpenCodeFormat(BaseFormat):
+class OpenCodeFormat(AgentSkillsFormat):
     """
     OpenCode format implementation (.md rule files).
 
@@ -92,46 +92,13 @@ class OpenCodeFormat(BaseFormat):
     The rule files preserve the original YAML frontmatter (description,
     languages, alwaysApply) so rules remain complete and can be referenced
     by the AI coding agent.
+
+    Inherits generate() from AgentSkillsFormat since the rule file format
+    is identical.
     """
 
     def get_format_name(self) -> str:
-        """Return OpenCode format identifier."""
         return "opencode"
 
-    def get_file_extension(self) -> str:
-        """Return OpenCode format file extension."""
-        return ".md"
-
     def get_output_subpath(self) -> str:
-        """Return OpenCode output subdirectory for rule files."""
         return ".opencode/skills/software-security/rules"
-
-    def generate(self, rule: ProcessedRule, globs: str) -> str:
-        """
-        Generate OpenCode .md format with YAML frontmatter.
-
-        Preserves the original YAML frontmatter (description, languages,
-        alwaysApply) so rules remain complete and can be referenced by
-        the AI coding agent, consistent with the Agent Skills format.
-
-        Args:
-            rule: The processed rule to format
-            globs: Glob patterns (not used for OpenCode rule files)
-
-        Returns:
-            Complete markdown with original YAML frontmatter preserved
-        """
-        yaml_lines = []
-
-        desc = self._format_yaml_field("description", rule.description)
-        if desc:
-            yaml_lines.append(desc)
-
-        if rule.languages:
-            yaml_lines.append("languages:")
-            for lang in rule.languages:
-                yaml_lines.append(f"- {lang}")
-
-        yaml_lines.append(f"alwaysApply: {str(rule.always_apply).lower()}")
-
-        return self._build_yaml_frontmatter(yaml_lines, rule.content)

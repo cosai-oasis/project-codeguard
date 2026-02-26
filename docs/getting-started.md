@@ -11,7 +11,7 @@ Get up and running with Project CodeGuard in just a few steps.
 
 ## Prerequisites
 
-Before you begin, familiarize yourself with how rules work in your IDE:
+Before you begin, familiarize yourself with how rules work in your AI coding tool:
 
 === "Cursor"
 
@@ -36,22 +36,29 @@ Before you begin, familiarize yourself with how rules work in your IDE:
 
     :material-book-open-page-variant: [Antigravity Instructions](https://codelabs.developers.google.com/getting-started-google-antigravity#8)
 
+=== "OpenCode"
+    OpenCode uses `.opencode/skills` for skill configuration.
+
+    :material-book-open-page-variant: [OpenCode Skills Documentation](https://opencode.ai/docs/skills/)
+
 ## Installation
 
 ### Option 1: Download Pre-built Rules (Recommended)
 
-1. **Download**: Visit the [Releases page](https://github.com/cosai-oasis/project-codeguard/releases) and download the IDE-specific ZIP file:
-    - `ide-rules-all.zip` - All IDE formats (recommended for teams using multiple tools)
+1. **Download**: Visit the [Releases page](https://github.com/cosai-oasis/project-codeguard/releases) and download the ZIP file for your tool:
+    - `ide-rules-all.zip` - All formats (recommended for teams using multiple tools)
     - `ide-rules-cursor.zip` - Cursor only
     - `ide-rules-windsurf.zip` - Windsurf only
     - `ide-rules-copilot.zip` - GitHub Copilot only
     - `ide-rules-antigravity.zip` - Antigravity only
+    - `ide-rules-opencode.zip` - OpenCode only
 2. **Extract**: Unzip the downloaded file
-3. **Install**: Copy the relevant IDE-specific rules to your project root:
+3. **Install**: Copy the relevant rules directory to your project root:
     - For **Cursor**: Copy `.cursor/` directory to your project
     - For **Windsurf**: Copy `.windsurf/` directory to your project
     - For **GitHub Copilot**: Copy `.github/` directory to your project
     - For **Antigravity**: Copy `.agent/` directory to your project
+    - For **OpenCode**: Copy `.opencode/` directory to your project
 
 
 !!! tip "Repository Level Installation"
@@ -134,6 +141,7 @@ cp -r dist/.cursor/ /path/to/your/project/
 cp -r dist/.windsurf/ /path/to/your/project/
 cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agent/ /path/to/your/project/
+cp -r dist/.opencode/ /path/to/your/project/
 ```
 
 ## Core vs OWASP Sources
@@ -162,6 +170,7 @@ For GitHub repositories, you can automate rule updates with a workflow that runs
 - Windsurf (`.windsurf/rules/`)
 - GitHub Copilot (`.github/instructions/`)
 - Antigravity (`.agent/rules/`)
+- OpenCode (`.opencode/skills/software-security/rules/`)
 
 ### Setup
 
@@ -181,10 +190,13 @@ your-project/
 │   └── rules/
 ├── .cursor/
 │   └── rules/
-├── .windsurf/
-│   └── rules/
 ├── .github/
 │   └── instructions/
+├── .opencode/
+│   └── skills/
+│       └── software-security/
+├── .windsurf/
+│   └── rules/
 └── ... (your project files)
 ```
 

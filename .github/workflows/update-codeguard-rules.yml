@@ -39,6 +39,7 @@ jobs:
             [".windsurf/rules"]="ide-rules-windsurf.zip"
             [".github/instructions"]="ide-rules-copilot.zip"
             [".agent/rules"]="ide-rules-antigravity.zip"
+            [".opencode/skills/software-security/rules"]="ide-rules-opencode.zip"
           )
 
           # File patterns for each format
@@ -47,6 +48,7 @@ jobs:
             [".windsurf/rules"]="codeguard-*.md"
             [".github/instructions"]="codeguard-*.instructions.md"
             [".agent/rules"]="codeguard-*.md"
+            [".opencode/skills/software-security/rules"]="codeguard-*.md"
           )
 
           # Detect which formats exist

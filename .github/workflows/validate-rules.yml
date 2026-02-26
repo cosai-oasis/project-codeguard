@@ -94,6 +94,11 @@ jobs:
             exit 1
           fi
           
+          if [ ! -d "test-output/.opencode" ]; then
+            echo "❌ OpenCode rules not generated"
+            exit 1
+          fi
+          
           echo "✅ All IDE formats generated successfully"
 
       - name: Check skills/ directory is up-to-date
