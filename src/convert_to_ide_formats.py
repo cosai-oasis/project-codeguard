@@ -12,8 +12,6 @@ import shutil
 from pathlib import Path
 from collections import defaultdict
 
-import yaml
-
 from converter import RuleConverter
 from formats import (
     CursorFormat,
@@ -23,11 +21,7 @@ from formats import (
     AntigravityFormat,
     OpenCodeFormat,
 )
-from formats.opencode import (
-    validate_opencode_name,
-    validate_opencode_description,
-)
-from utils import get_version_from_pyproject, parse_frontmatter_and_content
+from utils import get_version_from_pyproject
 from validate_versions import set_plugin_version, set_marketplace_version
 
 # Project root is always one level up from src/
@@ -100,75 +94,6 @@ def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: Path) -
 
     skill_path.write_text(updated_content, encoding="utf-8")
     print(f"Updated SKILL.md with language mappings")
-
-
-def generate_opencode_skill_md(
-    language_to_rules: dict[str, list[str]],
-    output_dir: Path,
-    template_path: Path,
-    version: str,
-    skill_name: str = "software-security",
-) -> None:
-    """
-    Generate an OpenCode-compliant SKILL.md with validated frontmatter.
-
-    Creates the directory structure .opencode/skills/<skill-name>/SKILL.md
-    with YAML frontmatter that conforms to the OpenCode skill specification:
-    - name: validated against ^[a-z0-9]+(-[a-z0-9]+)*$ (1-64 chars)
-    - description: 1-1024 chars
-    - license, compatibility, and metadata fields
-
-    Args:
-        language_to_rules: Dictionary mapping languages to rule files
-        output_dir: Base output directory (e.g., dist/)
-        template_path: Path to the SKILL.md template
-        version: Version string from pyproject.toml
-        skill_name: OpenCode skill directory name (default: software-security)
-
-    Raises:
-        ValueError: If skill_name fails OpenCode name validation
-        FileNotFoundError: If the template file does not exist
-    """
-    validate_opencode_name(skill_name)
-
-    skill_dir = output_dir / ".opencode" / "skills" / skill_name
-    skill_dir.mkdir(parents=True, exist_ok=True)
-    skill_path = skill_dir / "SKILL.md"
-
-    template_content = template_path.read_text(encoding="utf-8")
-    frontmatter, body = parse_frontmatter_and_content(template_content)
-
-    if frontmatter is None:
-        raise ValueError(
-            f"Invalid template: no YAML frontmatter found in {template_path}"
-        )
-
-    if "description" not in frontmatter:
-        raise ValueError(
-            f"Template {template_path} missing required 'description' field in frontmatter"
-        )
-
-    description = validate_opencode_description(frontmatter["description"])
-
-    frontmatter_dict = {
-        "name": skill_name,
-        "description": description,
-        "license": "CC-BY-4.0",
-        "compatibility": "opencode",
-        "metadata": {
-            "framework": "Project CodeGuard",
-            "codeguard-version": version,
-        },
-    }
-    yaml_content = yaml.safe_dump(
-        frontmatter_dict, default_flow_style=False, sort_keys=False
-    )
-    full_content = f"---\n{yaml_content}---\n\n{body}"
-
-    skill_path.write_text(full_content, encoding="utf-8")
-
-    update_skill_md(language_to_rules, skill_path)
-    print(f"Generated OpenCode SKILL.md at {skill_path}")
 
 
 def convert_rules(
@@ -331,13 +256,13 @@ def convert_rules(
 
         update_skill_md(language_to_rules, output_skill_path)
 
-        # Generate OpenCode SKILL.md with OpenCode-compliant frontmatter
-        generate_opencode_skill_md(
-            language_to_rules,
-            Path(output_dir),
-            template_path,
-            version,
-        )
+        # Copy the populated Agent Skills SKILL.md to the OpenCode skill directory.
+        # OpenCode ignores unknown frontmatter fields, and the existing SKILL.md
+        # already has the required `name` and `description` fields.
+        opencode_skill_dir = Path(output_dir) / ".opencode" / "skills" / "software-security"
+        opencode_skill_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(output_skill_path, opencode_skill_dir / "SKILL.md")
+        print(f"Copied SKILL.md to {opencode_skill_dir / 'SKILL.md'}")
 
     return results
 
