@@ -59,20 +59,33 @@ def validate_opencode_name(name: str) -> str:
     return name
 
 
-def truncate_description(description: str, max_length: int = OPENCODE_DESCRIPTION_MAX_LENGTH) -> str:
+def validate_opencode_description(description: str) -> str:
     """
-    Ensure a description fits within OpenCode's length limit.
+    Validate an OpenCode skill description against the specification.
+
+    Rules:
+        - 1-1024 characters
+        - Must not be empty or whitespace-only
 
     Args:
         description: The description text
-        max_length: Maximum allowed length (default: 1024)
 
     Returns:
-        The description, truncated with ellipsis if necessary
+        The validated description (unchanged)
+
+    Raises:
+        ValueError: If the description does not meet OpenCode requirements
     """
-    if len(description) <= max_length:
-        return description
-    return description[: max_length - 3] + "..."
+    if not description or not description.strip():
+        raise ValueError("OpenCode skill description cannot be empty")
+
+    if len(description) > OPENCODE_DESCRIPTION_MAX_LENGTH:
+        raise ValueError(
+            f"OpenCode skill description must be 1-{OPENCODE_DESCRIPTION_MAX_LENGTH} "
+            f"characters, got {len(description)}"
+        )
+
+    return description
 
 
 class OpenCodeFormat(AgentSkillsFormat):

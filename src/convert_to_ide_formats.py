@@ -12,6 +12,8 @@ import shutil
 from pathlib import Path
 from collections import defaultdict
 
+import yaml
+
 from converter import RuleConverter
 from formats import (
     CursorFormat,
@@ -21,8 +23,11 @@ from formats import (
     AntigravityFormat,
     OpenCodeFormat,
 )
-from formats.opencode import validate_opencode_name, truncate_description
-from utils import get_version_from_pyproject
+from formats.opencode import (
+    validate_opencode_name,
+    validate_opencode_description,
+)
+from utils import get_version_from_pyproject, parse_frontmatter_and_content
 from validate_versions import set_plugin_version, set_marketplace_version
 
 # Project root is always one level up from src/
@@ -58,7 +63,7 @@ def matches_tag_filter(rule_tags: list[str], filter_tags: list[str]) -> bool:
     return all(tag in rule_tags for tag in filter_tags)
 
 
-def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: str) -> None:
+def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: Path) -> None:
     """
     Update SKILL.md with language-to-rules mapping table.
 
@@ -66,7 +71,6 @@ def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: str) ->
         language_to_rules: Dictionary mapping languages to rule files
         skill_path: Path to SKILL.md file
     """
-    # Generate markdown table
     table_lines = [
         "| Language | Rule Files to Apply |",
         "|----------|---------------------|",
@@ -79,27 +83,22 @@ def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: str) ->
 
     table = "\n".join(table_lines)
 
-    # Markers for the language mappings section
     start_marker = "<!-- LANGUAGE_MAPPINGS_START -->"
     end_marker = "<!-- LANGUAGE_MAPPINGS_END -->"
 
-    # Read SKILL.md
-    skill_file = Path(skill_path)
-    content = skill_file.read_text(encoding="utf-8")
+    content = skill_path.read_text(encoding="utf-8")
 
     if start_marker not in content or end_marker not in content:
         raise RuntimeError(
-            "Invalid template: Language mappings section not found in codeguard-SKILLS.md.template"
+            f"Invalid SKILL.md: language mappings section markers not found in {skill_path}"
         )
 
-    # Replace entire section including markers with just the table
     start_idx = content.index(start_marker)
     end_idx = content.index(end_marker) + len(end_marker)
     new_section = f"\n\n{table}\n\n"
     updated_content = content[:start_idx] + new_section + content[end_idx:]
 
-    # Write back to SKILL.md
-    skill_file.write_text(updated_content, encoding="utf-8")
+    skill_path.write_text(updated_content, encoding="utf-8")
     print(f"Updated SKILL.md with language mappings")
 
 
@@ -137,37 +136,38 @@ def generate_opencode_skill_md(
     skill_path = skill_dir / "SKILL.md"
 
     template_content = template_path.read_text(encoding="utf-8")
+    frontmatter, body = parse_frontmatter_and_content(template_content)
 
-    _, body = template_content.split("---\n", 2)[1:]
-    body = "---\n".join(["", body])
+    if frontmatter is None:
+        raise ValueError(
+            f"Invalid template: no YAML frontmatter found in {template_path}"
+        )
 
-    description = (
-        "A software security skill that integrates with Project CodeGuard "
-        "to help AI coding agents write secure code and prevent common "
-        "vulnerabilities. Use this skill when writing, reviewing, or "
-        "modifying code to ensure secure-by-default practices are followed."
+    if "description" not in frontmatter:
+        raise ValueError(
+            f"Template {template_path} missing required 'description' field in frontmatter"
+        )
+
+    description = validate_opencode_description(frontmatter["description"])
+
+    frontmatter_dict = {
+        "name": skill_name,
+        "description": description,
+        "license": "CC-BY-4.0",
+        "compatibility": "opencode",
+        "metadata": {
+            "framework": "Project CodeGuard",
+            "codeguard-version": version,
+        },
+    }
+    yaml_content = yaml.safe_dump(
+        frontmatter_dict, default_flow_style=False, sort_keys=False
     )
-    description = truncate_description(description)
-
-    opencode_frontmatter = (
-        f"---\n"
-        f"name: {skill_name}\n"
-        f"description: >-\n"
-        f"  {description}\n"
-        f"license: CC-BY-4.0\n"
-        f"compatibility: opencode\n"
-        f"metadata:\n"
-        f'  framework: "Project CodeGuard"\n'
-        f'  codeguard-version: "{version}"\n'
-        f"---"
-    )
-
-    body_after_frontmatter = body.split("---\n", 1)[1] if "---\n" in body else body
-    full_content = opencode_frontmatter + "\n" + body_after_frontmatter
+    full_content = f"---\n{yaml_content}---\n\n{body}"
 
     skill_path.write_text(full_content, encoding="utf-8")
 
-    update_skill_md(language_to_rules, str(skill_path))
+    update_skill_md(language_to_rules, skill_path)
     print(f"Generated OpenCode SKILL.md at {skill_path}")
 
 
@@ -329,7 +329,7 @@ def convert_rules(
         )
         output_skill_path.write_text(template_content, encoding="utf-8")
 
-        update_skill_md(language_to_rules, str(output_skill_path))
+        update_skill_md(language_to_rules, output_skill_path)
 
         # Generate OpenCode SKILL.md with OpenCode-compliant frontmatter
         generate_opencode_skill_md(

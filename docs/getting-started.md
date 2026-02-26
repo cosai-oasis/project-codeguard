@@ -43,23 +43,163 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
 
 ## Installation
 
-### Option 1: Download Pre-built Rules (Recommended)
+### Option 1: Install Pre-built Rules (Recommended)
 
-1. **Download**: Visit the [Releases page](https://github.com/cosai-oasis/project-codeguard/releases) and download the ZIP file for your tool:
-    - `ide-rules-all.zip` - All formats (recommended for teams using multiple tools)
-    - `ide-rules-cursor.zip` - Cursor only
-    - `ide-rules-windsurf.zip` - Windsurf only
-    - `ide-rules-copilot.zip` - GitHub Copilot only
-    - `ide-rules-antigravity.zip` - Antigravity only
-    - `ide-rules-opencode.zip` - OpenCode only
-2. **Extract**: Unzip the downloaded file
-3. **Install**: Copy the relevant rules directory to your project root:
-    - For **Cursor**: Copy `.cursor/` directory to your project
-    - For **Windsurf**: Copy `.windsurf/` directory to your project
-    - For **GitHub Copilot**: Copy `.github/` directory to your project
-    - For **Antigravity**: Copy `.agent/` directory to your project
-    - For **OpenCode**: Copy `.opencode/` directory to your project
+Select your AI coding tool and follow the instructions:
 
+=== "Cursor"
+
+    1. **Download** [`ide-rules-cursor.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.cursor/` directory to your project root:
+
+        ```bash
+        cp -r .cursor/ /path/to/your/project/
+        ```
+
+    4. **Restart** Cursor to load the rules
+
+=== "Windsurf"
+
+    1. **Download** [`ide-rules-windsurf.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.windsurf/` directory to your project root:
+
+        ```bash
+        cp -r .windsurf/ /path/to/your/project/
+        ```
+
+    4. **Restart** Windsurf to load the rules
+
+=== "GitHub Copilot"
+
+    1. **Download** [`ide-rules-copilot.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.github/` directory to your project root:
+
+        ```bash
+        cp -r .github/ /path/to/your/project/
+        ```
+
+    4. **Restart** your IDE to load the instructions
+
+=== "Antigravity"
+
+    1. **Download** [`ide-rules-antigravity.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.agent/` directory to your project root:
+
+        ```bash
+        cp -r .agent/ /path/to/your/project/
+        ```
+
+    4. **Restart** Antigravity to load the rules
+
+=== "OpenCode"
+
+    **Option A: Skills (recommended)**
+
+    Using skills is more context-efficient as only relevant rules are loaded per session based on the files you're working with.
+
+    1. **Download** [`ide-rules-opencode.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.opencode/` directory to your project root:
+
+        ```bash
+        cp -r .opencode/ /path/to/your/project/
+        ```
+
+    4. **Restart** OpenCode to load the skill
+
+    **Option B: Remote Instructions (zero-maintenance)**
+
+    All rules loaded every session, but always up to date: no local files to maintain.
+
+    Create an [`opencode.json`](https://opencode.ai/docs/rules/#custom-instructions) in your project root:
+
+    ??? example "opencode.json with remote URLs"
+
+        ```json
+        {
+          "$schema": "https://opencode.ai/config.json",
+          "instructions": [
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-additional-cryptography.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-api-web-services.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-authentication-mfa.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-authorization-access-control.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-client-side-web-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-cloud-orchestration-kubernetes.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-data-storage.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-devops-ci-cd-containers.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-file-handling-and-uploads.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-framework-and-languages.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-iac-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-input-validation-injection.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-logging.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-mcp-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-mobile-apps.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-privacy-data-protection.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-safe-c-functions.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-session-management-and-cookies.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-supply-chain-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-xml-and-serialization.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-crypto-algorithms.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-digital-certificates.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-hardcoded-credentials.md"
+          ]
+        }
+        ```
+
+    !!! info "Tradeoff"
+        The skills approach (Option A) uses glob-scoped rules so only relevant rules are loaded based on the files you're editing. Remote instructions load all 23 rules into every session regardless of language. Remote URLs point to the `main` branch -- pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
+
+=== "Claude Code"
+
+    Claude Code uses a plugin system instead of manual file installation:
+
+    1. **Add** the Project CodeGuard marketplace:
+
+        ```bash
+        /plugin marketplace add cosai-oasis/project-codeguard
+        ```
+
+    2. **Install** the security plugin:
+
+        ```bash
+        /plugin install codeguard-security@project-codeguard
+        ```
+
+    The plugin automatically loads and applies security rules. See the [Claude Code Plugin documentation](claude-code-skill-plugin.md) for details.
+
+=== "Codex"
+
+    OpenAI Codex uses [agent skills](https://agentskills.io/) for task-specific instructions.
+
+    !!! warning "Prerequisites"
+        Make sure you're running the latest version of Codex before installing skills.
+
+    **Option A: Skill installer**
+
+    ```
+    $skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
+    ```
+
+    **Option B: Manual clone**
+
+    ```bash
+    mkdir -p .codex/skills
+    cd .codex/skills
+    git clone https://github.com/cosai-oasis/project-codeguard.git temp
+    mv temp/skills/software-security ./
+    rm -rf temp
+    ```
+
+    Once installed, invoke the skill with `$software-security` or let Codex use it automatically when writing or reviewing code.
+
+    !!! info "Codex Skills Documentation"
+        For more information, see the [OpenAI Codex Skills documentation](https://developers.openai.com/codex/skills/).
+
+**Using multiple tools?** Download [`ide-rules-all.zip`](https://github.com/cosai-oasis/project-codeguard/releases) for all formats in one archive.
 
 !!! tip "Repository Level Installation"
     Installing at the repository level ensures all team members benefit from the security rules automatically when they clone the repository.
@@ -69,51 +209,6 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
     
     - **macOS Finder**: Press ++cmd+shift+period++ to toggle visibility
     - **Linux**: Use `ls -la` in terminal or enable "Show Hidden Files" in your file manager
-
-### Claude Code Plugin
-
-Claude Code uses a plugin system instead of manual file installation:
-
-```bash
-# Add the Project CodeGuard marketplace
-/plugin marketplace add cosai-oasis/project-codeguard
-
-# Install the security plugin
-/plugin install codeguard-security@project-codeguard
-```
-
-The plugin will be automatically loaded and apply security rules to your code. See the [Claude Code Plugin documentation](claude-code-skill-plugin.md) for more details.
-
-### OpenAI Codex Skills
-
-OpenAI Codex uses [agent skills](https://agentskills.io/) to extend capabilities with task-specific instructions. 
-
-!!! warning "Prerequisites"
-    Make sure you're running the latest version of Codex before installing skills.
-
-To install Project CodeGuard as a Codex skill, open Codex and use the built-in skill installer:
-
-```
-$skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
-```
-
-Alternatively, you can manually clone the skill to your project:
-
-```bash
-# Clone to your project's .codex/skills directory
-mkdir -p .codex/skills
-cd .codex/skills
-git clone https://github.com/cosai-oasis/project-codeguard.git temp
-mv temp/skills/software-security ./
-rm -rf temp
-
-# Restart Codex to load the new skill
-```
-
-Once installed, you can invoke the skill explicitly in your prompts using `$software-security` or Codex will automatically use it when you're trying to write, review, or modify code.
-
-!!! info "Codex Skills Documentation"
-    For more information about Codex skills, skill locations, and configuration, see the [OpenAI Codex Skills documentation](https://developers.openai.com/codex/skills/).
 
 ### Option 2: Build from Source
 
