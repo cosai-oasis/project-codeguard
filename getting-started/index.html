@@ -362,27 +362,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#option-1-download-pre-built-rules-recommended" class="md-nav__link">
+  <a href="#option-1-install-pre-built-rules-recommended" class="md-nav__link">
     <span class="md-ellipsis">
-      Option 1: Download Pre-built Rules (Recommended)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#claude-code-plugin" class="md-nav__link">
-    <span class="md-ellipsis">
-      Claude Code Plugin
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openai-codex-skills" class="md-nav__link">
-    <span class="md-ellipsis">
-      OpenAI Codex Skills
+      Option 1: Install Pre-built Rules (Recommended)
     </span>
   </a>
   
@@ -671,27 +653,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#option-1-download-pre-built-rules-recommended" class="md-nav__link">
+  <a href="#option-1-install-pre-built-rules-recommended" class="md-nav__link">
     <span class="md-ellipsis">
-      Option 1: Download Pre-built Rules (Recommended)
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#claude-code-plugin" class="md-nav__link">
-    <span class="md-ellipsis">
-      Claude Code Plugin
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#openai-codex-skills" class="md-nav__link">
-    <span class="md-ellipsis">
-      OpenAI Codex Skills
+      Option 1: Install Pre-built Rules (Recommended)
     </span>
   </a>
   
@@ -901,8 +865,8 @@
 </div>
 
 <h2 id="prerequisites">Prerequisites</h2>
-<p>Before you begin, familiarize yourself with how rules work in your IDE:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Cursor</label><label for="__tabbed_1_2">Windsurf</label><label for="__tabbed_1_3">GitHub Copilot</label><label for="__tabbed_1_4">Antigravity</label></div>
+<p>Before you begin, familiarize yourself with how rules work in your AI coding tool:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:5"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Cursor</label><label for="__tabbed_1_2">Windsurf</label><label for="__tabbed_1_3">GitHub Copilot</label><label for="__tabbed_1_4">Antigravity</label><label for="__tabbed_1_5">OpenCode</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Cursor uses <code>.cursor/rules</code> for rule configuration.</p>
@@ -920,28 +884,169 @@
 <p>Antigravity uses <code>.agent/rules</code> for rule configuration.</p>
 <p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg></span> <a href="https://codelabs.developers.google.com/getting-started-google-antigravity#8">Antigravity Instructions</a></p>
 </div>
+<div class="tabbed-block">
+<p>OpenCode uses <code>.opencode/skills</code> for skill configuration.</p>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg></span> <a href="https://opencode.ai/docs/skills/">OpenCode Skills Documentation</a></p>
+</div>
 </div>
 </div>
 <h2 id="installation">Installation</h2>
-<h3 id="option-1-download-pre-built-rules-recommended">Option 1: Download Pre-built Rules (Recommended)</h3>
+<h3 id="option-1-install-pre-built-rules-recommended">Option 1: Install Pre-built Rules (Recommended)</h3>
+<p>Select your AI coding tool and follow the instructions:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:7"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><input id="__tabbed_2_4" name="__tabbed_2" type="radio" /><input id="__tabbed_2_5" name="__tabbed_2" type="radio" /><input id="__tabbed_2_6" name="__tabbed_2" type="radio" /><input id="__tabbed_2_7" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Cursor</label><label for="__tabbed_2_2">Windsurf</label><label for="__tabbed_2_3">GitHub Copilot</label><label for="__tabbed_2_4">Antigravity</label><label for="__tabbed_2_5">OpenCode</label><label for="__tabbed_2_6">Claude Code</label><label for="__tabbed_2_7">Codex</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
 <ol>
-<li><strong>Download</strong>: Visit the <a href="https://github.com/cosai-oasis/project-codeguard/releases">Releases page</a> and download the IDE-specific ZIP file:<ul>
-<li><code>ide-rules-all.zip</code> - All IDE formats (recommended for teams using multiple tools)</li>
-<li><code>ide-rules-cursor.zip</code> - Cursor only</li>
-<li><code>ide-rules-windsurf.zip</code> - Windsurf only</li>
-<li><code>ide-rules-copilot.zip</code> - GitHub Copilot only</li>
-<li><code>ide-rules-antigravity.zip</code> - Antigravity only</li>
-</ul>
+<li><strong>Download</strong> <a href="https://github.com/cosai-oasis/project-codeguard/releases"><code>ide-rules-cursor.zip</code></a> from the Releases page</li>
+<li><strong>Extract</strong> the ZIP file</li>
+<li>
+<p><strong>Copy</strong> the <code>.cursor/</code> directory to your project root:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>.cursor/<span class="w"> </span>/path/to/your/project/
+</code></pre></div>
 </li>
-<li><strong>Extract</strong>: Unzip the downloaded file</li>
-<li><strong>Install</strong>: Copy the relevant IDE-specific rules to your project root:<ul>
-<li>For <strong>Cursor</strong>: Copy <code>.cursor/</code> directory to your project</li>
-<li>For <strong>Windsurf</strong>: Copy <code>.windsurf/</code> directory to your project</li>
-<li>For <strong>GitHub Copilot</strong>: Copy <code>.github/</code> directory to your project</li>
-<li>For <strong>Antigravity</strong>: Copy <code>.agent/</code> directory to your project</li>
-</ul>
+<li>
+<p><strong>Restart</strong> Cursor to load the rules</p>
 </li>
 </ol>
+</div>
+<div class="tabbed-block">
+<ol>
+<li><strong>Download</strong> <a href="https://github.com/cosai-oasis/project-codeguard/releases"><code>ide-rules-windsurf.zip</code></a> from the Releases page</li>
+<li><strong>Extract</strong> the ZIP file</li>
+<li>
+<p><strong>Copy</strong> the <code>.windsurf/</code> directory to your project root:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>.windsurf/<span class="w"> </span>/path/to/your/project/
+</code></pre></div>
+</li>
+<li>
+<p><strong>Restart</strong> Windsurf to load the rules</p>
+</li>
+</ol>
+</div>
+<div class="tabbed-block">
+<ol>
+<li><strong>Download</strong> <a href="https://github.com/cosai-oasis/project-codeguard/releases"><code>ide-rules-copilot.zip</code></a> from the Releases page</li>
+<li><strong>Extract</strong> the ZIP file</li>
+<li>
+<p><strong>Copy</strong> the <code>.github/</code> directory to your project root:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>.github/<span class="w"> </span>/path/to/your/project/
+</code></pre></div>
+</li>
+<li>
+<p><strong>Restart</strong> your IDE to load the instructions</p>
+</li>
+</ol>
+</div>
+<div class="tabbed-block">
+<ol>
+<li><strong>Download</strong> <a href="https://github.com/cosai-oasis/project-codeguard/releases"><code>ide-rules-antigravity.zip</code></a> from the Releases page</li>
+<li><strong>Extract</strong> the ZIP file</li>
+<li>
+<p><strong>Copy</strong> the <code>.agent/</code> directory to your project root:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>.agent/<span class="w"> </span>/path/to/your/project/
+</code></pre></div>
+</li>
+<li>
+<p><strong>Restart</strong> Antigravity to load the rules</p>
+</li>
+</ol>
+</div>
+<div class="tabbed-block">
+<p><strong>Option A: Skills (recommended)</strong></p>
+<p>Using skills is more context-efficient as only relevant rules are loaded per session based on the files you're working with.</p>
+<ol>
+<li><strong>Download</strong> <a href="https://github.com/cosai-oasis/project-codeguard/releases"><code>ide-rules-opencode.zip</code></a> from the Releases page</li>
+<li><strong>Extract</strong> the ZIP file</li>
+<li>
+<p><strong>Copy</strong> the <code>.opencode/</code> directory to your project root:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>.opencode/<span class="w"> </span>/path/to/your/project/
+</code></pre></div>
+</li>
+<li>
+<p><strong>Restart</strong> OpenCode to load the skill</p>
+</li>
+</ol>
+<p><strong>Option B: Remote Instructions (zero-maintenance)</strong></p>
+<p>All rules loaded every session, but always up to date: no local files to maintain.</p>
+<p>Create an <a href="https://opencode.ai/docs/rules/#custom-instructions"><code>opencode.json</code></a> in your project root:</p>
+<details class="example">
+<summary>opencode.json with remote URLs</summary>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;$schema&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://opencode.ai/config.json&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;instructions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-additional-cryptography.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-api-web-services.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-authentication-mfa.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-authorization-access-control.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-client-side-web-security.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-cloud-orchestration-kubernetes.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-data-storage.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-devops-ci-cd-containers.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-file-handling-and-uploads.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-framework-and-languages.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-iac-security.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-input-validation-injection.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-logging.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-mcp-security.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-mobile-apps.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-privacy-data-protection.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-safe-c-functions.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-session-management-and-cookies.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-supply-chain-security.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-xml-and-serialization.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-crypto-algorithms.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-digital-certificates.md&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-hardcoded-credentials.md&quot;</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+</details>
+<div class="admonition info">
+<p class="admonition-title">Tradeoff</p>
+<p>The skills approach (Option A) uses glob-scoped rules so only relevant rules are loaded based on the files you're editing. Remote instructions load all 23 rules into every session regardless of language. Remote URLs point to the <code>main</code> branch -- pin to a release tag (e.g. <code>refs/tags/v1.3.0</code>) if you need a stable, auditable snapshot.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p>Claude Code uses a plugin system instead of manual file installation:</p>
+<ol>
+<li>
+<p><strong>Add</strong> the Project CodeGuard marketplace:</p>
+<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
+</code></pre></div>
+</li>
+<li>
+<p><strong>Install</strong> the security plugin:</p>
+<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
+</code></pre></div>
+</li>
+</ol>
+<p>The plugin automatically loads and applies security rules. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for details.</p>
+</div>
+<div class="tabbed-block">
+<p>OpenAI Codex uses <a href="https://agentskills.io/">agent skills</a> for task-specific instructions.</p>
+<div class="admonition warning">
+<p class="admonition-title">Prerequisites</p>
+<p>Make sure you're running the latest version of Codex before installing skills.</p>
+</div>
+<p><strong>Option A: Skill installer</strong></p>
+<div class="highlight"><pre><span></span><code>$skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
+</code></pre></div>
+<p><strong>Option B: Manual clone</strong></p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>.codex/skills
+<span class="nb">cd</span><span class="w"> </span>.codex/skills
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/cosai-oasis/project-codeguard.git<span class="w"> </span>temp
+mv<span class="w"> </span>temp/skills/software-security<span class="w"> </span>./
+rm<span class="w"> </span>-rf<span class="w"> </span>temp
+</code></pre></div>
+<p>Once installed, invoke the skill with <code>$software-security</code> or let Codex use it automatically when writing or reviewing code.</p>
+<div class="admonition info">
+<p class="admonition-title">Codex Skills Documentation</p>
+<p>For more information, see the <a href="https://developers.openai.com/codex/skills/">OpenAI Codex Skills documentation</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<p><strong>Using multiple tools?</strong> Download <a href="https://github.com/cosai-oasis/project-codeguard/releases"><code>ide-rules-all.zip</code></a> for all formats in one archive.</p>
 <div class="admonition tip">
 <p class="admonition-title">Repository Level Installation</p>
 <p>Installing at the repository level ensures all team members benefit from the security rules automatically when they clone the repository.</p>
@@ -954,63 +1059,31 @@
 <li><strong>Linux</strong>: Use <code>ls -la</code> in terminal or enable "Show Hidden Files" in your file manager</li>
 </ul>
 </div>
-<h3 id="claude-code-plugin">Claude Code Plugin</h3>
-<p>Claude Code uses a plugin system instead of manual file installation:</p>
-<pre><code class="language-bash"># Add the Project CodeGuard marketplace
-/plugin marketplace add cosai-oasis/project-codeguard
-
-# Install the security plugin
-/plugin install codeguard-security@project-codeguard
-</code></pre>
-<p>The plugin will be automatically loaded and apply security rules to your code. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for more details.</p>
-<h3 id="openai-codex-skills">OpenAI Codex Skills</h3>
-<p>OpenAI Codex uses <a href="https://agentskills.io/">agent skills</a> to extend capabilities with task-specific instructions. </p>
-<div class="admonition warning">
-<p class="admonition-title">Prerequisites</p>
-<p>Make sure you're running the latest version of Codex before installing skills.</p>
-</div>
-<p>To install Project CodeGuard as a Codex skill, open Codex and use the built-in skill installer:</p>
-<pre><code>$skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
-</code></pre>
-<p>Alternatively, you can manually clone the skill to your project:</p>
-<pre><code class="language-bash"># Clone to your project's .codex/skills directory
-mkdir -p .codex/skills
-cd .codex/skills
-git clone https://github.com/cosai-oasis/project-codeguard.git temp
-mv temp/skills/software-security ./
-rm -rf temp
-
-# Restart Codex to load the new skill
-</code></pre>
-<p>Once installed, you can invoke the skill explicitly in your prompts using <code>$software-security</code> or Codex will automatically use it when you're trying to write, review, or modify code.</p>
-<div class="admonition info">
-<p class="admonition-title">Codex Skills Documentation</p>
-<p>For more information about Codex skills, skill locations, and configuration, see the <a href="https://developers.openai.com/codex/skills/">OpenAI Codex Skills documentation</a>.</p>
-</div>
 <h3 id="option-2-build-from-source">Option 2: Build from Source</h3>
 <p>If you want to customize or contribute to the rules:</p>
-<pre><code class="language-bash"># Clone the repository
-git clone https://github.com/cosai-oasis/project-codeguard.git
-cd rules
+<div class="highlight"><pre><span></span><code><span class="c1"># Clone the repository</span>
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/cosai-oasis/project-codeguard.git
+<span class="nb">cd</span><span class="w"> </span>rules
 
-# Install dependencies (requires Python 3.11+)
-uv sync
+<span class="c1"># Install dependencies (requires Python 3.11+)</span>
+uv<span class="w"> </span>sync
 
-# Validate rules
-uv run python src/validate_unified_rules.py sources/
+<span class="c1"># Validate rules</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/
 
-# Convert rules (default: core rules only)
-uv run python src/convert_to_ide_formats.py
+<span class="c1"># Convert rules (default: core rules only)</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py
 
-# Or include all rules (core + owasp supplementary)
-uv run python src/convert_to_ide_formats.py --source core owasp
+<span class="c1"># Or include all rules (core + owasp supplementary)</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp
 
-# Copy the generated rules to your project
-cp -r dist/.cursor/ /path/to/your/project/
-cp -r dist/.windsurf/ /path/to/your/project/
-cp -r dist/.github/ /path/to/your/project/
-cp -r dist/.agent/ /path/to/your/project/
-</code></pre>
+<span class="c1"># Copy the generated rules to your project</span>
+cp<span class="w"> </span>-r<span class="w"> </span>dist/.cursor/<span class="w"> </span>/path/to/your/project/
+cp<span class="w"> </span>-r<span class="w"> </span>dist/.windsurf/<span class="w"> </span>/path/to/your/project/
+cp<span class="w"> </span>-r<span class="w"> </span>dist/.github/<span class="w"> </span>/path/to/your/project/
+cp<span class="w"> </span>-r<span class="w"> </span>dist/.agent/<span class="w"> </span>/path/to/your/project/
+cp<span class="w"> </span>-r<span class="w"> </span>dist/.opencode/<span class="w"> </span>/path/to/your/project/
+</code></pre></div>
 <h2 id="core-vs-owasp-sources">Core vs OWASP Sources</h2>
 <p>Project CodeGuard has two source rule sets:</p>
 <ul>
@@ -1032,6 +1105,7 @@ cp -r dist/.agent/ /path/to/your/project/
 <li>Windsurf (<code>.windsurf/rules/</code>)</li>
 <li>GitHub Copilot (<code>.github/instructions/</code>)</li>
 <li>Antigravity (<code>.agent/rules/</code>)</li>
+<li>OpenCode (<code>.opencode/skills/software-security/rules/</code>)</li>
 </ul>
 <h3 id="setup">Setup</h3>
 <ol>
@@ -1042,17 +1116,20 @@ cp -r dist/.agent/ /path/to/your/project/
 <p>The workflow runs monthly (1st at 9:00 UTC) and can also be triggered manually from the <strong>Actions</strong> tab.</p>
 <h2 id="verify-installation">Verify Installation</h2>
 <p>After installation, your project structure should include:</p>
-<pre><code>your-project/
+<div class="highlight"><pre><span></span><code>your-project/
 ├── .agent/
 │   └── rules/
 ├── .cursor/
 │   └── rules/
-├── .windsurf/
-│   └── rules/
 ├── .github/
 │   └── instructions/
+├── .opencode/
+│   └── skills/
+│       └── software-security/
+├── .windsurf/
+│   └── rules/
 └── ... (your project files)
-</code></pre>
+</code></pre></div>
 <h2 id="whats-included">What's Included</h2>
 <p>The security rules cover essential areas:</p>
 <h3 id="core-security-rules">Core Security Rules</h3>
@@ -1143,6 +1220,8 @@ cp -r dist/.agent/ /path/to/your/project/
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1215,7 +1294,7 @@ cp -r dist/.agent/ /path/to/your/project/
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>

@@ -629,29 +629,29 @@
 </tbody>
 </table>
 <p><strong>Examples:</strong></p>
-<pre><code class="language-bash"># Default: convert core rules only
-uv run python src/convert_to_ide_formats.py
+<div class="highlight"><pre><span></span><code><span class="c1"># Default: convert core rules only</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py
 
-# Include multiple sources
-uv run python src/convert_to_ide_formats.py --source core owasp my-rules
+<span class="c1"># Include multiple sources</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp<span class="w"> </span>my-rules
 
-# Custom output directory
-uv run python src/convert_to_ide_formats.py --source core my-rules -o build
+<span class="c1"># Custom output directory</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>my-rules<span class="w"> </span>-o<span class="w"> </span>build
 
-# Filter to only rules tagged with data-security
-uv run python src/convert_to_ide_formats.py --tag data-security
+<span class="c1"># Filter to only rules tagged with data-security</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--tag<span class="w"> </span>data-security
 
-# Multiple tags (AND logic - rules must have ALL tags)
-uv run python src/convert_to_ide_formats.py --tag data-security,authentication
-</code></pre>
+<span class="c1"># Multiple tags (AND logic - rules must have ALL tags)</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--tag<span class="w"> </span>data-security,authentication
+</code></pre></div>
 <h3 id="validate_unified_rulespy">validate_unified_rules.py</h3>
 <p>Validates rule files have correct frontmatter and structure before building.</p>
-<pre><code class="language-bash"># Validate all rules in a directory
-uv run python src/validate_unified_rules.py sources/my-rules/
+<div class="highlight"><pre><span></span><code><span class="c1"># Validate all rules in a directory</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/my-rules/
 
-# Validate all sources
-uv run python src/validate_unified_rules.py sources/
-</code></pre>
+<span class="c1"># Validate all sources</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/
+</code></pre></div>
 <h2 id="notes">Notes</h2>
 <ul>
 <li>Filenames must be unique across all sources</li>
@@ -676,6 +676,8 @@ uv run python src/validate_unified_rules.py sources/
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -748,7 +750,7 @@ uv run python src/validate_unified_rules.py sources/
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>

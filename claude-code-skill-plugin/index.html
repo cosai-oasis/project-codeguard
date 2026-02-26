@@ -874,13 +874,13 @@
 <ol>
 <li>
 <p><strong>Add the Project CodeGuard marketplace:</strong>
-   <code>bash
-   /plugin marketplace add cosai-oasis/project-codeguard</code></p>
+   <div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
+</code></pre></div></p>
 </li>
 <li>
 <p><strong>Install the security plugin:</strong>
-   <code>bash
-   /plugin install codeguard-security@project-codeguard</code></p>
+   <div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
+</code></pre></div></p>
 </li>
 <li>
 <p><strong>Restart Claude Code</strong> (if prompted)</p>
@@ -891,7 +891,7 @@
 </li>
 </ol>
 <h2 id="how-it-works">How It Works</h2>
-<p>The CodeGuard skill integrates <strong>22 security rule files</strong> covering all major security domains across languages, frameworks, and technology stacks. The skill follows a simple but powerful workflow:</p>
+<p>The CodeGuard skill integrates <strong>23 security rule files</strong> covering all major security domains across languages, frameworks, and technology stacks. The skill follows a simple but powerful workflow:</p>
 <h3 id="skill-activation">Skill Activation</h3>
 <p>The skill activates automatically when:
 - Writing new code in any language
@@ -924,57 +924,57 @@
 - Input validation, authentication, authorization, APIs, data storage, privacy, logging, cryptography, file handling, serialization, supply chain, DevOps, cloud, Kubernetes, IaC, frameworks, mobile security, and memory safety (C/C++)</p>
 <h2 id="usage-examples">Usage Examples</h2>
 <h3 id="example-1-writing-database-code">Example 1: Writing Database Code</h3>
-<pre><code class="language-python"># Claude will automatically use parameterized queries
-def get_user(email):
-    # Secure pattern following codeguard-0-input-validation-injection
-    query = &quot;SELECT * FROM users WHERE email = ?&quot;
-    return cursor.execute(query, (email,))
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1"># Claude will automatically use parameterized queries</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_user</span><span class="p">(</span><span class="n">email</span><span class="p">):</span>
+    <span class="c1"># Secure pattern following codeguard-0-input-validation-injection</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM users WHERE email = ?&quot;</span>
+    <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">email</span><span class="p">,))</span>
+</code></pre></div>
 <h3 id="example-2-handling-api-keys">Example 2: Handling API Keys</h3>
-<pre><code class="language-javascript">// Claude will prevent hardcoded credentials
-// and suggest environment variables
-const apiKey = process.env.STRIPE_API_KEY;
-if (!apiKey) {
-  throw new Error(&quot;STRIPE_API_KEY not configured&quot;);
-}
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1">// Claude will prevent hardcoded credentials</span>
+<span class="c1">// and suggest environment variables</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">apiKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">STRIPE_API_KEY</span><span class="p">;</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">apiKey</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">&quot;STRIPE_API_KEY not configured&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
 <h3 id="example-3-password-hashing">Example 3: Password Hashing</h3>
-<pre><code class="language-python"># Claude will suggest modern password hashing
-from argon2 import PasswordHasher
-ph = PasswordHasher()
-password_hash = ph.hash(password)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1"># Claude will suggest modern password hashing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">argon2</span><span class="w"> </span><span class="kn">import</span> <span class="n">PasswordHasher</span>
+<span class="n">ph</span> <span class="o">=</span> <span class="n">PasswordHasher</span><span class="p">()</span>
+<span class="n">password_hash</span> <span class="o">=</span> <span class="n">ph</span><span class="o">.</span><span class="n">hash</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="example-4-file-upload-security">Example 4: File Upload Security</h3>
-<pre><code class="language-javascript">// Claude will enforce file validation
-const multer = require('multer');
-const upload = multer({
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) =&gt; {
-    // Validate file type by content, not just extension
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only images allowed'));
-    }
-  }
-});
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1">// Claude will enforce file validation</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">multer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;multer&#39;</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">upload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">multer</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">limits</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fileSize</span><span class="o">:</span><span class="w"> </span><span class="mf">5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1024</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1024</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="c1">// 5MB limit</span>
+<span class="w">  </span><span class="nx">fileFilter</span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">req</span><span class="p">,</span><span class="w"> </span><span class="nx">file</span><span class="p">,</span><span class="w"> </span><span class="nx">cb</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Validate file type by content, not just extension</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">file</span><span class="p">.</span><span class="nx">mimetype</span><span class="p">.</span><span class="nx">startsWith</span><span class="p">(</span><span class="s1">&#39;image/&#39;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span><span class="w"> </span><span class="kc">true</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nx">cb</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">&#39;Only images allowed&#39;</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
 <h2 id="team-deployment">Team Deployment</h2>
 <p>For organizations, deploy CodeGuard to all developers automatically:</p>
 <ol>
 <li>
 <p>Add to your project's <code>.claude/settings.json</code>:
-   <code>json
-   {
-     "marketplaces": [{"source": "cosai-oasis/project-codeguard"}],
-     "plugins": [
-       {
-         "name": "codeguard-security",
-         "marketplace": "project-codeguard",
-         "enabled": true
-       }
-     ]
-   }</code></p>
+   <div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;marketplaces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cosai-oasis/project-codeguard&quot;</span><span class="p">}],</span>
+<span class="w">  </span><span class="nt">&quot;plugins&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;codeguard-security&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;marketplace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;project-codeguard&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></p>
 </li>
 <li>
 <p>Team members trust the repository folder</p>
@@ -1070,30 +1070,30 @@ const upload = multer({
 </blockquote>
 <h2 id="updating">Updating</h2>
 <p>To update to the latest security rules:</p>
-<pre><code class="language-bash">/plugin update codeguard-security@project-codeguard
-</code></pre>
+<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>update<span class="w"> </span>codeguard-security@project-codeguard
+</code></pre></div>
 <h2 id="customization">Customization</h2>
 <h3 id="disabling-the-plugin">Disabling the Plugin</h3>
 <p>If needed, temporarily disable:</p>
-<pre><code class="language-bash">/plugin disable codeguard-security@project-codeguard
-</code></pre>
+<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>disable<span class="w"> </span>codeguard-security@project-codeguard
+</code></pre></div>
 <p>Re-enable:</p>
-<pre><code class="language-bash">/plugin enable codeguard-security@project-codeguard
-</code></pre>
+<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>codeguard-security@project-codeguard
+</code></pre></div>
 <h3 id="using-specific-rule-files">Using Specific Rule Files</h3>
 <p>All rule files are available in the <code>skills/software-security/rules/</code> directory within the plugin. You can reference specific rules in prompts:</p>
-<pre><code>Claude, please review this authentication code against the 
+<div class="highlight"><pre><span></span><code>Claude, please review this authentication code against the 
 codeguard-0-authentication-mfa.md guidelines
-</code></pre>
+</code></pre></div>
 <h3 id="creating-custom-workflows">Creating Custom Workflows</h3>
 <p>You can create custom security review workflows:</p>
-<pre><code>Claude, perform the following security checks on this code:
+<div class="highlight"><pre><span></span><code>Claude, perform the following security checks on this code:
 1. Check for hardcoded credentials
 2. Validate input sanitization
 3. Verify authentication implementation
 4. Review authorization logic
 Use the relevant CodeGuard rules for each check.
-</code></pre>
+</code></pre></div>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <h3 id="plugin-not-loading">Plugin Not Loading</h3>
 <ol>
@@ -1108,8 +1108,8 @@ Use the relevant CodeGuard rules for each check.
 <li>Check that you're working with supported languages</li>
 </ol>
 <h3 id="checking-plugin-version">Checking Plugin Version</h3>
-<pre><code class="language-bash">/plugin list
-</code></pre>
+<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>list
+</code></pre></div>
 <p>Look for <code>codeguard-security@project-codeguard</code> and note the version number.</p>
 <h2 id="best-practices">Best Practices</h2>
 <h3 id="during-development">During Development</h3>
@@ -1136,38 +1136,38 @@ Use the relevant CodeGuard rules for each check.
 </ol>
 <h2 id="building-the-plugin">Building the Plugin</h2>
 <p>If you're contributing to Project CodeGuard or need to rebuild the plugin:</p>
-<pre><code class="language-bash">cd /path/to/cosai-oasis/project-codeguard
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/path/to/cosai-oasis/project-codeguard
 
-# Regenerate the Claude Code plugin (always uses core rules only)
-uv run python src/convert_to_ide_formats.py
-</code></pre>
+<span class="c1"># Regenerate the Claude Code plugin (always uses core rules only)</span>
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py
+</code></pre></div>
 <p>This command:
 - Converts unified rules from <code>sources/</code> to IDE-specific formats
-- Generates <code>skills/</code> directory with the 22 core security rules (Claude Code plugin)
-- Creates <code>dist/</code> with IDE-specific formats (Cursor, Windsurf, Copilot, Antigravity)</p>
-<p><strong>Note:</strong> The Claude Code plugin (<code>skills/</code>) always contains only the 22 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use <code>--source core owasp</code>, but this only affects <code>dist/</code>, not <code>skills/</code>.</p>
+- Generates <code>skills/</code> directory with the 23 core security rules (Claude Code plugin)
+- Creates <code>dist/</code> with all supported agent-specific formats</p>
+<p><strong>Note:</strong> The Claude Code plugin (<code>skills/</code>) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use <code>--source core owasp</code>, but this only affects <code>dist/</code>, not <code>skills/</code>.</p>
 <h2 id="advanced-usage">Advanced Usage</h2>
 <h3 id="language-specific-security-reviews">Language-Specific Security Reviews</h3>
 <p>Request focused reviews for specific languages:</p>
-<pre><code>Claude, perform a security review of this Python code with emphasis on:
+<div class="highlight"><pre><span></span><code>Claude, perform a security review of this Python code with emphasis on:
 - SQL injection prevention
 - Input validation
 - Authentication best practices
-</code></pre>
+</code></pre></div>
 <h3 id="feature-specific-guidance">Feature-Specific Guidance</h3>
 <p>Get proactive security guidance when building features:</p>
-<pre><code>Claude, I'm about to implement a file upload feature. 
+<div class="highlight"><pre><span></span><code>Claude, I&#39;m about to implement a file upload feature. 
 What security considerations should I keep in mind 
 according to CodeGuard rules?
-</code></pre>
+</code></pre></div>
 <h3 id="security-first-development">Security-First Development</h3>
 <p>Use CodeGuard from the planning phase:</p>
-<pre><code>Claude, help me design a secure authentication system for a web app.
+<div class="highlight"><pre><span></span><code>Claude, help me design a secure authentication system for a web app.
 Use CodeGuard rules to guide the architecture.
-</code></pre>
+</code></pre></div>
 <h2 id="plugin-architecture">Plugin Architecture</h2>
 <h3 id="file-structure">File Structure</h3>
-<pre><code>cosai-oasis/project-codeguard/
+<div class="highlight"><pre><span></span><code>cosai-oasis/project-codeguard/
 ├── .claude-plugin/
 │   ├── plugin.json                  # Plugin metadata
 │   └── marketplace.json             # Marketplace catalog
@@ -1188,7 +1188,7 @@ Use CodeGuard rules to guide the architecture.
 │
 └── src/
     └── convert_to_ide_formats.py    # Conversion script
-</code></pre>
+</code></pre></div>
 <h3 id="how-claude-uses-the-skill">How Claude Uses the Skill</h3>
 <p>When you write or review code, Claude follows this workflow:</p>
 <ol>
@@ -1267,6 +1267,8 @@ Use CodeGuard rules to guide the architecture.
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -1301,7 +1303,7 @@ Use CodeGuard rules to guide the architecture.
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>

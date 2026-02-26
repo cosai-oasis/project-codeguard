@@ -394,9 +394,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#q-how-can-i-use-the-rules-in-windsurf-cursor-or-github-copilot" class="md-nav__link">
+  <a href="#q-how-do-i-install-the-rules" class="md-nav__link">
     <span class="md-ellipsis">
-      Q: How can I use the rules in Windsurf, Cursor, or GitHub Copilot?
+      Q: How do I install the rules?
     </span>
   </a>
   
@@ -430,9 +430,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#q-how-can-i-use-the-rules-in-my-own-ai-agent" class="md-nav__link">
+  <a href="#q-can-i-create-my-own-custom-rules" class="md-nav__link">
     <span class="md-ellipsis">
-      Q: How can I use the rules in my own AI agent?
+      Q: Can I create my own custom rules?
     </span>
   </a>
   
@@ -545,9 +545,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#q-how-can-i-use-the-rules-in-windsurf-cursor-or-github-copilot" class="md-nav__link">
+  <a href="#q-how-do-i-install-the-rules" class="md-nav__link">
     <span class="md-ellipsis">
-      Q: How can I use the rules in Windsurf, Cursor, or GitHub Copilot?
+      Q: How do I install the rules?
     </span>
   </a>
   
@@ -581,9 +581,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#q-how-can-i-use-the-rules-in-my-own-ai-agent" class="md-nav__link">
+  <a href="#q-can-i-create-my-own-custom-rules" class="md-nav__link">
     <span class="md-ellipsis">
-      Q: How can I use the rules in my own AI agent?
+      Q: Can I create my own custom rules?
     </span>
   </a>
   
@@ -669,15 +669,12 @@
 <h2 id="q-where-can-i-access-the-rules">Q: Where can I access the rules?</h2>
 <p><strong>A:</strong> You can access the rules in the <a href="https://github.com/cosai-oasis/project-codeguard">Project CodeGuard GitHub repository</a>. The latest stable release is available on the <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a>.</p>
 <hr />
-<h2 id="q-how-can-i-use-the-rules-in-windsurf-cursor-or-github-copilot">Q: How can I use the rules in Windsurf, Cursor, or GitHub Copilot?</h2>
+<h2 id="q-how-do-i-install-the-rules">Q: How do I install the rules?</h2>
 <p><strong>A:</strong> Detailed installation instructions are available in our <a href="../getting-started/">Getting Started guide</a>. In summary:</p>
 <ol>
 <li>Download the latest release from the <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a></li>
-<li>Extract the archive and copy the IDE-specific rules to your project:</li>
-<li><strong>Cursor</strong>: Copy <code>.cursor/</code> directory to your project root</li>
-<li><strong>Windsurf</strong>: Copy <code>.windsurf/</code> directory to your project root</li>
-<li><strong>GitHub Copilot</strong>: Copy <code>.github/instructions/</code> directory to your project root</li>
-<li>Restart your IDE and start coding - the AI assistant will automatically follow the security rules</li>
+<li>Extract the archive and copy the appropriate rules directory to your project root (e.g. <code>.cursor/</code> for Cursor, <code>.opencode/</code> for OpenCode)</li>
+<li>Restart your AI coding tool and start coding - the AI assistant will automatically follow the security rules</li>
 </ol>
 <hr />
 <h2 id="q-will-these-rules-consume-a-lot-of-the-ai-agents-context-window">Q: Will these rules consume a lot of the AI agent's <strong>context window</strong>?</h2>
@@ -705,19 +702,19 @@
 <h2 id="q-what-are-the-owasp-supplementary-rules">Q: What are the OWASP supplementary rules?</h2>
 <p><strong>A:</strong> The <code>sources/owasp/</code> folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.</p>
 <p>The official release bundles package the main <code>sources/core/</code> rules. If you <a href="../getting-started/#option-2-build-from-source">build from source</a> and want the OWASP supplementary set too, include it explicitly:</p>
-<pre><code class="language-bash">uv run python src/convert_to_ide_formats.py --source core owasp
-</code></pre>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp
+</code></pre></div>
 <hr />
-<h2 id="q-how-can-i-use-the-rules-in-my-own-ai-agent">Q: How can I use the rules in my own AI agent?</h2>
-<p><strong>A:</strong> You can use the rules in your own AI agent by creating a custom ruleset. You can create a custom ruleset by creating a new file in the <code>.cursor/rules</code>, <code>.windsurf/rules</code>, <code>.github/instructions</code>, or <code>.agent/rules</code> directories and adding the rules you want to apply. You can also use the <code>cosai-oasis/project-codeguard</code> repository as a template to create your own ruleset.</p>
+<h2 id="q-can-i-create-my-own-custom-rules">Q: Can I create my own custom rules?</h2>
+<p><strong>A:</strong> Yes. See the <a href="../custom-rules/">Custom Rules</a> documentation for a full guide.</p>
 <hr />
 <h2 id="q-why-does-the-downloaded-release-folder-appear-empty">Q: Why does the downloaded release folder appear empty?</h2>
-<p><strong>A:</strong> After downloading and extracting the release, the folders may appear empty because the rule directories (<code>.cursor/</code>, <code>.windsurf/</code>, <code>.github/</code>, <code>.agent/</code>) start with a dot (<code>.</code>) and are hidden by default on most operating systems.</p>
+<p><strong>A:</strong> After downloading and extracting the release, the folders may appear empty because the rule directories start with a dot (<code>.</code>) and are hidden by default on most operating systems.</p>
 <p><strong>To show hidden files:</strong></p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">macOS</label><label for="__tabbed_1_2">Windows</label><label for="__tabbed_1_3">Linux</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p>In Finder, navigate to the extracted folder and press <span class="keys"><kbd class="key-command">Cmd</kbd><span>+</span><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-period">.</kbd></span> to toggle the visibility of hidden files. You should now see the <code>.cursor/</code>, <code>.windsurf/</code>, <code>.github/</code>, and <code>.agent/</code> directories.</p>
+<p>In Finder, navigate to the extracted folder and press <span class="keys"><kbd class="key-command">Cmd</kbd><span>+</span><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-period">.</kbd></span> to toggle the visibility of hidden files.</p>
 </div>
 <div class="tabbed-block">
 <p>In File Explorer:</p>
@@ -732,13 +729,13 @@
 </div>
 </div>
 </div>
-<p>Once hidden files are visible, you can copy the appropriate directory (<code>.cursor/</code>, <code>.windsurf/</code>, <code>.github/</code>, or <code>.agent/</code>) to your project root.</p>
+<p>Once hidden files are visible, copy the appropriate directory to your project root. See <a href="../getting-started/">Getting Started</a> for supported formats.</p>
 <hr />
 <h2 id="q-can-i-use-this-with-claude-code">Q: Can I use this with Claude Code?</h2>
 <p><strong>A:</strong> Yes! Install the Project CodeGuard Claude Code plugin (Agent Skill) and Claude will apply the security rules automatically while you code.</p>
-<pre><code class="language-bash">/plugin marketplace add cosai-oasis/project-codeguard
-/plugin install codeguard-security@project-codeguard
-</code></pre>
+<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
+/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
+</code></pre></div>
 <p>For team/repo defaults, add the plugin in <code>.claude/settings.json</code> so it’s enabled for all contributors. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for details and troubleshooting.</p>
 <h2 id="q-how-can-i-report-a-problem-or-enhancement-to-any-of-the-rules">Q: How can I report a problem or enhancement to any of the rules?</h2>
 <p><strong>A:</strong> You can report problems, successes, or suggest enhancements to any of the rules by:</p>
@@ -785,6 +782,8 @@
             </div>
           
           
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
         
@@ -841,7 +840,7 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
