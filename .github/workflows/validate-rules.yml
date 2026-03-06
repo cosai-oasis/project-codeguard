@@ -99,6 +99,11 @@ jobs:
             exit 1
           fi
           
+          if [ ! -d "test-output/.codex" ]; then
+            echo "❌ Codex rules not generated"
+            exit 1
+          fi
+          
           echo "✅ All IDE formats generated successfully"
 
       - name: Check skills/ directory is up-to-date

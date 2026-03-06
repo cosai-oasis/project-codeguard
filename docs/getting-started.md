@@ -178,20 +178,22 @@ Select your AI coding tool and follow the instructions:
     !!! warning "Prerequisites"
         Make sure you're running the latest version of Codex before installing skills.
 
-    **Option A: Skill installer**
+    **Option A: Pre-built download (recommended)**
+
+    1. **Download** [`ide-rules-codex.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.codex/` directory to your project root:
+
+        ```bash
+        cp -r .codex/ /path/to/your/project/
+        ```
+
+    4. **Restart** Codex to load the skill
+
+    **Option B: Skill installer**
 
     ```
     $skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
-    ```
-
-    **Option B: Manual clone**
-
-    ```bash
-    mkdir -p .codex/skills
-    cd .codex/skills
-    git clone https://github.com/cosai-oasis/project-codeguard.git temp
-    mv temp/skills/software-security ./
-    rm -rf temp
     ```
 
     Once installed, invoke the skill with `$software-security` or let Codex use it automatically when writing or reviewing code.
@@ -237,6 +239,7 @@ cp -r dist/.windsurf/ /path/to/your/project/
 cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agent/ /path/to/your/project/
 cp -r dist/.opencode/ /path/to/your/project/
+cp -r dist/.codex/ /path/to/your/project/
 ```
 
 ## Core vs OWASP Sources
@@ -266,6 +269,7 @@ For GitHub repositories, you can automate rule updates with a workflow that runs
 - GitHub Copilot (`.github/instructions/`)
 - Antigravity (`.agent/rules/`)
 - OpenCode (`.opencode/skills/software-security/rules/`)
+- Codex (`.codex/skills/software-security/rules/`)
 
 ### Setup
 
@@ -283,6 +287,9 @@ After installation, your project structure should include:
 your-project/
 ├── .agent/
 │   └── rules/
+├── .codex/
+│   └── skills/
+│       └── software-security/
 ├── .cursor/
 │   └── rules/
 ├── .github/
@@ -369,4 +376,3 @@ The rules have minimal performance impact, but if you experience issues:
 - **Documentation**: You're reading it! Check the [FAQ](faq.md) for common questions
 - **GitHub Issues**: [Report bugs or ask questions](https://github.com/cosai-oasis/project-codeguard/issues)
 - **Discussions**: [Join the community discussion](https://github.com/cosai-oasis/project-codeguard/discussions)
-

@@ -2,8 +2,8 @@
 Convert Unified Rules to IDE Formats
 
 Transforms the unified markdown sources into IDE-specific bundles (Cursor,
-Windsurf, Copilot, Agent Skills, Antigravity, OpenCode). This script is the
-main entry point for producing distributable rule packs from the sources/
+Windsurf, Copilot, Agent Skills, Antigravity, OpenCode, Codex). This script is
+the main entry point for producing distributable rule packs from the sources/
 directory.
 """
 
@@ -20,6 +20,7 @@ from formats import (
     AgentSkillsFormat,
     AntigravityFormat,
     OpenCodeFormat,
+    CodexFormat,
 )
 from utils import get_version_from_pyproject
 from validate_versions import set_plugin_version, set_marketplace_version
@@ -135,10 +136,11 @@ def convert_rules(
         AntigravityFormat(version),
     ]
 
-    # Only include Agent Skills and OpenCode formats for core rules
+    # Only include Agent Skills, OpenCode, and Codex formats for core rules
     if include_agentskills:
         all_formats.append(AgentSkillsFormat(version))
         all_formats.append(OpenCodeFormat(version))
+        all_formats.append(CodexFormat(version))
 
     converter = RuleConverter(formats=all_formats)
     path = Path(input_path)
@@ -264,6 +266,12 @@ def convert_rules(
         shutil.copy2(output_skill_path, opencode_skill_dir / "SKILL.md")
         print(f"Copied SKILL.md to {opencode_skill_dir / 'SKILL.md'}")
 
+        # Copy SKILL.md to the Codex skill directory (.codex/skills/software-security/).
+        codex_skill_dir = Path(output_dir) / ".codex" / "skills" / "software-security"
+        codex_skill_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(output_skill_path, codex_skill_dir / "SKILL.md")
+        print(f"Copied SKILL.md to {codex_skill_dir / 'SKILL.md'}")
+
     return results
 
 
@@ -344,7 +352,7 @@ if __name__ == "__main__":
         )
         if not template_path.exists():
             print(f"❌ SKILL.md template not found at {template_path}")
-            print("This file is required for Agent Skills and OpenCode generation.")
+            print("This file is required for Agent Skills, OpenCode, and Codex generation.")
             sys.exit(1)
 
     # Clean output directories once before processing
@@ -364,7 +372,7 @@ if __name__ == "__main__":
         sources_list = ", ".join(p.name for p in source_paths)
         print(f"\nConverting {len(source_paths)} sources: {sources_list}")
         if has_core:
-            print("(Agent Skills and OpenCode will include only core rules)")
+            print("(Agent Skills, OpenCode, and Codex will include only core rules)")
         print()
 
     # Convert all sources

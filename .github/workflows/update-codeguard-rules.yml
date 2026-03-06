@@ -40,6 +40,7 @@ jobs:
             [".github/instructions"]="ide-rules-copilot.zip"
             [".agent/rules"]="ide-rules-antigravity.zip"
             [".opencode/skills/software-security/rules"]="ide-rules-opencode.zip"
+            [".codex/skills/software-security/rules"]="ide-rules-codex.zip"
           )
 
           # File patterns for each format
@@ -49,6 +50,7 @@ jobs:
             [".github/instructions"]="codeguard-*.instructions.md"
             [".agent/rules"]="codeguard-*.md"
             [".opencode/skills/software-security/rules"]="codeguard-*.md"
+            [".codex/skills/software-security/rules"]="codeguard-*.md"
           )
 
           # Detect which formats exist

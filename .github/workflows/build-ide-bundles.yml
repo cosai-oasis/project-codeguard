@@ -56,6 +56,7 @@ jobs:
           zip -r ../ide-rules-copilot.zip .github/
           zip -r ../ide-rules-antigravity.zip .agent/
           zip -r ../ide-rules-opencode.zip .opencode/
+          zip -r ../ide-rules-codex.zip .codex/
           cd ..
           zip -r ide-rules-all.zip dist/
           ls -lh ide-rules-*.zip
@@ -71,5 +72,6 @@ jobs:
             ide-rules-copilot.zip \
             ide-rules-antigravity.zip \
             ide-rules-opencode.zip \
+            ide-rules-codex.zip \
             --clobber
 
