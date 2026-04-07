@@ -8,3 +8,13 @@ dependencies = [
     "mkdocs~=1.6.1",
     "mkdocs-material~=9.6.21",
 ]
+
+[tool.uv]
+# CVE floors for transitive deps
+constraint-dependencies = [
+    "urllib3>=2.6.3",
+    "requests>=2.33.0",
+    "pygments>=2.20.0",
+]
+# Supply-chain cooldown
+exclude-newer = "7 days"
