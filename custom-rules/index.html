@@ -392,26 +392,8 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#validate_unified_rulespy" class="md-nav__link">
-    <span class="md-ellipsis">
-      validate_unified_rules.py
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Notes
-    </span>
-  </a>
   
 </li>
       
@@ -508,26 +490,8 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#validate_unified_rulespy" class="md-nav__link">
-    <span class="md-ellipsis">
-      validate_unified_rules.py
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      Notes
-    </span>
-  </a>
   
 </li>
       
@@ -629,29 +593,26 @@
 </tbody>
 </table>
 <p><strong>Examples:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Default: convert core rules only</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py
-
-<span class="c1"># Include multiple sources</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp<span class="w"> </span>my-rules
-
-<span class="c1"># Custom output directory</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>my-rules<span class="w"> </span>-o<span class="w"> </span>build
-
-<span class="c1"># Filter to only rules tagged with data-security</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--tag<span class="w"> </span>data-security
-
-<span class="c1"># Multiple tags (AND logic - rules must have ALL tags)</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--tag<span class="w"> </span>data-security,authentication
-</code></pre></div>
+<p>```bash</p>
+<h1 id="default-convert-core-rules-only">Default: convert core rules only</h1>
+<p>uv run python src/convert_to_ide_formats.py</p>
+<h1 id="include-multiple-sources">Include multiple sources</h1>
+<p>uv run python src/convert_to_ide_formats.py --source core owasp my-rules</p>
+<h1 id="custom-output-directory">Custom output directory</h1>
+<p>uv run python src/convert_to_ide_formats.py --source core my-rules -o build</p>
+<h1 id="filter-to-only-rules-tagged-with-data-security">Filter to only rules tagged with data-security</h1>
+<p>uv run python src/convert_to_ide_formats.py --tag data-security</p>
+<h1 id="multiple-tags-and-logic-rules-must-have-all-tags">Multiple tags (AND logic - rules must have ALL tags)</h1>
+<p>uv run python src/convert_to_ide_formats.py --tag data-security,authentication
+```</p>
 <h3 id="validate_unified_rulespy">validate_unified_rules.py</h3>
 <p>Validates rule files have correct frontmatter and structure before building.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Validate all rules in a directory</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/my-rules/
-
-<span class="c1"># Validate all sources</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/
-</code></pre></div>
+<p>```bash</p>
+<h1 id="validate-all-rules-in-a-directory">Validate all rules in a directory</h1>
+<p>uv run python src/validate_unified_rules.py sources/my-rules/</p>
+<h1 id="validate-all-sources">Validate all sources</h1>
+<p>uv run python src/validate_unified_rules.py sources/
+```</p>
 <h2 id="notes">Notes</h2>
 <ul>
 <li>Filenames must be unique across all sources</li>

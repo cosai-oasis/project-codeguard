@@ -702,8 +702,8 @@
 <h2 id="q-what-are-the-owasp-supplementary-rules">Q: What are the OWASP supplementary rules?</h2>
 <p><strong>A:</strong> The <code>sources/owasp/</code> folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.</p>
 <p>The official release bundles package the main <code>sources/core/</code> rules. If you <a href="../getting-started/#option-2-build-from-source">build from source</a> and want the OWASP supplementary set too, include it explicitly:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp
-</code></pre></div>
+<p><code>bash
+uv run python src/convert_to_ide_formats.py --source core owasp</code></p>
 <hr />
 <h2 id="q-can-i-create-my-own-custom-rules">Q: Can I create my own custom rules?</h2>
 <p><strong>A:</strong> Yes. See the <a href="../custom-rules/">Custom Rules</a> documentation for a full guide.</p>
@@ -733,9 +733,9 @@
 <hr />
 <h2 id="q-can-i-use-this-with-claude-code">Q: Can I use this with Claude Code?</h2>
 <p><strong>A:</strong> Yes! Install the Project CodeGuard Claude Code plugin (Agent Skill) and Claude will apply the security rules automatically while you code.</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
-/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
-</code></pre></div>
+<p><code>bash
+/plugin marketplace add cosai-oasis/project-codeguard
+/plugin install codeguard-security@project-codeguard</code></p>
 <p>For team/repo defaults, add the plugin in <code>.claude/settings.json</code> so it’s enabled for all contributors. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for details and troubleshooting.</p>
 <h2 id="q-how-can-i-report-a-problem-or-enhancement-to-any-of-the-rules">Q: How can I report a problem or enhancement to any of the rules?</h2>
 <p><strong>A:</strong> You can report problems, successes, or suggest enhancements to any of the rules by:</p>
