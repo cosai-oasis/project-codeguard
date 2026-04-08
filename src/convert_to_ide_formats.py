@@ -138,7 +138,7 @@ def convert_rules(
         AntigravityFormat(version),
     ]
 
-    # Only include Agent Skills, OpenCode, and Codex formats for core rules
+    # Only include Agent Skills–based formats (skills with SKILL.md) for core rules
     if include_agentskills:
         all_formats.append(AgentSkillsFormat(version))
         all_formats.append(OpenCodeFormat(version))
