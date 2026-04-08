@@ -57,6 +57,8 @@ jobs:
           zip -r ../ide-rules-antigravity.zip .agent/
           zip -r ../ide-rules-opencode.zip .opencode/
           zip -r ../ide-rules-codex.zip .codex/
+          zip -r ../ide-rules-openclaw.zip .openclaw/
+          zip -r ../ide-rules-hermes.zip .hermes/
           cd ..
           zip -r ide-rules-all.zip dist/
           ls -lh ide-rules-*.zip
@@ -73,5 +75,7 @@ jobs:
             ide-rules-antigravity.zip \
             ide-rules-opencode.zip \
             ide-rules-codex.zip \
+            ide-rules-openclaw.zip \
+            ide-rules-hermes.zip \
             --clobber
 

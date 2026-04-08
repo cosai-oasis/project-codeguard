@@ -41,6 +41,16 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
 
     :material-book-open-page-variant: [OpenCode Skills Documentation](https://opencode.ai/docs/skills/)
 
+=== "OpenClaw"
+    OpenClaw uses `.openclaw/skills` for skill configuration.
+
+    :material-book-open-page-variant: [OpenClaw Documentation](https://github.com/openclaw/openclaw)
+
+=== "Hermes"
+    Hermes uses `.hermes/skills` for skill configuration.
+
+    :material-book-open-page-variant: [Hermes Skills Documentation](https://hermes-agent.nousresearch.com/docs/skills/)
+
 ## Installation
 
 ### Option 1: Install Pre-built Rules (Recommended)
@@ -201,6 +211,57 @@ Select your AI coding tool and follow the instructions:
     !!! info "Codex Skills Documentation"
         For more information, see the [OpenAI Codex Skills documentation](https://developers.openai.com/codex/skills/).
 
+=== "OpenClaw"
+
+    OpenClaw uses the [Agent Skills standard](https://agentskills.io/) for skill discovery.
+
+    **Option A: Pre-built download (recommended)**
+
+    1. **Download** [`ide-rules-openclaw.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.openclaw/` directory to your project root:
+
+        ```bash
+        cp -r .openclaw/ /path/to/your/project/
+        ```
+
+    4. **Start a new session** in OpenClaw to load the rules
+
+    **Option B: ClawHub marketplace**
+
+    ```bash
+    clawhub install software-security
+    ```
+
+    Once installed, OpenClaw automatically discovers and applies the security rules when generating or reviewing code.
+
+=== "Hermes"
+
+    Hermes uses the [Agent Skills standard](https://agentskills.io/) for skill discovery.
+
+    **Option A: Pre-built download (recommended)**
+
+    1. **Download** [`ide-rules-hermes.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.hermes/` directory to your project root:
+
+        ```bash
+        cp -r .hermes/ /path/to/your/project/
+        ```
+
+    4. **Start a new session** in Hermes to load the rules
+
+    **Option B: Hermes CLI**
+
+    ```bash
+    hermes skills install software-security
+    ```
+
+    Once installed, Hermes automatically discovers and applies the security rules when generating or reviewing code.
+
+    !!! info "Hermes Skills Documentation"
+        For more information, see the [Hermes Skills documentation](https://hermes-agent.nousresearch.com/docs/skills/).
+
 **Using multiple tools?** Download [`ide-rules-all.zip`](https://github.com/cosai-oasis/project-codeguard/releases) for all formats in one archive.
 
 !!! tip "Repository Level Installation"
@@ -240,6 +301,8 @@ cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agent/ /path/to/your/project/
 cp -r dist/.opencode/ /path/to/your/project/
 cp -r dist/.codex/ /path/to/your/project/
+cp -r dist/.openclaw/ /path/to/your/project/
+cp -r dist/.hermes/ /path/to/your/project/
 ```
 
 ## Core vs OWASP Sources
@@ -270,6 +333,8 @@ For GitHub repositories, you can automate rule updates with a workflow that runs
 - Antigravity (`.agent/rules/`)
 - OpenCode (`.opencode/skills/software-security/rules/`)
 - Codex (`.codex/skills/software-security/rules/`)
+- OpenClaw (`.openclaw/skills/software-security/rules/`)
+- Hermes (`.hermes/skills/software-security/rules/`)
 
 ### Setup
 
@@ -294,6 +359,12 @@ your-project/
 │   └── rules/
 ├── .github/
 │   └── instructions/
+├── .hermes/
+│   └── skills/
+│       └── software-security/
+├── .openclaw/
+│   └── skills/
+│       └── software-security/
 ├── .opencode/
 │   └── skills/
 │       └── software-security/

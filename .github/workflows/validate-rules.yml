@@ -103,7 +103,17 @@ jobs:
             echo "❌ Codex rules not generated"
             exit 1
           fi
-          
+
+          if [ ! -d "test-output/.openclaw" ]; then
+            echo "❌ OpenClaw rules not generated"
+            exit 1
+          fi
+
+          if [ ! -d "test-output/.hermes" ]; then
+            echo "❌ Hermes rules not generated"
+            exit 1
+          fi
+
           echo "✅ All IDE formats generated successfully"
 
       - name: Check skills/ directory is up-to-date

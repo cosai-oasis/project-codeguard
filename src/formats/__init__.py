@@ -11,9 +11,11 @@ Available Formats:
 - AntigravityFormat: Generates .md files for Google Antigravity
 - OpenCodeFormat: Generates .md files for OpenCode AI coding agent
 - CodexFormat: Generates .md files for OpenAI Codex
+- OpenClawFormat: Generates .md files for OpenClaw AI assistant
+- HermesFormat: Generates .md files for Hermes AI coding agent
 
 Usage:
-    from formats import BaseFormat, ProcessedRule, CursorFormat, WindsurfFormat, CopilotFormat, AgentSkillsFormat, AntigravityFormat, OpenCodeFormat, CodexFormat
+    from formats import BaseFormat, ProcessedRule, CursorFormat, WindsurfFormat, CopilotFormat, AgentSkillsFormat, AntigravityFormat, OpenCodeFormat, CodexFormat, OpenClawFormat, HermesFormat
 
     version = "1.0.0"
     formats = [
@@ -24,6 +26,8 @@ Usage:
         AntigravityFormat(version),
         OpenCodeFormat(version),
         CodexFormat(version),
+        OpenClawFormat(version),
+        HermesFormat(version),
     ]
 """
 
@@ -35,6 +39,8 @@ from formats.agentskills import AgentSkillsFormat
 from formats.antigravity import AntigravityFormat
 from formats.opencode import OpenCodeFormat
 from formats.codex import CodexFormat
+from formats.openclaw import OpenClawFormat
+from formats.hermes import HermesFormat
 
 __all__ = [
     "BaseFormat",
@@ -46,4 +52,6 @@ __all__ = [
     "AntigravityFormat",
     "OpenCodeFormat",
     "CodexFormat",
+    "OpenClawFormat",
+    "HermesFormat",
 ]
