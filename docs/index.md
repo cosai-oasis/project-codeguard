@@ -48,6 +48,12 @@ Get started in minutes:
 [Get Started →](getting-started.md){ .md-button .md-button--primary }
 [View on GitHub :material-github:](https://github.com/cosai-oasis/project-codeguard){ .md-button }
 
+## Benchmarking Security Impact
+
+This branch also contains an experimental benchmarking subsystem for comparing `with_skills` and `without_skills` agent runs against the same coding task, then scoring the resulting diffs on a CVSS-style `0-10` scale where lower is better.
+
+[Benchmarking System →](benchmarking.md){ .md-button }
+
 ## How It Works
 
 1. **Security rules** are written in a unified markdown format

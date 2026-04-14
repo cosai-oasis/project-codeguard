@@ -257,15 +257,24 @@ def main() -> None:
             _orig_judge_result = _judge_mod.judge_result
 
             async def _tracked_judge(*a, **kw):
-                result = await _orig_judge_result(*a, **kw)
+                verdict, log = await _orig_judge_result(*a, **kw)
                 progress.advance(task)
-                return result
+                return verdict, log
 
             _judge_mod.judge_result = _tracked_judge
             try:
-                verdicts = await judge_all(scenarios, results, config, creds)
+                verdicts, judge_logs = await judge_all(scenarios, results, config, creds)
             finally:
                 _judge_mod.judge_result = _orig_judge_result
+
+        # Save judge logs
+        debug_dir = RESULTS_DIR / "debug"
+        debug_dir.mkdir(parents=True, exist_ok=True)
+        for jl in judge_logs:
+            tag = f"{jl['scenario_id']}_{jl['run_mode']}_{jl['run_index']}"
+            (debug_dir / f"{tag}_judge.json").write_text(
+                json.dumps(jl, indent=2, ensure_ascii=False), encoding="utf-8",
+            )
 
         summary = build_summary(
             scenarios, verdicts, config, results, agent_pricing, judge_pricing,

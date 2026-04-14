@@ -180,13 +180,14 @@ async def judge_result(
     result: ContainerResult,
     config: BenchmarkConfig,
     creds: Credentials,
-) -> JudgeVerdict:
+) -> tuple[JudgeVerdict, dict]:
     """Send the diff to the judge model and parse the structured verdict."""
     last_exc: Exception | None = None
 
     for attempt in range(_MAX_RETRIES):
         try:
-            return await _call_judge(scenario, result, config, creds)
+            verdict, log = await _call_judge(scenario, result, config, creds)
+            return verdict, log
         except (httpx.ConnectError, httpx.ReadTimeout, httpx.HTTPStatusError) as exc:
             last_exc = exc
             if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code < 500:
@@ -203,7 +204,30 @@ async def _call_judge(
     result: ContainerResult,
     config: BenchmarkConfig,
     creds: Credentials,
-) -> JudgeVerdict:
+) -> tuple[JudgeVerdict, dict]:
+    """Call judge and return (verdict, full_log).
+
+    full_log contains the request messages and raw API response
+    for debug/audit purposes.
+    """
+    user_prompt = build_judge_prompt(scenario, result)
+    request_body = {
+        "model": config.judge_model,
+        "messages": [
+            {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "judge_verdict",
+                "strict": True,
+                "schema": _VERDICT_SCHEMA,
+            },
+        },
+        "temperature": config.judge.temperature,
+    }
+
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{creds.openai_base_url}/chat/completions",
@@ -211,22 +235,7 @@ async def _call_judge(
                 "Authorization": f"Bearer {creds.openai_api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "model": config.judge_model,
-                "messages": [
-                    {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
-                    {"role": "user", "content": build_judge_prompt(scenario, result)},
-                ],
-                "response_format": {
-                    "type": "json_schema",
-                    "json_schema": {
-                        "name": "judge_verdict",
-                        "strict": True,
-                        "schema": _VERDICT_SCHEMA,
-                    },
-                },
-                "temperature": config.judge.temperature,
-            },
+            json=request_body,
             timeout=float(config.judge.timeout_seconds),
         )
         response.raise_for_status()
@@ -234,7 +243,6 @@ async def _call_judge(
         content = body["choices"][0]["message"]["content"]
         raw = json.loads(content)
 
-        # Extract token usage from OpenRouter response
         usage_data = body.get("usage", {})
         judge_usage = TokenUsage(
             prompt_tokens=usage_data.get("prompt_tokens", 0),
@@ -242,12 +250,30 @@ async def _call_judge(
             total_tokens=usage_data.get("total_tokens", 0),
         )
 
-        # Inject run metadata so the verdict is self-contained
         raw["scenario_id"] = result.scenario_id
         raw["run_mode"] = result.run_mode
         raw["run_index"] = result.run_index
         raw["judge_usage"] = judge_usage.model_dump()
-        return JudgeVerdict.model_validate(raw)
+        verdict = JudgeVerdict.model_validate(raw)
+
+        # Build full log for debug
+        judge_log = {
+            "scenario_id": result.scenario_id,
+            "run_mode": result.run_mode.value,
+            "run_index": result.run_index,
+            "request": {
+                "model": config.judge_model,
+                "temperature": config.judge.temperature,
+                "system_prompt": JUDGE_SYSTEM_PROMPT,
+                "user_prompt": user_prompt,
+            },
+            "response": {
+                "verdict": raw,
+                "usage": usage_data,
+            },
+        }
+
+        return verdict, judge_log
 
 
 async def judge_all(
@@ -255,12 +281,19 @@ async def judge_all(
     results: list[ContainerResult],
     config: BenchmarkConfig,
     creds: Credentials,
-) -> list[JudgeVerdict]:
-    """Judge all container results, bounded by config.judge.max_concurrent."""
+) -> tuple[list[JudgeVerdict], list[dict]]:
+    """Judge all container results, bounded by config.judge.max_concurrent.
+
+    Returns (verdicts, judge_logs) where judge_logs contains the full
+    request/response for each judge call (for debug/audit).
+    """
     sem = asyncio.Semaphore(config.judge.max_concurrent)
 
-    async def _judge(r: ContainerResult) -> JudgeVerdict:
+    async def _judge(r: ContainerResult) -> tuple[JudgeVerdict, dict]:
         async with sem:
             return await judge_result(scenarios[r.scenario_id], r, config, creds)
 
-    return list(await asyncio.gather(*[_judge(r) for r in results]))
+    pairs = list(await asyncio.gather(*[_judge(r) for r in results]))
+    verdicts = [p[0] for p in pairs]
+    logs = [p[1] for p in pairs]
+    return verdicts, logs

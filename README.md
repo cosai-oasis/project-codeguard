@@ -32,6 +32,8 @@ Project CodeGuard is designed to integrate seamlessly across the entire AI codin
 - **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
 - **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, and Claude Code can use the rules for code review. 
 
+This branch also introduces an experimental benchmarking harness under `benchmarks/` for measuring the security impact of Project CodeGuard on realistic coding tasks. It runs the same scenario in `with_skills` and `without_skills` modes, judges the resulting diffs on a CVSS-style `0-10` scale where lower is better, and records token and cost data for both the agent and the judge model.
+
 
 ## Security Coverage
 
@@ -64,3 +66,15 @@ Get started in minutes:
 3. **Release automation** packages skills and rules into downloadable ZIP files
 4. **AI assistants** reference these skills and rules when generating or reviewing code
 5. **Secure code** is produced automatically without developer intervention
+
+## Benchmarking System
+
+The benchmarking subsystem in this branch is intended for regression testing and comparative evaluation of CodeGuard-enabled agent runs.
+
+- **Scenario-driven**: benchmark definitions live in `benchmarks/scenarios/*.yaml`
+- **A/B execution**: each scenario is executed both with and without CodeGuard skills
+- **Structured judging**: an LLM judge reviews the complete git diff and returns a structured verdict
+- **Operational telemetry**: token usage and estimated model cost are aggregated into the final report
+- **Reproducible artifacts**: JSON summaries and per-run debug files are written to `benchmarks/results/`
+
+For setup, CLI usage, result interpretation, and current limitations, see [Benchmarking documentation](docs/benchmarking.md).
