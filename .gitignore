@@ -166,3 +166,8 @@ AGENTS.md
 
 # Generated IDE-specific rule bundles (not committed, built for releases)
 dist/
+
+# Benchmark results (generated at runtime)
+benchmarks/results/
+!benchmarks/results/.gitkeep
+benchmarks/docker/_build_ctx/
