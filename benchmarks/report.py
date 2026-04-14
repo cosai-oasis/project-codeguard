@@ -16,6 +16,7 @@ from benchmarks.models import (
     BenchmarkSummary,
     ContainerResult,
     JudgeVerdict,
+    ModelPricing,
     RunMode,
     Scenario,
     ScenarioReport,
@@ -56,11 +57,19 @@ def aggregate_scenario(
 def _aggregate_usage(
     container_results: list[ContainerResult],
     verdicts: list[JudgeVerdict],
+    agent_pricing: ModelPricing | None = None,
+    judge_pricing: ModelPricing | None = None,
 ) -> UsageSummary:
     agent_prompt = sum(r.agent_usage.prompt_tokens for r in container_results)
     agent_completion = sum(r.agent_usage.completion_tokens for r in container_results)
     judge_prompt = sum(v.judge_usage.prompt_tokens for v in verdicts)
     judge_completion = sum(v.judge_usage.completion_tokens for v in verdicts)
+
+    ap = agent_pricing or ModelPricing()
+    jp = judge_pricing or ModelPricing()
+    agent_cost = agent_prompt * ap.prompt + agent_completion * ap.completion
+    judge_cost = judge_prompt * jp.prompt + judge_completion * jp.completion
+
     return UsageSummary(
         agent_prompt_tokens=agent_prompt,
         agent_completion_tokens=agent_completion,
@@ -69,6 +78,9 @@ def _aggregate_usage(
         judge_completion_tokens=judge_completion,
         judge_total_tokens=judge_prompt + judge_completion,
         total_tokens=agent_prompt + agent_completion + judge_prompt + judge_completion,
+        agent_cost_usd=round(agent_cost, 4),
+        judge_cost_usd=round(judge_cost, 4),
+        total_cost_usd=round(agent_cost + judge_cost, 4),
     )
 
 
@@ -77,6 +89,8 @@ def build_summary(
     verdicts: list[JudgeVerdict],
     config: BenchmarkConfig,
     container_results: list[ContainerResult] | None = None,
+    agent_pricing: ModelPricing | None = None,
+    judge_pricing: ModelPricing | None = None,
 ) -> BenchmarkSummary:
     by_scenario: dict[str, list[JudgeVerdict]] = defaultdict(list)
     for v in verdicts:
@@ -128,7 +142,9 @@ def build_summary(
             (sum(1 for v in all_without if v.secure_implementation) / len(all_without)), 3
         ) if all_without else 0.0,
         by_category=by_category,
-        usage=_aggregate_usage(container_results or [], verdicts),
+        usage=_aggregate_usage(
+            container_results or [], verdicts, agent_pricing, judge_pricing,
+        ),
     )
 
 
@@ -178,7 +194,7 @@ def print_summary(summary: BenchmarkSummary) -> None:
     u = summary.usage
     if u.total_tokens > 0:
         print(f"\n  Token Usage:")
-        print(f"    Agent:  {u.agent_prompt_tokens:>10,} prompt + {u.agent_completion_tokens:>10,} completion = {u.agent_total_tokens:>10,}")
-        print(f"    Judge:  {u.judge_prompt_tokens:>10,} prompt + {u.judge_completion_tokens:>10,} completion = {u.judge_total_tokens:>10,}")
-        print(f"    Total:  {u.total_tokens:>10,} tokens")
+        print(f"    Agent:  {u.agent_prompt_tokens:>10,} in + {u.agent_completion_tokens:>10,} out = {u.agent_total_tokens:>10,}    ${u.agent_cost_usd:.4f}")
+        print(f"    Judge:  {u.judge_prompt_tokens:>10,} in + {u.judge_completion_tokens:>10,} out = {u.judge_total_tokens:>10,}    ${u.judge_cost_usd:.4f}")
+        print(f"    Total:  {u.total_tokens:>10,} tokens   ${u.total_cost_usd:.4f}")
     print()

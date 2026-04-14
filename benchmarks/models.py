@@ -149,8 +149,15 @@ class ScenarioReport(BaseModel):
     secure_rate_without: float
 
 
+class ModelPricing(BaseModel):
+    """Per-token pricing from OpenRouter API."""
+
+    prompt: float = 0.0
+    completion: float = 0.0
+
+
 class UsageSummary(BaseModel):
-    """Aggregate token usage across all API calls."""
+    """Aggregate token usage and cost across all API calls."""
 
     agent_prompt_tokens: int = 0
     agent_completion_tokens: int = 0
@@ -159,6 +166,9 @@ class UsageSummary(BaseModel):
     judge_completion_tokens: int = 0
     judge_total_tokens: int = 0
     total_tokens: int = 0
+    agent_cost_usd: float = 0.0
+    judge_cost_usd: float = 0.0
+    total_cost_usd: float = 0.0
 
 
 class BenchmarkSummary(BaseModel):

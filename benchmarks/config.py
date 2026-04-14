@@ -15,7 +15,9 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from benchmarks.models import BenchmarkConfig, BenchmarkFile, Scenario
+import httpx
+
+from benchmarks.models import BenchmarkConfig, BenchmarkFile, ModelPricing, Scenario
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BENCHMARKS_DIR = Path(__file__).resolve().parent
@@ -71,3 +73,34 @@ def load_benchmark(
 
     scenarios = {s.id: s for s in benchmark_file.scenarios}
     return config, scenarios
+
+
+def fetch_model_pricing(
+    model_id: str,
+    creds: Credentials,
+) -> ModelPricing:
+    """Fetch per-token pricing for a model from OpenRouter API.
+
+    model_id can be in opencode format ("openrouter/qwen/qwen3.6-plus")
+    or plain OpenRouter format ("qwen/qwen3.6-plus").
+    """
+    # Strip "openrouter/" prefix if present — OpenRouter API uses bare IDs
+    api_id = model_id.removeprefix("openrouter/")
+
+    try:
+        resp = httpx.get(
+            f"{creds.openai_base_url}/models",
+            headers={"Authorization": f"Bearer {creds.openai_api_key}"},
+            timeout=15.0,
+        )
+        resp.raise_for_status()
+        for m in resp.json().get("data", []):
+            if m.get("id") == api_id:
+                p = m.get("pricing", {})
+                return ModelPricing(
+                    prompt=float(p.get("prompt", 0)),
+                    completion=float(p.get("completion", 0)),
+                )
+    except Exception:
+        pass
+    return ModelPricing()

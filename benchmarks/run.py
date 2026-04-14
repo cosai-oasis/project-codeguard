@@ -20,6 +20,7 @@ from pathlib import Path
 from benchmarks.config import (
     RESULTS_DIR,
     SCENARIOS_DIR,
+    fetch_model_pricing,
     load_benchmark,
     load_credentials,
 )
@@ -100,6 +101,19 @@ def main() -> None:
     # Load credentials from .env
     creds = load_credentials()
 
+    # Fetch model pricing from OpenRouter
+    print("Fetching model pricing...")
+    agent_pricing = fetch_model_pricing(config.agent_model, creds)
+    judge_pricing = fetch_model_pricing(config.judge_model, creds)
+    if agent_pricing.prompt:
+        print(f"  Agent ({config.agent_model}): ${agent_pricing.prompt*1e6:.2f}/${agent_pricing.completion*1e6:.2f} per 1M tokens")
+    else:
+        print(f"  Agent pricing not found — cost will show $0")
+    if judge_pricing.prompt:
+        print(f"  Judge ({config.judge_model}): ${judge_pricing.prompt*1e6:.2f}/${judge_pricing.completion*1e6:.2f} per 1M tokens")
+    else:
+        print(f"  Judge pricing not found — cost will show $0")
+
     async def _run() -> None:
         if args.build:
             print("\nBuilding Docker image...")
@@ -140,7 +154,9 @@ def main() -> None:
         print(f"\nJudging {len(results)} results...")
         verdicts = await judge_all(scenarios, results, config, creds)
 
-        summary = build_summary(scenarios, verdicts, config, results)
+        summary = build_summary(
+            scenarios, verdicts, config, results, agent_pricing, judge_pricing,
+        )
         filepath = save_results(summary, RESULTS_DIR)
         print(f"Results saved to: {filepath}")
         print_summary(summary)
