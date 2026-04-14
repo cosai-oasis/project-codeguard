@@ -26,46 +26,23 @@ git clone --depth 1 --branch "${REPO_REF}" "${REPO_URL}" "${WORK_DIR}" 2>&1
 
 cd "${WORK_DIR}"
 
-# 2. Expose API key to opencode under the env var it expects
+# 2. Expose API key to opencode
 export OPENROUTER_API_KEY="${OPENAI_API_KEY}"
 
-# 3. Conditionally inject CodeGuard rules into opencode agent instructions
+# 3. Conditionally install CodeGuard skills into .opencode/skills/
+#    OpenCode has a built-in `skill` tool that discovers SKILL.md files
+#    in .opencode/skills/<name>/ and loads rules from the rules/ subdirectory.
 if [ "${RUN_MODE}" = "with_skills" ]; then
-    echo "[entrypoint] Injecting CodeGuard rules into agent instructions..."
-
-    # Concatenate SKILL.md + all rule files into a single instructions blob
-    INSTRUCTIONS=""
-    if [ -f /opt/codeguard-skills/software-security/SKILL.md ]; then
-        INSTRUCTIONS=$(cat /opt/codeguard-skills/software-security/SKILL.md)
-        INSTRUCTIONS="${INSTRUCTIONS}
-
----
-
-"
-    fi
-    for rule_file in /opt/codeguard-skills/software-security/rules/*.md; do
-        INSTRUCTIONS="${INSTRUCTIONS}$(cat "${rule_file}")
-
----
-
-"
-    done
-
-    RULE_COUNT=$(ls /opt/codeguard-skills/software-security/rules/*.md | wc -l)
-    echo "[entrypoint] Rules loaded: ${RULE_COUNT}"
-
-    # Escape the instructions for JSON and write opencode.json
-    # Use python for reliable JSON string escaping
-    python3 -c "
-import json, sys
-instructions = sys.stdin.read()
-config = {'agent': {'build': {'instructions': instructions}}}
-print(json.dumps(config))
-" <<< "${INSTRUCTIONS}" > opencode.json
-
-    echo "[entrypoint] opencode.json created ($(wc -c < opencode.json) bytes)"
+    echo "[entrypoint] Installing CodeGuard skills..."
+    mkdir -p .opencode/skills/software-security/rules
+    cp /opt/codeguard-skills/software-security/SKILL.md \
+       .opencode/skills/software-security/
+    cp /opt/codeguard-skills/software-security/rules/*.md \
+       .opencode/skills/software-security/rules/
+    RULE_COUNT=$(ls .opencode/skills/software-security/rules/ | wc -l)
+    echo "[entrypoint] Skills installed: ${RULE_COUNT} rules"
 else
-    echo "[entrypoint] Running WITHOUT CodeGuard rules (baseline)"
+    echo "[entrypoint] Running WITHOUT CodeGuard skills (baseline)"
 fi
 
 # 4. Mark baseline so final diff captures only agent changes
@@ -75,13 +52,21 @@ git \
     -c user.email="bench@local" \
     commit --allow-empty -m "pre-benchmark baseline" 2>/dev/null || true
 
-# 5. Run the opencode agent (JSON stream → stdout, stderr → separate file)
+# 5. Build the final prompt — append skill hint for with_skills mode
+FINAL_PROMPT="${AGENT_PROMPT}"
+if [ "${RUN_MODE}" = "with_skills" ]; then
+    FINAL_PROMPT="${AGENT_PROMPT}
+
+Before writing any code, check if there are security skills installed in this project and apply them."
+fi
+
+# 6. Run the opencode agent (JSON stream → stdout, stderr → separate file)
 echo "[entrypoint] Running opencode agent with model ${AGENT_MODEL}..."
 opencode run \
     -m "${AGENT_MODEL}" \
     --format json \
     --dangerously-skip-permissions \
-    "${AGENT_PROMPT}" \
+    "${FINAL_PROMPT}" \
     > "${LOG_OUTPUT}" 2>"${OUTPUT_DIR}/agent.stderr" || true
 
 echo "[entrypoint] Agent exited with code $?"
@@ -112,7 +97,6 @@ TRACE_EVENTS=$(grep -c '^{' "${LOG_OUTPUT}" 2>/dev/null || echo "0")
 echo "[entrypoint] Trace: ${TRACE_EVENTS} events saved"
 
 # 8. Extract token usage from opencode JSON events
-#    opencode step_finish events have: "tokens":{"total":N,"input":N,"output":N}
 INPUT_TOKENS=$(grep -oP '"input"\s*:\s*\K\d+' "${LOG_OUTPUT}" 2>/dev/null \
     | awk '{s+=$1}END{print s+0}')
 OUTPUT_TOKENS=$(grep -oP '"output"\s*:\s*\K\d+' "${LOG_OUTPUT}" 2>/dev/null \
@@ -125,7 +109,7 @@ USAGE_EOF
 
 echo "[entrypoint] Agent tokens: input=${INPUT_TOKENS} output=${OUTPUT_TOKENS} total=${TOTAL_TOKENS}"
 
-# 9. Debug: print summary if BENCH_DEBUG=1
+# 9. Debug output
 if [ "${BENCH_DEBUG:-0}" = "1" ]; then
     echo ""
     echo "========== DEBUG: agent.stderr =========="
@@ -137,8 +121,8 @@ if [ "${BENCH_DEBUG:-0}" = "1" ]; then
     echo "========== DEBUG: diff head =========="
     head -30 "${DIFF_OUTPUT}" 2>/dev/null || true
     echo ""
-    echo "========== DEBUG: opencode.json =========="
-    head -5 opencode.json 2>/dev/null || echo "No opencode.json"
+    echo "========== DEBUG: skills check =========="
+    ls -la .opencode/skills/software-security/ 2>/dev/null || echo "No skills installed"
 fi
 
 echo "[entrypoint] Done."
