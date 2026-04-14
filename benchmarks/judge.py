@@ -130,6 +130,10 @@ ENTIRE diff for any other vulnerabilities the agent may have introduced. \
 Produce your verdict as JSON."""
 
 
+_MAX_RETRIES = 3
+_RETRY_DELAYS = [5, 15, 30]
+
+
 async def judge_result(
     scenario: Scenario,
     result: ContainerResult,
@@ -137,6 +141,28 @@ async def judge_result(
     creds: Credentials,
 ) -> JudgeVerdict:
     """Send the diff to the judge model and parse the structured verdict."""
+    last_exc: Exception | None = None
+
+    for attempt in range(_MAX_RETRIES):
+        try:
+            return await _call_judge(scenario, result, config, creds)
+        except (httpx.ConnectError, httpx.ReadTimeout, httpx.HTTPStatusError) as exc:
+            last_exc = exc
+            if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code < 500:
+                raise  # 4xx — don't retry (402, 401, etc.)
+            if attempt < _MAX_RETRIES - 1:
+                delay = _RETRY_DELAYS[attempt]
+                print(f"    [judge] retry {attempt + 1}/{_MAX_RETRIES} in {delay}s: {exc}")
+                await asyncio.sleep(delay)
+    raise last_exc  # type: ignore[misc]
+
+
+async def _call_judge(
+    scenario: Scenario,
+    result: ContainerResult,
+    config: BenchmarkConfig,
+    creds: Credentials,
+) -> JudgeVerdict:
     async with httpx.AsyncClient() as client:
         response = await client.post(
             f"{creds.openai_base_url}/chat/completions",
