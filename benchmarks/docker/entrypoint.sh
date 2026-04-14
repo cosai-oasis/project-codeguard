@@ -26,21 +26,47 @@ git clone --depth 1 --branch "${REPO_REF}" "${REPO_URL}" "${WORK_DIR}" 2>&1
 
 cd "${WORK_DIR}"
 
-# 2. Conditionally install CodeGuard skills
-if [ "${RUN_MODE}" = "with_skills" ]; then
-    echo "[entrypoint] Installing CodeGuard skills..."
-    mkdir -p .opencode/skills/software-security/rules
-    cp /opt/codeguard-skills/software-security/SKILL.md \
-       .opencode/skills/software-security/
-    cp /opt/codeguard-skills/software-security/rules/*.md \
-       .opencode/skills/software-security/rules/
-    echo "[entrypoint] Skills installed: $(ls .opencode/skills/software-security/rules/ | wc -l) rules"
-else
-    echo "[entrypoint] Running WITHOUT CodeGuard skills (baseline)"
-fi
-
-# 3. Expose API key to opencode under the env var it expects
+# 2. Expose API key to opencode under the env var it expects
 export OPENROUTER_API_KEY="${OPENAI_API_KEY}"
+
+# 3. Conditionally inject CodeGuard rules into opencode agent instructions
+if [ "${RUN_MODE}" = "with_skills" ]; then
+    echo "[entrypoint] Injecting CodeGuard rules into agent instructions..."
+
+    # Concatenate SKILL.md + all rule files into a single instructions blob
+    INSTRUCTIONS=""
+    if [ -f /opt/codeguard-skills/software-security/SKILL.md ]; then
+        INSTRUCTIONS=$(cat /opt/codeguard-skills/software-security/SKILL.md)
+        INSTRUCTIONS="${INSTRUCTIONS}
+
+---
+
+"
+    fi
+    for rule_file in /opt/codeguard-skills/software-security/rules/*.md; do
+        INSTRUCTIONS="${INSTRUCTIONS}$(cat "${rule_file}")
+
+---
+
+"
+    done
+
+    RULE_COUNT=$(ls /opt/codeguard-skills/software-security/rules/*.md | wc -l)
+    echo "[entrypoint] Rules loaded: ${RULE_COUNT}"
+
+    # Escape the instructions for JSON and write opencode.json
+    # Use python for reliable JSON string escaping
+    python3 -c "
+import json, sys
+instructions = sys.stdin.read()
+config = {'agent': {'build': {'instructions': instructions}}}
+print(json.dumps(config))
+" <<< "${INSTRUCTIONS}" > opencode.json
+
+    echo "[entrypoint] opencode.json created ($(wc -c < opencode.json) bytes)"
+else
+    echo "[entrypoint] Running WITHOUT CodeGuard rules (baseline)"
+fi
 
 # 4. Mark baseline so final diff captures only agent changes
 git add -A
@@ -67,13 +93,10 @@ git diff --cached --no-color > "${DIFF_OUTPUT}" 2>/dev/null || true
 DIFF_LINES=$(wc -l < "${DIFF_OUTPUT}" 2>/dev/null || echo "0")
 echo "[entrypoint] Diff collected: ${DIFF_LINES} lines"
 
-# 7. Build debug trace — full JSON events from opencode output
-#    Each line in LOG_OUTPUT is a JSON event from --format json.
-#    Wrap them into a JSON array for easy consumption.
+# 7. Build debug trace — wrap JSON event lines into a JSON array
 echo "[" > "${DEBUG_TRACE}"
 first=true
 while IFS= read -r line; do
-    # Only include lines that look like JSON objects
     if echo "${line}" | grep -q '^{'; then
         if [ "${first}" = true ]; then
             first=false
@@ -114,9 +137,8 @@ if [ "${BENCH_DEBUG:-0}" = "1" ]; then
     echo "========== DEBUG: diff head =========="
     head -30 "${DIFF_OUTPUT}" 2>/dev/null || true
     echo ""
-    echo "========== DEBUG: skills check =========="
-    ls -la .opencode/skills/software-security/ 2>/dev/null || echo "No skills installed"
-    ls .opencode/skills/software-security/rules/ 2>/dev/null || true
+    echo "========== DEBUG: opencode.json =========="
+    head -5 opencode.json 2>/dev/null || echo "No opencode.json"
 fi
 
 echo "[entrypoint] Done."
