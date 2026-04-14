@@ -36,31 +36,35 @@ else
     echo "[entrypoint] Running WITHOUT CodeGuard skills (baseline)"
 fi
 
-# 3. Mark baseline so final diff captures only agent changes
+# 3. Expose API key to opencode under the env var it expects
+export OPENROUTER_API_KEY="${OPENAI_API_KEY}"
+
+# 4. Mark baseline so final diff captures only agent changes
 git add -A
 git \
     -c user.name="bench" \
     -c user.email="bench@local" \
     commit --allow-empty -m "pre-benchmark baseline" 2>/dev/null || true
 
-# 4. Run the opencode agent
+# 5. Run the opencode agent
 echo "[entrypoint] Running opencode agent with model ${AGENT_MODEL}..."
-opencode \
-    --model "${AGENT_MODEL}" \
-    --non-interactive \
-    --prompt "${AGENT_PROMPT}" \
+opencode run \
+    -m "${AGENT_MODEL}" \
+    --format json \
+    --dangerously-skip-permissions \
+    "${AGENT_PROMPT}" \
     > "${LOG_OUTPUT}" 2>&1 || true
 
 echo "[entrypoint] Agent exited with code $?"
 
-# 5. Collect the diff
+# 6. Collect the diff
 git add -A
 git diff --cached --no-color > "${DIFF_OUTPUT}" 2>/dev/null || true
 
 DIFF_LINES=$(wc -l < "${DIFF_OUTPUT}" 2>/dev/null || echo "0")
 echo "[entrypoint] Diff collected: ${DIFF_LINES} lines"
 
-# 6. Extract token usage from agent log (best-effort)
+# 7. Extract token usage from agent log (best-effort)
 # Look for common patterns: "prompt_tokens", "completion_tokens", "total_tokens"
 # OpenRouter / OpenAI-compatible agents typically log JSON usage blocks.
 PROMPT_TOKENS=$(grep -oP '"prompt_tokens"\s*:\s*\K\d+' "${LOG_OUTPUT}" 2>/dev/null | awk '{s+=$1}END{print s+0}')

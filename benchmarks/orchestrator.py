@@ -100,6 +100,7 @@ async def run_container(
         "AGENT_MODEL": config.agent_model,
         "OPENAI_API_KEY": creds.openai_api_key,
         "OPENAI_BASE_URL": creds.openai_base_url,
+        "OPENROUTER_API_KEY": creds.openai_api_key,
     }
 
     container = None

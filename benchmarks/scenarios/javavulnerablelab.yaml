@@ -1,5 +1,5 @@
 config:
-  agent_model: "qwen/qwen3-coder-next"
+  agent_model: "openrouter/qwen/qwen3-coder"
   judge_model: "openai/gpt-5.4-mini"
   max_parallel: 10
   timeout_seconds: 600
