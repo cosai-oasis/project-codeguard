@@ -271,7 +271,7 @@ def main() -> None:
             scenarios, verdicts, config, results, agent_pricing, judge_pricing,
         )
         filepath = save_results(summary, RESULTS_DIR)
-        console.print(f"\n  Results: [link file://{filepath}]{filepath}[/link]")
+        console.print(f"\n  Results: {filepath}")
         print_summary(summary)
 
     asyncio.run(_run())
