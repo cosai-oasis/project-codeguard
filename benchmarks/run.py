@@ -52,6 +52,10 @@ def main() -> None:
         "--dry-run", action="store_true",
         help="Print scenario plan without executing",
     )
+    parser.add_argument(
+        "--debug", action="store_true",
+        help="Save full agent traces to results/debug/ and print debug info",
+    )
     args = parser.parse_args()
 
     # Build CLI overrides dict (only set keys)
@@ -103,12 +107,35 @@ def main() -> None:
             print("Image built successfully.")
 
         print(f"\nStarting benchmark ({total_containers} containers)...")
-        results = await run_all(list(scenarios.values()), config, creds)
+        results = await run_all(
+            list(scenarios.values()), config, creds, debug=args.debug,
+        )
 
         succeeded = sum(1 for r in results if not r.error)
         failed = sum(1 for r in results if r.error)
         timed_out = sum(1 for r in results if r.timed_out)
         print(f"Containers finished: {succeeded} ok, {failed} errors, {timed_out} timeouts")
+
+        # Save debug traces if --debug
+        if args.debug:
+            import json
+            debug_dir = RESULTS_DIR / "debug"
+            debug_dir.mkdir(parents=True, exist_ok=True)
+            for r in results:
+                tag = f"{r.scenario_id}_{r.run_mode.value}_{r.run_index}"
+                if r.agent_trace:
+                    (debug_dir / f"{tag}_trace.json").write_text(
+                        json.dumps(r.agent_trace, indent=2), encoding="utf-8",
+                    )
+                if r.agent_log:
+                    (debug_dir / f"{tag}_agent.log").write_text(
+                        r.agent_log, encoding="utf-8",
+                    )
+                if r.diff:
+                    (debug_dir / f"{tag}.diff").write_text(
+                        r.diff, encoding="utf-8",
+                    )
+            print(f"Debug traces saved to: {debug_dir}")
 
         print(f"\nJudging {len(results)} results...")
         verdicts = await judge_all(scenarios, results, config, creds)

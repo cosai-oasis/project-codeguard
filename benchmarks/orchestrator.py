@@ -87,6 +87,7 @@ async def run_container(
     run_index: int,
     config: BenchmarkConfig,
     creds: Credentials,
+    debug: bool = False,
 ) -> ContainerResult:
     """Run a single benchmark container and collect results."""
     container_name = f"bench-{scenario.id}-{run_mode.value}-{run_index}"
@@ -101,6 +102,7 @@ async def run_container(
         "OPENAI_API_KEY": creds.openai_api_key,
         "OPENAI_BASE_URL": creds.openai_base_url,
         "OPENROUTER_API_KEY": creds.openai_api_key,
+        "BENCH_DEBUG": "1" if debug else "0",
     }
 
     container = None
@@ -130,25 +132,31 @@ async def run_container(
 
         duration = time.monotonic() - start
 
-        # Extract diff, log, and usage
+        # Extract diff, log, usage, and trace
+        import json as _json
+
         diff = ""
         agent_log = ""
         agent_usage = TokenUsage()
+        agent_trace: list = []
 
-        for filename, attr in [
+        files_to_extract = [
             ("diff.patch", "diff"),
             ("agent.log", "agent_log"),
             ("usage.json", "_usage_raw"),
-        ]:
+            ("trace.json", "_trace_raw"),
+        ]
+        for filename, attr in files_to_extract:
             try:
                 stream, _ = await asyncio.to_thread(
                     container.get_archive, f"/workspace/output/{filename}",
                 )
                 content = _extract_file_from_archive(stream, filename)
                 if attr == "_usage_raw":
-                    import json
-                    usage_data = json.loads(content)
+                    usage_data = _json.loads(content)
                     agent_usage = TokenUsage(**usage_data)
+                elif attr == "_trace_raw":
+                    agent_trace = _json.loads(content)
                 elif attr == "diff":
                     diff = content
                 else:
@@ -162,6 +170,7 @@ async def run_container(
             run_index=run_index,
             diff=diff,
             agent_log=agent_log,
+            agent_trace=agent_trace,
             exit_code=exit_code,
             timed_out=timed_out,
             duration_seconds=round(duration, 1),
@@ -195,10 +204,11 @@ async def _run_with_semaphore(
     run_index: int,
     config: BenchmarkConfig,
     creds: Credentials,
+    debug: bool = False,
 ) -> ContainerResult:
     async with semaphore:
         return await run_container(
-            client, scenario, run_mode, run_index, config, creds,
+            client, scenario, run_mode, run_index, config, creds, debug,
         )
 
 
@@ -208,6 +218,7 @@ async def run_scenario(
     config: BenchmarkConfig,
     creds: Credentials,
     semaphore: asyncio.Semaphore,
+    debug: bool = False,
 ) -> list[ContainerResult]:
     """Run all executions for one scenario (both modes, all run indices)."""
     tasks = []
@@ -215,7 +226,7 @@ async def run_scenario(
         for mode in RunMode:
             tasks.append(
                 _run_with_semaphore(
-                    semaphore, client, scenario, mode, run_index, config, creds,
+                    semaphore, client, scenario, mode, run_index, config, creds, debug,
                 )
             )
     return list(await asyncio.gather(*tasks))
@@ -225,6 +236,7 @@ async def run_all(
     scenarios: list[Scenario],
     config: BenchmarkConfig,
     creds: Credentials,
+    debug: bool = False,
 ) -> list[ContainerResult]:
     """Run all scenarios with parallelism control.
 
@@ -240,7 +252,7 @@ async def run_all(
 
     semaphore = asyncio.Semaphore(config.max_parallel)
     all_tasks = [
-        run_scenario(client, s, config, creds, semaphore) for s in scenarios
+        run_scenario(client, s, config, creds, semaphore, debug) for s in scenarios
     ]
     nested = await asyncio.gather(*all_tasks)
     return [r for sub in nested for r in sub]

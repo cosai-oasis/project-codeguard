@@ -9,13 +9,16 @@ set -euo pipefail
 # AGENT_MODEL       - Model identifier for opencode
 # OPENAI_API_KEY    - API key (passed through from host)
 # OPENAI_BASE_URL   - OpenRouter base URL
+# BENCH_DEBUG       - "1" to enable debug output (optional)
 
 WORK_DIR="/workspace/repo"
-DIFF_OUTPUT="/workspace/output/diff.patch"
-LOG_OUTPUT="/workspace/output/agent.log"
-USAGE_OUTPUT="/workspace/output/usage.json"
+OUTPUT_DIR="/workspace/output"
+DIFF_OUTPUT="${OUTPUT_DIR}/diff.patch"
+LOG_OUTPUT="${OUTPUT_DIR}/agent.log"
+USAGE_OUTPUT="${OUTPUT_DIR}/usage.json"
+DEBUG_TRACE="${OUTPUT_DIR}/trace.json"
 
-mkdir -p /workspace/output
+mkdir -p "${OUTPUT_DIR}"
 
 # 1. Clone the target repository
 echo "[entrypoint] Cloning ${REPO_URL} at ref ${REPO_REF}..."
@@ -46,14 +49,14 @@ git \
     -c user.email="bench@local" \
     commit --allow-empty -m "pre-benchmark baseline" 2>/dev/null || true
 
-# 5. Run the opencode agent
+# 5. Run the opencode agent (JSON stream → stdout, stderr → separate file)
 echo "[entrypoint] Running opencode agent with model ${AGENT_MODEL}..."
 opencode run \
     -m "${AGENT_MODEL}" \
     --format json \
     --dangerously-skip-permissions \
     "${AGENT_PROMPT}" \
-    > "${LOG_OUTPUT}" 2>&1 || true
+    > "${LOG_OUTPUT}" 2>"${OUTPUT_DIR}/agent.stderr" || true
 
 echo "[entrypoint] Agent exited with code $?"
 
@@ -64,16 +67,56 @@ git diff --cached --no-color > "${DIFF_OUTPUT}" 2>/dev/null || true
 DIFF_LINES=$(wc -l < "${DIFF_OUTPUT}" 2>/dev/null || echo "0")
 echo "[entrypoint] Diff collected: ${DIFF_LINES} lines"
 
-# 7. Extract token usage from agent log (best-effort)
-# Look for common patterns: "prompt_tokens", "completion_tokens", "total_tokens"
-# OpenRouter / OpenAI-compatible agents typically log JSON usage blocks.
-PROMPT_TOKENS=$(grep -oP '"prompt_tokens"\s*:\s*\K\d+' "${LOG_OUTPUT}" 2>/dev/null | awk '{s+=$1}END{print s+0}')
-COMPLETION_TOKENS=$(grep -oP '"completion_tokens"\s*:\s*\K\d+' "${LOG_OUTPUT}" 2>/dev/null | awk '{s+=$1}END{print s+0}')
-TOTAL_TOKENS=$((PROMPT_TOKENS + COMPLETION_TOKENS))
+# 7. Build debug trace — full JSON events from opencode output
+#    Each line in LOG_OUTPUT is a JSON event from --format json.
+#    Wrap them into a JSON array for easy consumption.
+echo "[" > "${DEBUG_TRACE}"
+first=true
+while IFS= read -r line; do
+    # Only include lines that look like JSON objects
+    if echo "${line}" | grep -q '^{'; then
+        if [ "${first}" = true ]; then
+            first=false
+        else
+            echo "," >> "${DEBUG_TRACE}"
+        fi
+        echo "${line}" >> "${DEBUG_TRACE}"
+    fi
+done < "${LOG_OUTPUT}"
+echo "]" >> "${DEBUG_TRACE}"
+
+TRACE_EVENTS=$(grep -c '^{' "${LOG_OUTPUT}" 2>/dev/null || echo "0")
+echo "[entrypoint] Trace: ${TRACE_EVENTS} events saved"
+
+# 8. Extract token usage from opencode JSON events
+#    opencode step_finish events have: "tokens":{"total":N,"input":N,"output":N}
+INPUT_TOKENS=$(grep -oP '"input"\s*:\s*\K\d+' "${LOG_OUTPUT}" 2>/dev/null \
+    | awk '{s+=$1}END{print s+0}')
+OUTPUT_TOKENS=$(grep -oP '"output"\s*:\s*\K\d+' "${LOG_OUTPUT}" 2>/dev/null \
+    | awk '{s+=$1}END{print s+0}')
+TOTAL_TOKENS=$((INPUT_TOKENS + OUTPUT_TOKENS))
 
 cat > "${USAGE_OUTPUT}" <<USAGE_EOF
-{"prompt_tokens": ${PROMPT_TOKENS}, "completion_tokens": ${COMPLETION_TOKENS}, "total_tokens": ${TOTAL_TOKENS}}
+{"prompt_tokens": ${INPUT_TOKENS}, "completion_tokens": ${OUTPUT_TOKENS}, "total_tokens": ${TOTAL_TOKENS}}
 USAGE_EOF
 
-echo "[entrypoint] Agent tokens: prompt=${PROMPT_TOKENS} completion=${COMPLETION_TOKENS} total=${TOTAL_TOKENS}"
+echo "[entrypoint] Agent tokens: input=${INPUT_TOKENS} output=${OUTPUT_TOKENS} total=${TOTAL_TOKENS}"
+
+# 9. Debug: print summary if BENCH_DEBUG=1
+if [ "${BENCH_DEBUG:-0}" = "1" ]; then
+    echo ""
+    echo "========== DEBUG: agent.stderr =========="
+    cat "${OUTPUT_DIR}/agent.stderr" 2>/dev/null || true
+    echo ""
+    echo "========== DEBUG: trace events =========="
+    head -50 "${LOG_OUTPUT}" 2>/dev/null || true
+    echo ""
+    echo "========== DEBUG: diff head =========="
+    head -30 "${DIFF_OUTPUT}" 2>/dev/null || true
+    echo ""
+    echo "========== DEBUG: skills check =========="
+    ls -la .opencode/skills/software-security/ 2>/dev/null || echo "No skills installed"
+    ls .opencode/skills/software-security/rules/ 2>/dev/null || true
+fi
+
 echo "[entrypoint] Done."

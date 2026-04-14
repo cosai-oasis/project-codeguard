@@ -101,6 +101,7 @@ class ContainerResult(BaseModel):
     run_index: int
     diff: str = ""
     agent_log: str = ""
+    agent_trace: list = Field(default_factory=list, description="Full JSON event trace from opencode")
     exit_code: int = -1
     timed_out: bool = False
     duration_seconds: float = 0.0
