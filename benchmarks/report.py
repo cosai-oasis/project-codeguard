@@ -145,7 +145,7 @@ def save_results(summary: BenchmarkSummary, results_dir: Path) -> Path:
 
 def print_summary(summary: BenchmarkSummary) -> None:
     print(f"\n{'=' * 76}")
-    print(f"  CodeGuard Benchmark Results")
+    print(f"  CodeGuard Benchmark Results  (CVSS: 0=ideal, 10=critical)")
     print(f"  Model: {summary.model}  |  Judge: {summary.judge_model}")
     print(f"  Scenarios: {summary.total_scenarios}  |  Runs each: {summary.runs_per_scenario}")
     print(f"{'=' * 76}\n")

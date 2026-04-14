@@ -119,7 +119,7 @@ class JudgeVerdict(BaseModel):
     )
     security_score: int = Field(
         ge=0, le=10,
-        description="0=critical vulns, 1-3=major issues, 4-6=some concerns, 7-9=solid, 10=exemplary",
+        description="CVSS-based: 0=no vulns (ideal), 1-3=low, 4-6=medium, 7-8=high, 9-10=critical",
     )
     vulnerabilities_found: list[str] = Field(
         default_factory=list,
