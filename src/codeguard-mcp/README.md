@@ -6,6 +6,8 @@ An [MCP](https://modelcontextprotocol.io/) server that exposes [CoSAI CodeGuard]
 
 The server reads the **23 security rules** from `sources/core/` in this repository and registers each one as a no-argument MCP tool. AI assistants invoke the tools at code-generation time and apply the returned guidance.
 
+It also **advertises the CodeGuard meta skill as an MCP resource** using FastMCP's [Skills Provider](https://gofastmcp.com/servers/providers/skills). Compatible MCP clients can discover and install the skill automatically via `list_resources()` and `read_resource()`.
+
 Rules cover: hardcoded credentials, cryptography, authentication & MFA, authorization, input validation, API security, session management, client-side web security, container/K8s/IaC hardening, logging, file uploads, supply chain, mobile security, and more.
 
 ## Quick Start
@@ -54,21 +56,38 @@ For org-wide deployment, put the server behind your reverse proxy with TLS + SSO
 
 ## Install the Meta Skill
 
-The meta skill tells your AI assistant *how* to use the CodeGuard tools. It lives at `.agents/skills/codeguard-mcp-meta/SKILL.md` and needs to be installed in your project.
+The meta skill tells your AI assistant *how* to use the CodeGuard tools. It is advertised as an MCP resource by the server.
 
-**Option A:** Copy it manually from this repo:
+**Option A: Automatic (MCP clients that support skills)**
+
+Compatible clients can discover and download the skill programmatically:
+
+```python
+from fastmcp import Client
+from fastmcp.utilities.skills import list_skills, sync_skills
+
+async with Client("http://localhost:8080/mcp") as client:
+    # List available skills
+    skills = await list_skills(client)
+
+    # Download all skills to your project
+    await sync_skills(client, Path(".agents/skills"))
+```
+
+The skill is also discoverable via `list_resources()`:
+
+```
+skill://codeguard-mcp-meta/SKILL.md
+skill://codeguard-mcp-meta/_manifest
+```
+
+**Option B: Manual copy**
 
 ```bash
 cp -r src/codeguard-mcp/.agents /path/to/your/project/
 ```
 
-**Option B:** Download from the running server:
-
-```
-GET http://localhost:8080/download/skill
-```
-
-This returns a zip containing the `.agents/` directory. Unzip it into your project root.
+This places the skill at `.agents/skills/codeguard-mcp-meta/SKILL.md` in your project.
 
 ## How It Works
 
@@ -109,9 +128,15 @@ All settings via environment variables (prefix `CODEGUARD_`):
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/mcp` | MCP protocol endpoint |
+| `POST` | `/mcp` | MCP protocol (tools + resources) |
 | `GET` | `/health` | Health check (`{"status": "ok"}`) |
-| `GET` | `/download/skill` | Download `.agents/` skill zip |
+
+### MCP Resources
+
+| URI | Description |
+|-----|-------------|
+| `skill://codeguard-mcp-meta/SKILL.md` | Meta skill content |
+| `skill://codeguard-mcp-meta/_manifest` | Skill file manifest |
 
 ## License
 

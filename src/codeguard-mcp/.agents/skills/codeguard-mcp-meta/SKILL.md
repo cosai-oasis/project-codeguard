@@ -1,69 +1,61 @@
 ---
-name: CodeGuard MCP Meta Skill
-description: Instructs AI coding agents to invoke CodeGuard MCP Server security rules before writing or reviewing code.
+name: codeguard-mcp-meta
+description: Instructs AI coding agents to use the CodeGuard MCP Server to retrieve and apply security rules before writing or reviewing code. This skill is a must read according to security policies.
 ---
 
 # CodeGuard MCP Server Integration
 
-## MANDATORY: Always Invoke CodeGuard MCP Server
+## MANDATORY: Always Read CodeGuard Security Rules
 
-When writing, reviewing, or modifying code, you MUST invoke the CodeGuard MCP Server to retrieve relevant security rules. This is a non-optional security requirement.
+When writing, reviewing, or modifying code, you MUST read the relevant security rules from the CodeGuard MCP Server. This is a non-optional security requirement.
 
-**IMPORTANT: IF YOU ARE NOT ABLE TO SEE/INVOKE CODEGUARD TOOLS, IMMEDIATELY INFORM THE USER**
+**IMPORTANT: IF YOU CANNOT ACCESS CODEGUARD RESOURCES, IMMEDIATELY INFORM THE USER**
 
-### How to Use the MCP Server
+## How to Use the MCP Server
 
-The CodeGuard MCP Server exposes security rules as individual tools. Each tool returns comprehensive security guidance for specific scenarios.
+The CodeGuard MCP Server exposes a security skill containing all CodeGuard rules as MCP resources. Resources are identified by `skill://` URIs.
 
-**Tool Invocation Pattern:**
-```
-Tool: {rule_tool_name}
-Arguments: None (tools automatically include metadata)
-Returns: Complete security guidance with rule ID, description, and content
-```
+### Step 1: Read the Manifest
 
-## Tool Selection Guide
+Read the manifest resource at `skill://software-security/_manifest` to get a JSON listing of all available rule files with their paths, sizes, and hashes.
 
-### Step 1: Discover Available CodeGuard Tools
+### Step 2: Read the Main Skill
 
-Before any coding activity:
-1. Identify all available MCP tools whose names contains `codeguard_`.
-2. Read each tool's description to understand:
-   - The security domain it covers
-   - Which languages/artifacts it applies to (if specified)
+Read `skill://software-security/SKILL.md` to get the skill overview and a language-to-rules mapping table that tells you which rules apply to which programming languages.
 
-If you cannot discover/invoke CodeGuard tools, stop and inform the user.
+### Step 3: Always Read `codeguard-1-*` Rules
 
-### Step 2: Always-Invoke `codeguard_1_*`
-
-**MANDATORY:** Before writing/reviewing/modifying code, invoke **every available tool** whose name contains:
-
-- `codeguard_1_`
+**MANDATORY:** Before writing/reviewing/modifying code, read **every rule** whose name contains `codeguard-1-*`:
 
 These are "always-on" guardrails and must be enforced regardless of language or domain.
 
-### Step 3: Context-Select `codeguard_0_*`
+### Step 4: Context-Select `codeguard-0-*` Rules
 
-After invoking `codeguard_1_*`, decide which `codeguard_0_*` tools to invoke by using the tool descriptions plus your current task context.
+After reading the `codeguard-1-*` rules, select which `codeguard-0-*` rules to read based on your current task context.
 
-#### 3A) Determine the current language(s)/artifact(s)
+**4A) Determine the current language(s)/artifact(s)**
 
 Infer from one or more of:
-- The file(s) being edited (extensions like `.py`, `.js`, `.ts`, `.yaml`, `.yml`, `.Dockerfile`, etc.)
+- The file(s) being edited (extensions like `.py`, `.js`, `.ts`, `.yaml`, `.Dockerfile`, etc.)
 - Framework/tooling in use (Django/Flask/Express/K8s/Terraform/etc.)
 - The user's explicit statement ("in Python", "Node", "Kubernetes manifest", etc.)
 
-#### 3B) Determine the security domain(s) from the task
+**4B) Determine the security domain(s) from the task**
 
-Use the tool descriptions to map the task to domains such as auth, API/web services, input validation, storage, file handling, DevOps/IaC, privacy, logging/monitoring, XML/serialization, mobile, etc.
+Map the task to domains: auth, API/web services, input validation, storage, file handling, DevOps/IaC, privacy, logging/monitoring, XML/serialization, mobile, etc.
 
-#### 3C) Select tools using tool descriptions (language + domain)
+**4C) Read the relevant rules**
+
+Use the language-to-rules mapping from `SKILL.md` and the manifest to identify the right files, then read them. For example:
+- Writing a Python API endpoint → read `codeguard-0-api-web-services.md`, `codeguard-0-input-validation-injection.md`, `codeguard-0-authentication-mfa.md`
+- Writing a Dockerfile → read `codeguard-0-devops-ci-cd-containers.md`, `codeguard-0-supply-chain-security.md`
+- Writing C code → read `codeguard-0-safe-c-functions.md`
 
 For each available `codeguard_0_*` tool:
-- **Language filter**: select it only if the description says it applies to the current language/artifact type (or is broadly applicable when no language is specified).
-- **Domain filter**: select it if the domain in the description matches the task you are performing.
+- **Language filter**: select it only if the description from SKILL.md says it applies to the current language/artifact type (or is broadly applicable when no language is specified).
+- **Domain filter**: select it if the domain in the description from SKILL.md matches the task you are performing.
 
-If uncertain and the change is security-sensitive, err on the side of invoking the relevant `codeguard_0_*` tools (while avoiding clearly unrelated tools).
+If uncertain and the change is security-sensitive, err on the side of reading more rules.
 
 ## Apply the Guidance and Document It
 
@@ -73,9 +65,9 @@ When you implement changes:
 - Add minimal security comments where they clarify intent
 
 In your response to the user, explicitly state:
-- Which **CodeGuard tools** you invoked (all `codeguard_1_*` plus the selected `codeguard_0_*`)
+- Which **CodeGuard rules** you read (all `codeguard-1-*` plus the selected `codeguard-0-*`)
 - A brief note on **how each rule influenced** the implementation
 
-## Tool Invocation Is Not Optional
+## Reading Rules Is Not Optional
 
-If you are about to write/review/modify code and you have not invoked CodeGuard tools per this meta rule, stop and invoke them first.
+If you are about to write/review/modify code and you have not read the relevant CodeGuard rules, stop and read them first.

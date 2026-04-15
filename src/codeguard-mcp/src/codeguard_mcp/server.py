@@ -1,4 +1,4 @@
-"""CoSAI CodeGuard MCP Server — security rules as MCP tools."""
+"""CoSAI CodeGuard MCP Server — security rules as MCP skills (resources)."""
 
 from __future__ import annotations
 
@@ -8,13 +8,12 @@ import zipfile
 from pathlib import Path
 
 from fastmcp import FastMCP
+from fastmcp.server.providers.skills import SkillProvider
 from starlette.requests import Request
 from starlette.responses import JSONResponse, StreamingResponse
 
 from codeguard_mcp.config import settings
 from codeguard_mcp.log import setup_logging
-from codeguard_mcp.rule_processor import RuleProcessor
-from codeguard_mcp.tool_factory import RuleToolFactory
 
 setup_logging(settings.LOG_LEVEL)
 logger = logging.getLogger(__name__)
@@ -23,19 +22,23 @@ mcp = FastMCP(
     "CodeGuard MCP Server",
     instructions=(
         "This server provides access to CoSAI CodeGuard security rules. "
-        "Each rule is exposed as a separate tool that returns security "
-        "guidance for specific programming languages and security domains."
+        "Each rule is exposed as an MCP resource via the skill:// URI scheme. "
+        "Use list_resources() to discover available rules and "
+        "read_resource() to fetch their content."
     ),
     mask_error_details=True,
 )
 
 
-# ── Custom routes ────────────────────────────────────────────────────
+# ── Health endpoint ──────────────────────────────────────────────────
 
 
 @mcp.custom_route("/health", methods=["GET"], name="health")
 async def health(_: Request) -> JSONResponse:
     return JSONResponse({"status": "ok", "version": settings.APP_VERSION})
+
+
+# ── Download endpoint (meta skill zip) ───────────────────────────────
 
 
 @mcp.custom_route("/download/skill", methods=["GET"], name="download_skill")
@@ -63,22 +66,9 @@ async def download_skill(_: Request) -> StreamingResponse | JSONResponse:
     )
 
 
-# ── Rule registration ────────────────────────────────────────────────
+# ── Skills provider (software-security skill) ────────────────────────
 
-
-def _register_rules() -> None:
-    processor = RuleProcessor()
-    factory = RuleToolFactory()
-    rules = processor.get_all_rules()
-
-    logger.info("Registering %d security rules as MCP tools", len(rules))
-    for rule in rules:
-        mcp.add_tool(factory.create_tool(rule))
-
-    logger.info("All %d tools registered", len(rules))
-
-
-_register_rules()
+mcp.add_provider(SkillProvider(Path(settings.SKILLS_PATH)))
 
 
 # ── Entrypoint ────────────────────────────────────────────────────────
