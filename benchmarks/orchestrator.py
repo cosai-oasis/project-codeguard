@@ -34,7 +34,7 @@ async def build_image() -> None:
 
     Prepares a temporary build context that includes:
     - Dockerfile and entrypoint.sh from benchmarks/docker/
-    - skills/software-security/ (SKILL.md + rules)
+    - skills/secure-coding/ (SKILL.md + rules)
     """
     build_context = DOCKER_DIR / "_build_ctx"
     build_context.mkdir(exist_ok=True)
@@ -45,7 +45,7 @@ async def build_image() -> None:
         shutil.copy2(DOCKER_DIR / "entrypoint.sh", build_context / "entrypoint.sh")
 
         # Copy skills into context
-        skills_dst = build_context / "skills" / "software-security"
+        skills_dst = build_context / "skills" / "secure-coding"
         if skills_dst.exists():
             shutil.rmtree(skills_dst)
         shutil.copytree(SKILLS_DIR, skills_dst)

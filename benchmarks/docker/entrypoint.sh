@@ -34,12 +34,12 @@ export OPENROUTER_API_KEY="${OPENAI_API_KEY}"
 #    in .opencode/skills/<name>/ and loads rules from the rules/ subdirectory.
 if [ "${RUN_MODE}" = "with_skills" ]; then
     echo "[entrypoint] Installing CodeGuard skills..."
-    mkdir -p .opencode/skills/software-security/rules
-    cp /opt/codeguard-skills/software-security/SKILL.md \
-       .opencode/skills/software-security/
-    cp /opt/codeguard-skills/software-security/rules/*.md \
-       .opencode/skills/software-security/rules/
-    RULE_COUNT=$(ls .opencode/skills/software-security/rules/ | wc -l)
+    mkdir -p .opencode/skills/secure-coding/rules
+    cp /opt/codeguard-skills/secure-coding/SKILL.md \
+       .opencode/skills/secure-coding/
+    cp /opt/codeguard-skills/secure-coding/rules/*.md \
+       .opencode/skills/secure-coding/rules/
+    RULE_COUNT=$(ls .opencode/skills/secure-coding/rules/ | wc -l)
     echo "[entrypoint] Skills installed: ${RULE_COUNT} rules"
 else
     echo "[entrypoint] Running WITHOUT CodeGuard skills (baseline)"
@@ -122,7 +122,7 @@ if [ "${BENCH_DEBUG:-0}" = "1" ]; then
     head -30 "${DIFF_OUTPUT}" 2>/dev/null || true
     echo ""
     echo "========== DEBUG: skills check =========="
-    ls -la .opencode/skills/software-security/ 2>/dev/null || echo "No skills installed"
+    ls -la .opencode/skills/secure-coding/ 2>/dev/null || echo "No skills installed"
 fi
 
 echo "[entrypoint] Done."

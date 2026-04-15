@@ -21,7 +21,7 @@ from benchmarks.models import BenchmarkConfig, BenchmarkFile, ModelPricing, Scen
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 BENCHMARKS_DIR = Path(__file__).resolve().parent
-SKILLS_DIR = PROJECT_ROOT / "skills" / "software-security"
+SKILLS_DIR = PROJECT_ROOT / "skills" / "secure-coding"
 SCENARIOS_DIR = BENCHMARKS_DIR / "scenarios"
 RESULTS_DIR = BENCHMARKS_DIR / "results"
 DOCKER_DIR = BENCHMARKS_DIR / "docker"

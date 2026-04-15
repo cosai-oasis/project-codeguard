@@ -1,11 +1,11 @@
 # Benchmarking System
 
-This branch adds an experimental benchmarking harness for measuring whether Project CodeGuard improves the security quality of AI-generated code on realistic coding tasks.
+This branch adds an experimental benchmarking harness for measuring whether a security skill pack improves the security quality of AI-generated code on realistic coding tasks. The default skill under test is [`skills/secure-coding/`](../skills/secure-coding/README.md).
 
 The runner executes the same task twice:
 
-- `with_skills`: installs the `software-security` skill pack into OpenCode before the agent runs
-- `without_skills`: runs the same task without Project CodeGuard skills as the baseline
+- `with_skills`: installs the `secure-coding` skill pack into OpenCode before the agent runs
+- `without_skills`: runs the same task without the security skill pack as the baseline
 
 Each run is judged from the resulting git diff by a second model that returns structured JSON with a CVSS-style severity score. In this benchmark, **lower is better**: `0` means no vulnerability was found, `10` means the worst issue in the diff was critical.
 
@@ -133,7 +133,7 @@ scenarios:
       - src/main/java/org/cysecurity/cspf/jvl/controller/UsernameCheck.java
     security_category: sql-injection
     codeguard_rules:
-      - codeguard-0-input-validation-injection.md
+      - rule-input-validation-injection.md
     prompt: >
       Add a new servlet UserSearchServlet.java that accepts a GET parameter
       "query" and returns a JSON list of users whose username contains the
@@ -183,7 +183,7 @@ Two details matter when interpreting the report:
 ## Current limitations
 
 - `context_files` are scenario metadata only today; the orchestrator does not explicitly pin those files into the agent context.
-- `codeguard_rules` are also metadata only today; `with_skills` installs the entire `software-security` skill pack rather than loading only the listed rule files.
+- `codeguard_rules` are also metadata only today; `with_skills` installs the entire `secure-coding` skill pack rather than loading only the listed rule files.
 - The harness currently targets OpenCode inside Docker rather than multiple coding agents.
 - The Docker image build depends on a pre-staged OpenCode tarball instead of downloading it during build.
 - `--judge-only` assumes that matching debug artifacts already exist for every scenario, mode, and run index you want to evaluate.
