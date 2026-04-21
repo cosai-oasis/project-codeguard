@@ -45,6 +45,9 @@ repo_name: cosai-oasis/project-codeguard
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Choosing an Install Path: install-paths.md
+  - CoSAI Personas: personas.md
+  - Claude Code Plugin: claude-code-skill-plugin.md
   - Custom Rules: custom-rules.md
   - FAQ: faq.md
 markdown_extensions:
