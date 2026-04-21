@@ -143,7 +143,7 @@ The tool pulls rules from a URL or installer command at runtime — no local fil
 
 - **Supported by:** OpenCode (`opencode.json` remote `instructions` URLs), Codex (`$skill-installer`)
 - **Best for:** Always-current rules without managing files; ephemeral / CI environments.
-- **Tradeoffs:** Loads **all 23 rules every session** regardless of language — highest token cost. Requires network access. Pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
+- **Tradeoffs:** Loads the **full CodeGuard ruleset every session** regardless of language — highest token cost. Requires network access. Pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
 - **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (OpenCode, Codex) owning the remote loader and installer behavior.
 
 ### Org-managed (admin dashboard)
