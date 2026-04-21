@@ -53,6 +53,13 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
 
 ## Installation
 
+Not sure which route fits your situation? See **[Choosing an Install Path](install-paths.md)** for a comparison of rule files, Agent Skills, MCP, and project- vs user-scope installs.
+
+!!! info "Responsible CoSAI personas"
+    The installation routes below are typically implemented by the **Application Developer** persona (for file-based project and user installs), with **Agentic Platform and Framework Providers** supplying the activation behavior in tools like Claude Code, Codex, and OpenCode. **AI System Governance** becomes the owner once rules are rolled out org-wide through vendor dashboards. See **[CoSAI Personas](personas.md)** for the full persona model and **[Choosing an Install Path → Responsible CoSAI Personas Per Install Route](install-paths.md#responsible-cosai-personas-per-install-route)** for the per-route mapping.
+
+![CodeGuard install routes per tool](images/codeguard-install-flowchart.svg)
+
 ### Option 1: Install Pre-built Rules (Recommended)
 
 Select your AI coding tool and follow the instructions:
@@ -252,6 +259,8 @@ Select your AI coding tool and follow the instructions:
 
 ### Option 2: Build from Source
 
+This route is typically driven by the **Application Developer** persona for local customization, or the **AI Platform Provider** persona when a platform team generates and redistributes CodeGuard artifacts internally.
+
 If you want to customize or contribute to the rules:
 
 ```bash
@@ -299,6 +308,8 @@ Project CodeGuard supports two rule activation types:
 - **Glob-scoped rules**: Apply only to matching file patterns (derived from `languages` in source frontmatter). These rules are for language- or framework-specific guidance.
 
 ## Keeping Rules Updated (Automated)
+
+Typically owned by the **Application Developer** persona (repository maintainer) with **AI System Governance** reviewing and merging update PRs to keep policy current.
 
 For GitHub repositories, you can automate rule updates with a workflow that runs monthly and creates PRs when new versions are available.
 
