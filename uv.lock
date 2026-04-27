@@ -1,6 +1,10 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
+
+[options]
+exclude-newer = "2026-04-15T21:47:13.607623Z"
+exclude-newer-span = "P7D"
 
 [manifest]
 constraints = [
