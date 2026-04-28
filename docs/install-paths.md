@@ -15,6 +15,7 @@ This page helps you pick the right path for your situation. For step-by-step ins
 | **Solo developer, one repo** | Rule / instruction files | Glob-scoped — only rules matching the file you're editing load. Lowest token cost, simplest setup. |
 | **Team sharing via git** | Rule files or Agent Skills, **project-scoped** | Committed to the repo — every contributor gets CodeGuard automatically on clone. |
 | **Want zero local files / auto-updates** | Plugin marketplace (Claude Code) or remote instructions (OpenCode) | One command, no files to maintain, always current. |
+| **Prefer a one-click install from your IDE's extension marketplace** | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Familiar "install extension" UX; auto-updates through the marketplace; one package covers all four VS Code-family IDEs. |
 | **Org admin enforcing policy** | Org-managed dashboard (Cursor Team Rules, Copilot org instructions) | Centrally enforced across every repo without per-project setup. |
 | **Already running MCP infrastructure** | MCP server (self-hosted) | Rules served dynamically; integrates with your existing MCP tooling. |
 
@@ -136,6 +137,22 @@ A managed install: one command, the tool fetches and updates the skill for you.
 - **Best for:** Claude Code users who want the lowest-maintenance setup.
 - **Tradeoffs:** Claude Code only. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) for details.
 - **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code) and AI System Governance for managed-settings enforcement.
+
+### IDE marketplace extension
+
+A VS Code-compatible extension (`.vsix`) published to an IDE marketplace. Installing the extension writes the CodeGuard rule/instruction files into the correct directory for the host IDE (`.cursor/rules/`, `.windsurf/rules/`, `.agent/rules/`, or `.github/instructions/`) and keeps them up to date through the marketplace's normal extension-update channel.
+
+- **Supported by:** Cursor, Windsurf, Antigravity, and VS Code (which is the host process for GitHub Copilot). All four are VS Code-family IDEs and consume the same `.vsix` format, typically via Open VSX and/or the Visual Studio Marketplace.
+- **Best for:** Developers who prefer the familiar "install an extension" UX over downloading release zips, and teams that want marketplace-driven auto-updates without running their own infrastructure.
+- **Tradeoffs:**
+    - Installs to **user scope** by default — rules apply to every workspace on the machine, not just a single repo. The extension can offer a command (e.g. `CodeGuard: Install Rules Into Workspace`) to copy the files into project scope when you want them committed to git.
+    - Because the extension writes standard rule files, the end state is the same as the **Rule / instruction files** route — marketplace install is just the delivery mechanism.
+    - Extension updates flow outside of repo history; if you rely on pinned, reviewed rules in git, prefer project-scoped rule files instead.
+    - Each IDE's marketplace has its own publishing workflow; a single `.vsix` covers all four IDEs but may need to be listed in multiple marketplaces (Open VSX, Visual Studio Marketplace, and any IDE-specific registry).
+- **Responsible CoSAI personas:** Application Developer (installs and runs the extension), with Agentic Platform and Framework Providers (the IDEs hosting the extension) and AI System Governance (reviewing the extension before org-wide rollout).
+
+!!! note "CodeGuard does not currently ship a marketplace extension"
+    This route is shown for completeness. If you want to deliver CodeGuard through a VS Code-compatible extension, package the rule files from `sources/core/` into a `.vsix` that copies them into the appropriate IDE directory on activation. Until a signed CodeGuard extension is published, the supported ready-to-use paths are **rule files**, **Agent Skills**, and the **Claude Code plugin marketplace**.
 
 ### Remote / installer
 
@@ -262,6 +279,7 @@ Project CodeGuard aligns with the [CoSAI standard personas](personas.md) (see th
 | Agent Skills (project scope) | Application Developer | AI System Governance, Agentic Platform and Framework Providers |
 | Agent Skills (user scope) | Application Developer, AI System Users | Agentic Platform and Framework Providers |
 | Plugin marketplace (Claude Code) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
+| IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
 | Remote instructions / installer (OpenCode, Codex) | Application Developer | Agentic Platform and Framework Providers |
 | Org-managed dashboard (Cursor Team Rules, GitHub Copilot org custom instructions, Claude Code managed settings) | AI System Governance | Agentic Platform and Framework Providers, AI Platform Provider (for endpoint management) |
 | MCP server (self-hosted) | AI Platform Provider | AI System Governance, Agentic Platform and Framework Providers, Application Developer |
