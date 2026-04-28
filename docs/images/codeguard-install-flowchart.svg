@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 1330" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif">
+
+  <!-- background card -->
+  <rect x="0.5" y="0.5" width="919" height="1329" rx="12" fill="#ffffff" stroke="#e5e7eb"/>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <!-- ============ CONNECTORS ============ -->
+  <g stroke="#9ca3af" stroke-width="1.5" fill="none" marker-end="url(#arrow)">
+    <!-- tool -> route -->
+    <!-- Cursor (tool center y=144) -->
+    <line x1="200" y1="144" x2="278" y2="56"/>
+    <line x1="200" y1="144" x2="278" y2="100"/>
+    <line x1="200" y1="144" x2="278" y2="144"/>
+    <line x1="200" y1="144" x2="278" y2="188"/>
+    <line x1="200" y1="144" x2="278" y2="232"/>
+    <!-- Windsurf (tool center y=342) -->
+    <line x1="200" y1="342" x2="278" y2="276"/>
+    <line x1="200" y1="342" x2="278" y2="320"/>
+    <line x1="200" y1="342" x2="278" y2="364"/>
+    <line x1="200" y1="342" x2="278" y2="408"/>
+    <!-- GitHub Copilot (tool center y=518) -->
+    <line x1="200" y1="518" x2="278" y2="452"/>
+    <line x1="200" y1="518" x2="278" y2="496"/>
+    <line x1="200" y1="518" x2="278" y2="540"/>
+    <line x1="200" y1="518" x2="278" y2="584"/>
+    <!-- Antigravity (tool center y=650) -->
+    <line x1="200" y1="650" x2="278" y2="628"/>
+    <line x1="200" y1="650" x2="278" y2="672"/>
+    <!-- OpenCode (tool center y=738) -->
+    <line x1="200" y1="738" x2="278" y2="716"/>
+    <line x1="200" y1="738" x2="278" y2="760"/>
+    <!-- Claude Code (tool center y=826) -->
+    <line x1="200" y1="826" x2="278" y2="804"/>
+    <line x1="200" y1="826" x2="278" y2="848"/>
+    <!-- Codex (tool center y=914) -->
+    <line x1="200" y1="914" x2="278" y2="892"/>
+    <line x1="200" y1="914" x2="278" y2="936"/>
+    <!-- OpenClaw (tool center y=980) -->
+    <line x1="200" y1="980" x2="278" y2="980"/>
+    <!-- Hermes (tool center y=1046) -->
+    <line x1="200" y1="1046" x2="278" y2="1046"/>
+
+    <!-- route -> terminal (fan-in, terminal center y=551) -->
+    <path d="M 500   56 C 580   56 580 551 648 551"/>
+    <path d="M 500  100 C 580  100 580 551 648 551"/>
+    <path d="M 500  144 C 580  144 580 551 648 551"/>
+    <path d="M 500  188 C 580  188 580 551 648 551"/>
+    <path d="M 500  232 C 580  232 580 551 648 551"/>
+    <path d="M 500  276 C 580  276 580 551 648 551"/>
+    <path d="M 500  320 C 580  320 580 551 648 551"/>
+    <path d="M 500  364 C 580  364 580 551 648 551"/>
+    <path d="M 500  408 C 580  408 580 551 648 551"/>
+    <path d="M 500  452 C 580  452 580 551 648 551"/>
+    <path d="M 500  496 C 580  496 580 551 648 551"/>
+    <path d="M 500  540 C 580  540 580 551 648 551"/>
+    <path d="M 500  584 C 580  584 580 551 648 551"/>
+    <path d="M 500  628 C 580  628 580 551 648 551"/>
+    <path d="M 500  672 C 580  672 580 551 648 551"/>
+    <path d="M 500  716 C 580  716 580 551 648 551"/>
+    <path d="M 500  760 C 580  760 580 551 648 551"/>
+    <path d="M 500  804 C 580  804 580 551 648 551"/>
+    <path d="M 500  848 C 580  848 580 551 648 551"/>
+    <path d="M 500  892 C 580  892 580 551 648 551"/>
+    <path d="M 500  936 C 580  936 580 551 648 551"/>
+    <path d="M 500  980 C 580  980 580 551 648 551"/>
+    <path d="M 500 1046 C 580 1046 580 551 648 551"/>
+  </g>
+
+  <!-- ============ COLUMN HEADERS ============ -->
+  <g font-size="11" font-weight="600" fill="#6b7280" text-anchor="middle" letter-spacing="0.5">
+    <text x="120" y="28">AI CODING TOOL</text>
+    <text x="390" y="28">INSTALL ROUTE</text>
+    <text x="765" y="28">RESULT</text>
+  </g>
+
+  <!-- ============ TOOL NODES (col 1) ============ -->
+  <g font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">
+    <rect x="40" y="122" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="149">Cursor</text>
+
+    <rect x="40" y="320" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="347">Windsurf</text>
+
+    <rect x="40" y="496" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="517">GitHub Copilot</text>
+    <text x="120" y="532" font-size="10" font-weight="400" fill="#6b7280">(VS Code)</text>
+
+    <rect x="40" y="628" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="655">Antigravity</text>
+
+    <rect x="40" y="716" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="743">OpenCode</text>
+
+    <rect x="40" y="804" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="831">Claude Code</text>
+
+    <rect x="40" y="892" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="919">Codex</text>
+
+    <rect x="40" y="958" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="985">OpenClaw</text>
+
+    <rect x="40" y="1024" width="160" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="120" y="1051">Hermes</text>
+  </g>
+
+  <!-- ============ ROUTE NODES (col 2) ============ -->
+  <!-- gold stroke = recommended route for that tool -->
+  <g font-size="12" font-weight="500" fill="#ffffff" text-anchor="middle">
+    <!-- Cursor -->
+    <rect x="280" y="40"   width="220" height="32" rx="6" fill="#3b82f6" stroke="#fbbf24" stroke-width="3"/><text x="390" y="61">.cursor/rules/</text>
+    <rect x="280" y="84"   width="220" height="32" rx="6" fill="#10b981"/><text x="390" y="105">.cursor/skills/</text>
+    <rect x="280" y="128"  width="220" height="32" rx="6" fill="#06b6d4"/><text x="390" y="149">Team Rules (dashboard)</text>
+    <rect x="280" y="172"  width="220" height="32" rx="6" fill="#ec4899"/><text x="390" y="193">Marketplace extension (.vsix)</text>
+    <rect x="280" y="216"  width="220" height="32" rx="6" fill="#ef4444"/><text x="390" y="237">MCP server</text>
+    <!-- Windsurf -->
+    <rect x="280" y="260"  width="220" height="32" rx="6" fill="#3b82f6" stroke="#fbbf24" stroke-width="3"/><text x="390" y="281">.windsurf/rules/</text>
+    <rect x="280" y="304"  width="220" height="32" rx="6" fill="#10b981"/><text x="390" y="325">.windsurf/skills/</text>
+    <rect x="280" y="348"  width="220" height="32" rx="6" fill="#ec4899"/><text x="390" y="369">Marketplace extension (.vsix)</text>
+    <rect x="280" y="392"  width="220" height="32" rx="6" fill="#ef4444"/><text x="390" y="413">MCP server</text>
+    <!-- Copilot -->
+    <rect x="280" y="436"  width="220" height="32" rx="6" fill="#3b82f6" stroke="#fbbf24" stroke-width="3"/><text x="390" y="457">.github/instructions/</text>
+    <rect x="280" y="480"  width="220" height="32" rx="6" fill="#06b6d4"/><text x="390" y="501">Org custom instructions</text>
+    <rect x="280" y="524"  width="220" height="32" rx="6" fill="#ec4899"/><text x="390" y="545">Marketplace extension (.vsix)</text>
+    <rect x="280" y="568"  width="220" height="32" rx="6" fill="#ef4444"/><text x="390" y="589">MCP server</text>
+    <!-- Antigravity -->
+    <rect x="280" y="612"  width="220" height="32" rx="6" fill="#3b82f6" stroke="#fbbf24" stroke-width="3"/><text x="390" y="633">.agent/rules/</text>
+    <rect x="280" y="656"  width="220" height="32" rx="6" fill="#ec4899"/><text x="390" y="677">Marketplace extension (.vsix)</text>
+    <!-- OpenCode -->
+    <rect x="280" y="700"  width="220" height="32" rx="6" fill="#10b981" stroke="#fbbf24" stroke-width="3"/><text x="390" y="721">.opencode/skills/</text>
+    <rect x="280" y="744"  width="220" height="32" rx="6" fill="#8b5cf6"/><text x="390" y="765">opencode.json (remote)</text>
+    <!-- Claude Code -->
+    <rect x="280" y="788"  width="220" height="32" rx="6" fill="#f59e0b" stroke="#fbbf24" stroke-width="3"/><text x="390" y="809">/plugin install</text>
+    <rect x="280" y="832"  width="220" height="32" rx="6" fill="#ef4444"/><text x="390" y="853">MCP server</text>
+    <!-- Codex -->
+    <rect x="280" y="876"  width="220" height="32" rx="6" fill="#10b981" stroke="#fbbf24" stroke-width="3"/><text x="390" y="897">.codex/skills/</text>
+    <rect x="280" y="920"  width="220" height="32" rx="6" fill="#8b5cf6"/><text x="390" y="941">$skill-installer</text>
+    <!-- OpenClaw -->
+    <rect x="280" y="964"  width="220" height="32" rx="6" fill="#10b981" stroke="#fbbf24" stroke-width="3"/><text x="390" y="985">.openclaw/skills/</text>
+    <!-- Hermes -->
+    <rect x="280" y="1030" width="220" height="32" rx="6" fill="#10b981" stroke="#fbbf24" stroke-width="3"/><text x="390" y="1051">.hermes/skills/</text>
+  </g>
+
+  <!-- ============ TERMINAL NODE ============ -->
+  <g>
+    <rect x="650" y="516" width="230" height="70" rx="35" fill="#059669"/>
+    <text x="765" y="548" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">✓  CodeGuard</text>
+    <text x="765" y="568" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Enabled</text>
+  </g>
+
+  <!-- ============ LEGEND: route types + tradeoffs ============ -->
+  <g font-size="12" fill="#1f2937">
+    <text x="40" y="1120" font-size="11" font-weight="600" fill="#6b7280" letter-spacing="0.5">WHY CHOOSE THIS ROUTE</text>
+
+    <!-- recommended marker key -->
+    <rect x="640" y="1107" width="34" height="18" rx="4" fill="#ffffff" stroke="#fbbf24" stroke-width="3"/>
+    <text x="682" y="1120" font-size="11" fill="#6b7280">= Recommended for that tool</text>
+
+    <rect x="40" y="1134" width="18" height="18" rx="4" fill="#3b82f6"/>
+    <text x="66" y="1148"><tspan font-weight="600">Rule / instruction files</tspan><tspan fill="#6b7280">  — glob-scoped: only rules matching the file type load → low token cost</tspan></text>
+
+    <rect x="40" y="1160" width="18" height="18" rx="4" fill="#10b981"/>
+    <text x="66" y="1174"><tspan font-weight="600">Agent Skills</tspan><tspan fill="#6b7280">  — model-invoked on demand, loads only when task is security-relevant → most context-efficient</tspan></text>
+
+    <rect x="40" y="1186" width="18" height="18" rx="4" fill="#f59e0b"/>
+    <text x="66" y="1200"><tspan font-weight="600">Plugin marketplace</tspan><tspan fill="#6b7280">  — one-command install, no local files, auto-updates → lowest maintenance</tspan></text>
+
+    <rect x="40" y="1212" width="18" height="18" rx="4" fill="#ec4899"/>
+    <text x="66" y="1226"><tspan font-weight="600">IDE marketplace extension (.vsix)</tspan><tspan fill="#6b7280">  — one-click install from the IDE's extension marketplace; auto-updates; writes standard rule files under the hood</tspan></text>
+
+    <rect x="40" y="1238" width="18" height="18" rx="4" fill="#8b5cf6"/>
+    <text x="66" y="1252"><tspan font-weight="600">Remote / installer</tspan><tspan fill="#6b7280">  — always current, zero local files, but loads all 23 rules every session → highest token cost</tspan></text>
+
+    <rect x="40" y="1264" width="18" height="18" rx="4" fill="#06b6d4"/>
+    <text x="66" y="1278"><tspan font-weight="600">Org-managed (admin dashboard)</tspan><tspan fill="#6b7280">  — enforced org-wide, no per-repo setup; free-form text (no glob scoping)</tspan></text>
+
+    <rect x="40" y="1290" width="18" height="18" rx="4" fill="#ef4444"/>
+    <text x="66" y="1304"><tspan font-weight="600">MCP server</tspan><tspan fill="#6b7280">  — rules fetched dynamically per query, no static files; requires a running server process</tspan></text>
+  </g>
+
+</svg>
