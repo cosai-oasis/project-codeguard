@@ -12,11 +12,13 @@
         <meta name="author" content="Cisco AI-enabled Security Engineering, Security and Trust">
       
       
-        <link rel="canonical" href="https://project-codeguard.org/faq/">
+        <link rel="canonical" href="https://project-codeguard.org/personas/">
       
       
-        <link rel="prev" href="../custom-rules/">
+        <link rel="prev" href="../install-paths/">
       
+      
+        <link rel="next" href="../claude-code-skill-plugin/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -24,7 +26,7 @@
     
     
       
-        <title>FAQ - Project CodeGuard</title>
+        <title>CoSAI Personas - Project CodeGuard</title>
       
     
     
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#frequently-asked-questions" class="md-skip">
+        <a href="#cosai-personas-for-project-codeguard" class="md-skip">
           Skip to content
         </a>
       
@@ -112,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              FAQ
+              CoSAI Personas
             
           </span>
         </div>
@@ -323,10 +325,32 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../personas/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    CoSAI Personas
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -337,6 +361,155 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#persona-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Persona Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#personas-directly-involved-in-codeguard-install-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      Personas Directly Involved in CodeGuard Install Paths
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Personas Directly Involved in CodeGuard Install Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#application-developer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Application Developer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-system-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI System Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agentic-platform-and-framework-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Agentic Platform and Framework Providers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-platform-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI Platform Provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-system-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI System Users
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#personas-indirectly-connected-to-codeguard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Personas Indirectly Connected to CodeGuard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Personas Indirectly Connected to CodeGuard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-model-serving" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI Model Serving
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persona-to-install-route-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Persona-to-Install-Route Mapping
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      Further Reading
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -389,32 +562,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    FAQ
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
         
   
   
@@ -425,143 +576,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#purpose-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      Purpose Statement
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-where-can-i-access-the-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Where can I access the rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-how-do-i-install-the-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: How do I install the rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-will-these-rules-consume-a-lot-of-the-ai-agents-context-window" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Will these rules consume a lot of the AI agent's context window?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-what-is-the-difference-between-always-on-rules-and-glob-scoped-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: What is the difference between always-on rules and glob-scoped rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-what-are-the-owasp-supplementary-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: What are the OWASP supplementary rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-can-i-create-my-own-custom-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Can I create my own custom rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-why-does-the-downloaded-release-folder-appear-empty" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Why does the downloaded release folder appear empty?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-can-i-use-this-with-claude-code" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Can I use this with Claude Code?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-how-can-i-report-a-problem-or-enhancement-to-any-of-the-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: How can I report a problem or enhancement to any of the rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-how-can-i-contribute-to-these-rules-and-this-project" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: How can I contribute to these rules and this project?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-does-project-codeguard-replace-my-security-scanners" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Does Project CodeGuard replace my security scanners?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#still-have-questions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Still have questions?
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -593,117 +607,129 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose-statement" class="md-nav__link">
+  <a href="#persona-summary" class="md-nav__link">
     <span class="md-ellipsis">
-      Purpose Statement
+      Persona Summary
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#q-where-can-i-access-the-rules" class="md-nav__link">
+  <a href="#personas-directly-involved-in-codeguard-install-paths" class="md-nav__link">
     <span class="md-ellipsis">
-      Q: Where can I access the rules?
+      Personas Directly Involved in CodeGuard Install Paths
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Personas Directly Involved in CodeGuard Install Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#application-developer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Application Developer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-system-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI System Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agentic-platform-and-framework-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Agentic Platform and Framework Providers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-platform-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI Platform Provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-system-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI System Users
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#personas-indirectly-connected-to-codeguard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Personas Indirectly Connected to CodeGuard
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Personas Indirectly Connected to CodeGuard">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Provider
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-model-serving" class="md-nav__link">
+    <span class="md-ellipsis">
+      AI Model Serving
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#persona-to-install-route-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      Persona-to-Install-Route Mapping
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#q-how-do-i-install-the-rules" class="md-nav__link">
+  <a href="#further-reading" class="md-nav__link">
     <span class="md-ellipsis">
-      Q: How do I install the rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-will-these-rules-consume-a-lot-of-the-ai-agents-context-window" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Will these rules consume a lot of the AI agent's context window?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-what-is-the-difference-between-always-on-rules-and-glob-scoped-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: What is the difference between always-on rules and glob-scoped rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-what-are-the-owasp-supplementary-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: What are the OWASP supplementary rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-can-i-create-my-own-custom-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Can I create my own custom rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-why-does-the-downloaded-release-folder-appear-empty" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Why does the downloaded release folder appear empty?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-can-i-use-this-with-claude-code" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Can I use this with Claude Code?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-how-can-i-report-a-problem-or-enhancement-to-any-of-the-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: How can I report a problem or enhancement to any of the rules?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-how-can-i-contribute-to-these-rules-and-this-project" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: How can I contribute to these rules and this project?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-does-project-codeguard-replace-my-security-scanners" class="md-nav__link">
-    <span class="md-ellipsis">
-      Q: Does Project CodeGuard replace my security scanners?
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#still-have-questions" class="md-nav__link">
-    <span class="md-ellipsis">
-      Still have questions?
+      Further Reading
     </span>
   </a>
   
@@ -728,108 +754,152 @@
   
 
 
-<h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
-<h2 id="purpose-statement">Purpose Statement</h2>
-<p>This FAQ document provides clear, concise answers to help developers seamlessly integrate Project CodeGuard security rules into AI-assisted coding workflows. Our goal is to ensure AI-generated code adheres to secure development practices without disrupting productivity.</p>
-<hr />
-<h2 id="q-where-can-i-access-the-rules">Q: Where can I access the rules?</h2>
-<p><strong>A:</strong> You can access the rules in the <a href="https://github.com/cosai-oasis/project-codeguard">Project CodeGuard GitHub repository</a>. The latest stable release is available on the <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a>.</p>
-<hr />
-<h2 id="q-how-do-i-install-the-rules">Q: How do I install the rules?</h2>
-<p><strong>A:</strong> Detailed installation instructions are available in our <a href="../getting-started/">Getting Started guide</a>. In summary:</p>
-<ol>
-<li>Download the latest release from the <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a></li>
-<li>Extract the archive and copy the appropriate rules directory to your project root (e.g. <code>.cursor/</code> for Cursor, <code>.opencode/</code> for OpenCode)</li>
-<li>Restart your AI coding tool and start coding - the AI assistant will automatically follow the security rules</li>
-</ol>
-<hr />
-<h2 id="q-will-these-rules-consume-a-lot-of-the-ai-agents-context-window">Q: Will these rules consume a lot of the AI agent's <strong>context window</strong>?</h2>
-<p><strong>A:</strong> The always‑on rules are lightweight and have minimal impact on the AI agent’s context window. Glob‑scoped rules only apply to their matching file types. Below are Cursor examples: left, no rules; right, three always‑on rules enabled.</p>
-<p align="center">
-  <img src="../images/context-window-no-rules.png" alt="Cursor AI agent context window usage without Project CodeGuard rules" width="40%" style="display:inline-block; margin-right:2%;" />
-  <img src="../images/context-window-with-rules.png" alt="Cursor AI agent context window usage with Project CodeGuard rules enabled" width="40%" style="display:inline-block;" />
-</p>
-
-<center>
-  <sub>
-    <b>Left:</b> Context window usage without any rules in place.<br>
-    <b>Right:</b> Context window usage with three always-on rules enabled.
-  </sub>
-</center>
-
-<hr />
-<h2 id="q-what-is-the-difference-between-always-on-rules-and-glob-scoped-rules">Q: What is the difference between always-on rules and glob-scoped rules?</h2>
-<p><strong>A:</strong> They are two activation types:</p>
+<h1 id="cosai-personas-for-project-codeguard">CoSAI Personas for Project CodeGuard</h1>
+<p>Project CodeGuard aligns with the <a href="https://github.com/cosai-oasis/secure-ai-tooling/blob/main/risk-map/yaml/personas.yaml">CoSAI standard personas</a> so that deployment responsibilities are described using the same vocabulary used across the Coalition for Secure AI (CoSAI) ecosystem.</p>
+<p>This page summarizes each persona in the context of <strong>deploying and operating CodeGuard</strong> so that install-path and test-plan documentation can reference a shared mental model.</p>
+<div class="admonition info">
+<p class="admonition-title">Scope of this page</p>
+<p>This page does not replace the upstream CoSAI persona definitions. It explains how each persona typically shows up when implementing CodeGuard across individual developers, teams, and organizations.</p>
+</div>
+<h2 id="persona-summary">Persona Summary</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Persona</th>
+<th style="text-align: left;">Role in CodeGuard deployment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Application Developer</td>
+<td style="text-align: left;">Installs CodeGuard into repositories and user profiles; consumes rules through their AI coding tool.</td>
+</tr>
+<tr>
+<td style="text-align: left;">AI System Governance</td>
+<td style="text-align: left;">Defines and enforces org-wide CodeGuard policy; owns vendor dashboards and managed-settings deployments.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agentic Platform and Framework Providers</td>
+<td style="text-align: left;">Provide the IDEs, agent frameworks, plugin marketplaces, and remote loaders that activate CodeGuard rules/skills.</td>
+</tr>
+<tr>
+<td style="text-align: left;">AI Platform Provider</td>
+<td style="text-align: left;">Hosts centrally operated services such as an internal MCP server or device-management-managed client configuration.</td>
+</tr>
+<tr>
+<td style="text-align: left;">AI System Users</td>
+<td style="text-align: left;">Developers and other end users who benefit from CodeGuard-guided AI output but do not configure the install path.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Model Provider</td>
+<td style="text-align: left;">Upstream model developer; not a CodeGuard implementer but benefits from CodeGuard nudging safe patterns at the tool layer.</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data Provider</td>
+<td style="text-align: left;">Supplies data used to train or evaluate models; out of scope for install path implementation.</td>
+</tr>
+<tr>
+<td style="text-align: left;">AI Model Serving</td>
+<td style="text-align: left;">Operates runtime model-serving infrastructure; out of scope for CodeGuard install path implementation.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="personas-directly-involved-in-codeguard-install-paths">Personas Directly Involved in CodeGuard Install Paths</h2>
+<h3 id="application-developer">Application Developer</h3>
+<p>The most common persona implementing CodeGuard.</p>
 <ul>
-<li><strong>Always-on</strong> rules apply to all files and provide a baseline security guardrail.</li>
-<li><strong>Glob-scoped</strong> rules apply only to files matching their language/file patterns.</li>
+<li>Installs rule files and Agent Skills into repositories and user profiles.</li>
+<li>Runs the update workflow or re-downloads release artifacts.</li>
+<li>Uses the AI tool (Cursor, Windsurf, GitHub Copilot, Claude Code, Codex, OpenCode, etc.) that consumes CodeGuard.</li>
+<li>Can operate either at user scope (personal machine) or project scope (committed to a repo).</li>
 </ul>
-<hr />
-<h2 id="q-what-are-the-owasp-supplementary-rules">Q: What are the OWASP supplementary rules?</h2>
-<p><strong>A:</strong> The <code>sources/additional-skills/owasp/</code> folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.</p>
-<p>The official release bundles package the main <code>sources/core/</code> rules. If you <a href="../getting-started/#option-2-build-from-source">build from source</a> and want the OWASP supplementary set too, include it explicitly:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>additional-skills/owasp
-</code></pre></div>
-<hr />
-<h2 id="q-can-i-create-my-own-custom-rules">Q: Can I create my own custom rules?</h2>
-<p><strong>A:</strong> Yes. See the <a href="../custom-rules/">Custom Rules</a> documentation for a full guide.</p>
-<hr />
-<h2 id="q-why-does-the-downloaded-release-folder-appear-empty">Q: Why does the downloaded release folder appear empty?</h2>
-<p><strong>A:</strong> After downloading and extracting the release, the folders may appear empty because the rule directories start with a dot (<code>.</code>) and are hidden by default on most operating systems.</p>
-<p><strong>To show hidden files:</strong></p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">macOS</label><label for="__tabbed_1_2">Windows</label><label for="__tabbed_1_3">Linux</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<p>In Finder, navigate to the extracted folder and press <span class="keys"><kbd class="key-command">Cmd</kbd><span>+</span><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-period">.</kbd></span> to toggle the visibility of hidden files.</p>
-</div>
-<div class="tabbed-block">
-<p>In File Explorer:</p>
-<ol>
-<li>Navigate to the extracted folder</li>
-<li>Click on the <strong>View</strong> tab in the ribbon</li>
-<li>Check the <strong>Hidden items</strong> checkbox</li>
-</ol>
-</div>
-<div class="tabbed-block">
-<p>In your file manager, press <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-h">H</kbd></span> to toggle hidden files, or use <code>ls -la</code> in the terminal to view all files including hidden ones.</p>
-</div>
-</div>
-</div>
-<p>Once hidden files are visible, copy the appropriate directory to your project root. See <a href="../getting-started/">Getting Started</a> for supported formats.</p>
-<hr />
-<h2 id="q-can-i-use-this-with-claude-code">Q: Can I use this with Claude Code?</h2>
-<p><strong>A:</strong> Yes! Install the Project CodeGuard Claude Code plugin (Agent Skill) and Claude will apply the security rules automatically while you code.</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
-/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
-</code></pre></div>
-<p>For team/repo defaults, add the plugin in <code>.claude/settings.json</code> so it’s enabled for all contributors. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for details and troubleshooting.</p>
-<h2 id="q-how-can-i-report-a-problem-or-enhancement-to-any-of-the-rules">Q: How can I report a problem or enhancement to any of the rules?</h2>
-<p><strong>A:</strong> You can report problems, successes, or suggest enhancements to any of the rules by:</p>
-<ol>
-<li><strong>Creating a GitHub issue</strong>: <a href="https://github.com/cosai-oasis/project-codeguard/issues">Open an issue here</a></li>
-<li><strong>Provide details</strong>: Include which rule(s) are affected, the issue you encountered, and your suggested improvement</li>
-<li><strong>Be specific</strong>: If reporting a bug, include steps to reproduce and example code if possible</li>
-</ol>
-<p>We welcome all feedback - whether it's a bug report, success story, or enhancement suggestion!</p>
-<hr />
-<h2 id="q-how-can-i-contribute-to-these-rules-and-this-project">Q: How can I contribute to these rules and this project?</h2>
-<p><strong>A:</strong> You can contribute at any time by:</p>
-<ol>
-<li><strong>Creating a pull request</strong>: Submit code, documentation, or rule improvements directly</li>
-<li><strong>Opening a GitHub issue</strong>: Report bugs, suggest new rules, or propose enhancements</li>
-<li><strong>Participating in discussions</strong>: Share your experience and help other users</li>
-<li><strong>Improving documentation</strong>: Help make our docs clearer and more comprehensive</li>
-</ol>
-<p>See <a href="https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for detailed guidelines on our contribution process.</p>
-<hr />
-<h2 id="q-does-project-codeguard-replace-my-security-scanners">Q: Does Project CodeGuard replace my security scanners?</h2>
-<p><strong>A:</strong> No, Project CodeGuard rules do not replace your security scanners. The primary purpose of CodeGuard is to help you avoid introducing new security vulnerabilities as you write code, by providing agentic rules and guidance directly in your IDE. If you perform a code review using these rules, Project CodeGuard will most likely identify many of the same vulnerabilities that security scanning tools would find. However, CodeGuard is not a comprehensive substitute for security scanners—automated security tools are designed to thoroughly analyze your entire codebase and catch a broader range of issues. For best results, use CodeGuard rules in combination with your existing security scanners to maximize your code’s security.</p>
-<hr />
-<h2 id="still-have-questions">Still have questions?</h2>
-<p><strong>Can't find your answer?</strong> </p>
+<p><strong>Typical install routes owned</strong></p>
 <ul>
-<li><a href="https://github.com/cosai-oasis/project-codeguard/issues">Open an issue</a> with your question</li>
-<li><a href="https://github.com/cosai-oasis/project-codeguard/discussions">Start a discussion</a> to chat with the community</li>
+<li>Rule / instruction files (project and user scope)</li>
+<li>Agent Skills (project and user scope)</li>
+<li>Plugin marketplace (Claude Code)</li>
+<li>Remote instructions / installer (OpenCode, Codex)</li>
+<li>Self-service build from source</li>
+</ul>
+<h3 id="ai-system-governance">AI System Governance</h3>
+<p>Represents AI risk, security, and compliance owners at the organization level.</p>
+<ul>
+<li>Decides which CodeGuard rules are mandatory for the organization.</li>
+<li>Owns the contents of vendor admin dashboards (Cursor Team Rules, GitHub Copilot organization custom instructions, Claude Code managed settings).</li>
+<li>Reviews and approves rule updates landing in repositories through PRs.</li>
+<li>Defines audit, rollback, and change-control procedures for CodeGuard rollouts.</li>
+</ul>
+<p><strong>Typical install routes owned</strong></p>
+<ul>
+<li>Org-managed vendor dashboards</li>
+<li>Policy review for project-scoped installations</li>
+<li>Governance of MCP-served policy</li>
+</ul>
+<h3 id="agentic-platform-and-framework-providers">Agentic Platform and Framework Providers</h3>
+<p>Providers of the IDEs, agent frameworks, and orchestration tools that actually consume CodeGuard rules.</p>
+<ul>
+<li>Define how rule files, skills, and remote loaders are discovered and activated.</li>
+<li>Determine how managed settings and marketplaces are enforced.</li>
+<li>Shape the effective guarantees CodeGuard can make in each tool.</li>
+</ul>
+<p><strong>Examples</strong></p>
+<ul>
+<li>IDEs and coding agents: Cursor, Windsurf, GitHub Copilot, Claude Code, Codex, OpenCode, Antigravity, OpenClaw, Hermes</li>
+<li>Agent frameworks and orchestration: LangChain, Semantic Kernel, and similar</li>
+</ul>
+<p><strong>Typical install routes influenced</strong></p>
+<ul>
+<li>Agent Skills activation behavior</li>
+<li>Plugin marketplace enforcement</li>
+<li>Remote instruction loading</li>
+<li>Managed settings propagation</li>
+<li>Org-wide rule push mechanisms</li>
+</ul>
+<h3 id="ai-platform-provider">AI Platform Provider</h3>
+<p>Platform, SRE, or infrastructure teams that host shared services supporting CodeGuard at scale.</p>
+<ul>
+<li>Operates internally hosted MCP servers that serve CodeGuard rules.</li>
+<li>Manages device management (MDM/Jamf/Intune) flows that push managed settings.</li>
+<li>Runs the CI/CD and artifact pipelines used to build and distribute CodeGuard packages inside an organization.</li>
+<li>Handles uptime, observability, rollback, and access control for shared CodeGuard infrastructure.</li>
+</ul>
+<p><strong>Typical install routes owned</strong></p>
+<ul>
+<li>MCP server (self-hosted)</li>
+<li>Internal redistribution of built-from-source artifacts</li>
+<li>Endpoint-managed settings deployment</li>
+</ul>
+<h3 id="ai-system-users">AI System Users</h3>
+<p>End users consuming AI-assisted output produced by tools that have CodeGuard applied.</p>
+<ul>
+<li>Typically do not configure CodeGuard themselves.</li>
+<li>Benefit from secure-by-default behavior shaped by CodeGuard rules.</li>
+<li>May request new rules or report false positives, feeding back into other personas.</li>
+</ul>
+<h2 id="personas-indirectly-connected-to-codeguard">Personas Indirectly Connected to CodeGuard</h2>
+<h3 id="model-provider">Model Provider</h3>
+<ul>
+<li>Provides the underlying models used by coding agents.</li>
+<li>Does not implement CodeGuard install paths, but benefits when CodeGuard shapes prompts and outputs toward safer patterns.</li>
+</ul>
+<h3 id="data-provider">Data Provider</h3>
+<ul>
+<li>Supplies training, evaluation, or inference data to model providers.</li>
+<li>Not directly involved in CodeGuard install path implementation.</li>
+</ul>
+<h3 id="ai-model-serving">AI Model Serving</h3>
+<ul>
+<li>Operates runtime environments that serve model predictions.</li>
+<li>Not directly involved in CodeGuard install path implementation, though CodeGuard-guided client-side behavior can reduce unsafe patterns reaching the serving layer.</li>
+</ul>
+<h2 id="persona-to-install-route-mapping">Persona-to-Install-Route Mapping</h2>
+<p>For the canonical per-route mapping used across the documentation, see <a href="../install-paths/#responsible-cosai-personas-per-install-route">Choosing an Install Path → Responsible CoSAI Personas Per Install Route</a>.</p>
+<h2 id="further-reading">Further Reading</h2>
+<ul>
+<li><a href="https://github.com/cosai-oasis/secure-ai-tooling/blob/main/risk-map/yaml/personas.yaml">CoSAI persona definitions (upstream YAML)</a></li>
+<li><a href="https://www.coalitionforsecureai.org/about/">About Coalition for Secure AI</a></li>
+<li><a href="../install-paths/">Choosing an Install Path</a></li>
+<li><a href="../getting-started/">Getting Started</a></li>
 </ul>
 
 
@@ -868,7 +938,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../custom-rules/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Custom Rules">
+          <a href="../install-paths/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Choosing an Install Path">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -878,11 +948,27 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Custom Rules
+                Choosing an Install Path
               </div>
             </div>
           </a>
         
+        
+          
+          <a href="../claude-code-skill-plugin/" class="md-footer__link md-footer__link--next" aria-label="Next: Claude Code Plugin">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Claude Code Plugin
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
         
       </nav>
     

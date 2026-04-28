@@ -1,0 +1,1619 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Project CodeGuard is an AI model-agnostic security framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.">
+      
+      
+        <meta name="author" content="Cisco AI-enabled Security Engineering, Security and Trust">
+      
+      
+        <link rel="canonical" href="https://project-codeguard.org/install-paths/">
+      
+      
+        <link rel="prev" href="../getting-started/">
+      
+      
+        <link rel="next" href="../personas/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
+    
+    
+      
+        <title>Choosing an Install Path - Project CodeGuard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#choosing-an-install-path" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Project CodeGuard" class="md-header__button md-logo" aria-label="Project CodeGuard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Project CodeGuard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Choosing an Install Path
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="cyan"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="cyan"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/cosai-oasis/project-codeguard" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cosai-oasis/project-codeguard
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Project CodeGuard" class="md-nav__button md-logo" aria-label="Project CodeGuard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Project CodeGuard
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/cosai-oasis/project-codeguard" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    cosai-oasis/project-codeguard
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Choosing an Install Path
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Choosing an Install Path
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Recommendation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fast-decision-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fast Decision Tree
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-are-you-deploying-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      Who Are You Deploying For?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-each-route-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Each Route Works
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How Each Route Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rule-instruction-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule / instruction files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      Agent Skills
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-marketplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin marketplace
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ide-marketplace-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      IDE marketplace extension
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remote-installer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remote / installer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org-managed-admin-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Org-managed (admin dashboard)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      MCP server
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responsible-cosai-personas-per-install-route" class="md-nav__link">
+    <span class="md-ellipsis">
+      Responsible CoSAI Personas Per Install Route
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#skills-vs-mcp-which-should-i-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skills vs MCP: Which Should I Use?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Skills vs MCP: Which Should I Use?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-each-route-is-really-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      What each route is really for
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Decision logic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-are-an-individual-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      If you are an individual user
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-are-a-company-platform-team-or-security-team" class="md-nav__link">
+    <span class="md-ellipsis">
+      If you are a company, platform team, or security team
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottom-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bottom line
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-scope-vs-user-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Scope vs User Scope
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../personas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CoSAI Personas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../claude-code-skill-plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Claude Code Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom-rules/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Custom Rules
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    FAQ
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quick Recommendation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fast-decision-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fast Decision Tree
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#who-are-you-deploying-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      Who Are You Deploying For?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-each-route-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How Each Route Works
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How Each Route Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rule-instruction-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rule / instruction files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      Agent Skills
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-marketplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      Plugin marketplace
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ide-marketplace-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      IDE marketplace extension
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remote-installer" class="md-nav__link">
+    <span class="md-ellipsis">
+      Remote / installer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org-managed-admin-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      Org-managed (admin dashboard)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      MCP server
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#responsible-cosai-personas-per-install-route" class="md-nav__link">
+    <span class="md-ellipsis">
+      Responsible CoSAI Personas Per Install Route
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#skills-vs-mcp-which-should-i-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      Skills vs MCP: Which Should I Use?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Skills vs MCP: Which Should I Use?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-each-route-is-really-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      What each route is really for
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Decision logic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-are-an-individual-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      If you are an individual user
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#if-you-are-a-company-platform-team-or-security-team" class="md-nav__link">
+    <span class="md-ellipsis">
+      If you are a company, platform team, or security team
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bottom-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bottom line
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-scope-vs-user-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Scope vs User Scope
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="choosing-an-install-path">Choosing an Install Path</h1>
+<p>Project CodeGuard ships the same security ruleset through several delivery mechanisms — rule files, Agent Skills, plugin marketplaces, remote URLs, org dashboards, and MCP. The rules are identical; what changes is <strong>how they reach your AI coding tool</strong>, <strong>who maintains them</strong>, and <strong>how much context they consume</strong>.</p>
+<p>This page helps you pick the right path for your situation. For step-by-step install commands per tool, see <a href="../getting-started/#installation">Getting Started → Installation</a>.</p>
+<p><img alt="CodeGuard install routes per tool" src="../images/codeguard-install-flowchart.svg" /></p>
+<hr />
+<h2 id="quick-recommendation">Quick Recommendation</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Your situation</th>
+<th style="text-align: left;">Use this route</th>
+<th style="text-align: left;">Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Solo developer, one repo</strong></td>
+<td style="text-align: left;">Rule / instruction files</td>
+<td style="text-align: left;">Glob-scoped — only rules matching the file you're editing load. Lowest token cost, simplest setup.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Team sharing via git</strong></td>
+<td style="text-align: left;">Rule files or Agent Skills, <strong>project-scoped</strong></td>
+<td style="text-align: left;">Committed to the repo — every contributor gets CodeGuard automatically on clone.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Want zero local files / auto-updates</strong></td>
+<td style="text-align: left;">Plugin marketplace (Claude Code) or remote instructions (OpenCode)</td>
+<td style="text-align: left;">One command, no files to maintain, always current.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Prefer a one-click install from your IDE's extension marketplace</strong></td>
+<td style="text-align: left;">IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot)</td>
+<td style="text-align: left;">Familiar "install extension" UX; auto-updates through the marketplace; one package covers all four VS Code-family IDEs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Org admin enforcing policy</strong></td>
+<td style="text-align: left;">Org-managed dashboard (Cursor Team Rules, Copilot org instructions)</td>
+<td style="text-align: left;">Centrally enforced across every repo without per-project setup.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Already running MCP infrastructure</strong></td>
+<td style="text-align: left;">MCP server (self-hosted)</td>
+<td style="text-align: left;">Rules served dynamically; integrates with your existing MCP tooling.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Not sure? Start here</p>
+<p>Download the pre-built rule files for your tool from the <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a> and drop them into your repo. You can switch routes later — the underlying rules are the same.</p>
+</div>
+<h2 id="fast-decision-tree">Fast Decision Tree</h2>
+<p>Use this if you want the shortest path to the right install route:</p>
+<ol>
+<li><strong>Are you choosing for just yourself, for one repo/team, or for a whole company?</strong>
+   <code>Just me</code> → Start with <a href="#project-scope-vs-user-scope">user-scope</a> <strong>rule files</strong> or <strong>skills</strong>
+   <code>One repo / one team</code> → Start with <a href="#project-scope-vs-user-scope">project-scope</a> <strong>rule files</strong>
+   <code>Whole company / many repos</code> → Look at <strong>org-managed rules</strong> or <strong>MCP</strong></li>
+<li><strong>Do you want the simplest and most predictable setup?</strong>
+   <code>Yes</code> → Use <strong>rule / instruction files</strong>
+   <code>No, I want guidance loaded only when relevant</code> → Use <strong>Agent Skills</strong></li>
+<li><strong>Do you need one centrally managed live source of truth across many repos or clients?</strong>
+   <code>No</code> → Stay with <strong>rule files</strong> or <strong>skills</strong>
+   <code>Yes</code> → Use <strong>MCP</strong> if you already operate that infrastructure</li>
+<li><strong>Do you want zero local files and automatic updates from the tool or URL?</strong>
+   <code>Yes</code> → Use the tool's <strong>plugin marketplace</strong> or <strong>remote installer/instructions</strong> option where available
+   <code>No</code> → Keep the files in the repo for reviewability and git history</li>
+</ol>
+<p><strong>Default answers if you're unsure</strong></p>
+<ul>
+<li><strong>Individual user:</strong> user-scope or project-scope <strong>rule files</strong></li>
+<li><strong>Team/repository:</strong> project-scoped <strong>rule files</strong></li>
+<li><strong>Tool with strong skill support and you want on-demand loading:</strong> <strong>Agent Skills</strong></li>
+<li><strong>Platform/security team centralizing policy across many repos:</strong> <strong>org-managed rules</strong> first, <strong>MCP</strong> if you need a service-based architecture</li>
+</ul>
+<hr />
+<h2 id="who-are-you-deploying-for">Who Are You Deploying For?</h2>
+<p>Before picking a mechanism, decide <strong>who</strong> should end up with CodeGuard active. Each audience implies a different install location and a different set of administrative responsibilities.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Just me (individual)</label><label for="__tabbed_1_2">My team / repository</label><label for="__tabbed_1_3">My whole organization</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>You install CodeGuard on your own machine; no one else is affected.</p>
+<p><strong>Responsible CoSAI personas:</strong> Application Developer, AI System Users</p>
+<p><strong>Install location:</strong> <a href="#project-scope-vs-user-scope">User scope</a> (<code>~/.cursor/rules/</code>, <code>~/.codex/skills/</code>, Claude Code <code>/plugin install</code>, etc.)</p>
+<p><strong>Admin responsibilities</strong></p>
+<ul>
+<li>None beyond your own machine — no approvals, no PRs.</li>
+<li>You are responsible for updating your local copy when new CodeGuard releases ship.</li>
+<li>Rules are <strong>not</strong> visible in code review and <strong>not</strong> shared with collaborators.</li>
+</ul>
+<p><strong>Choose this when:</strong> evaluating CodeGuard, contributing to repos you don't control, or you want the rules everywhere you personally work.</p>
+</div>
+<div class="tabbed-block">
+<p>CodeGuard is committed to a repository so every contributor gets it on <code>git clone</code>.</p>
+<p><strong>Responsible CoSAI personas:</strong> Application Developer (repo owners and contributors), AI System Governance (review and approval for enforced defaults)</p>
+<p><strong>Install location:</strong> <a href="#project-scope-vs-user-scope">Project scope</a> (<code>&lt;repo&gt;/.cursor/rules/</code>, <code>&lt;repo&gt;/.github/instructions/</code>, <code>&lt;repo&gt;/.claude/settings.json</code>, etc.)</p>
+<p><strong>Admin responsibilities</strong></p>
+<ul>
+<li>Requires write access to the repo and a reviewed PR to land the rule files.</li>
+<li>Someone on the team owns updates — either manually on each CodeGuard release or via the <a href="../getting-started/#keeping-rules-updated-automated">auto-update GitHub Action</a>, which still needs a reviewer to merge its PRs.</li>
+<li>Rule changes are visible in diff/PR history, so treat them like any other code change (review, CODEOWNERS, branch protection).</li>
+<li>If contributors use different AI tools, you may need to commit multiple format directories (<code>.cursor/</code>, <code>.windsurf/</code>, <code>.github/</code>, …) and keep them in sync.</li>
+</ul>
+<p><strong>Choose this when:</strong> you want consistent security guidance for everyone working in a specific codebase. This is the <strong>recommended default</strong> for most teams.</p>
+</div>
+<div class="tabbed-block">
+<p>CodeGuard is enforced centrally across all repos and members, regardless of whether individual repos opt in.</p>
+<p><strong>Responsible CoSAI personas:</strong> AI System Governance (primary owner), Agentic Platform and Framework Providers (tool/IDE configuration), AI Platform Provider (if a centrally hosted MCP server is involved)</p>
+<p><strong>Install location:</strong> Vendor admin dashboard (Cursor Team Rules, GitHub Copilot organization custom instructions) or a centrally operated MCP server.</p>
+<p><strong>Admin responsibilities</strong></p>
+<ul>
+<li>Requires <strong>org-admin / owner privileges</strong> in the AI tool's dashboard — typically a security or platform team, not individual developers.</li>
+<li>You become the single point of update: when CodeGuard ships a new release, an admin must paste/upload the new rules into the dashboard (or redeploy the MCP server).</li>
+<li>Dashboard rules are usually free-form text with no glob scoping, so weigh the context-window cost of loading all rules for every file against the benefit of guaranteed coverage.</li>
+<li>Plan for governance: change-control on who can edit org rules, an audit trail of edits, and a rollback procedure if a rule update causes problems.</li>
+<li>Communicate to developers that org-level rules are active so behavior changes aren't a surprise.</li>
+</ul>
+<p><strong>Choose this when:</strong> security policy must be enforced uniformly and you can't rely on every repo opting in.</p>
+</div>
+</div>
+</div>
+<div class="admonition info">
+<p class="admonition-title">These layers stack</p>
+<p>Org-level rules give you a guaranteed baseline; team/repo-level adds project-specific or stricter rules on top; individual user-scope lets a developer trial new rules locally. Most tools merge all active layers — see <a href="#project-scope-vs-user-scope">Project scope vs user scope</a> for precedence.</p>
+</div>
+<hr />
+<h2 id="how-each-route-works">How Each Route Works</h2>
+<h3 id="rule-instruction-files">Rule / instruction files</h3>
+<p>Static markdown files the AI tool reads from a known directory. Each rule declares which file globs it applies to, so only relevant rules load per file.</p>
+<ul>
+<li><strong>Supported by:</strong> Cursor (<code>.cursor/rules/</code>), Windsurf (<code>.windsurf/rules/</code>), GitHub Copilot (<code>.github/instructions/</code>), Antigravity (<code>.agent/rules/</code>)</li>
+<li><strong>Best for:</strong> Most users. Predictable, version-controlled, diffable in PRs.</li>
+<li><strong>Tradeoffs:</strong> You update by re-downloading (or use the <a href="../getting-started/#keeping-rules-updated-automated">auto-update workflow</a>).</li>
+<li><strong>Responsible CoSAI personas:</strong> Application Developer, with AI System Governance for policy review in PRs.</li>
+</ul>
+<h3 id="agent-skills">Agent Skills</h3>
+<p>A skill is a self-describing capability the model invokes <strong>on demand</strong> when the task is security-relevant. Nothing loads until the model decides it's needed.</p>
+<ul>
+<li><strong>Supported by:</strong> Cursor (<code>.cursor/skills/</code>), Windsurf (<code>.windsurf/skills/</code>), OpenCode (<code>.opencode/skills/</code>), Codex (<code>.codex/skills/</code>), OpenClaw (<code>.openclaw/skills/</code>), Hermes (<code>.hermes/skills/</code>)</li>
+<li><strong>Best for:</strong> Context-sensitive workflows, polyglot repos, tools that natively support the <a href="https://agentskills.io/">Agent Skills standard</a>.</li>
+<li><strong>Tradeoffs:</strong> Activation depends on the model recognizing the task as security-relevant. Slightly less deterministic than always-on rule files.</li>
+<li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers supplying the skill discovery and invocation model.</li>
+</ul>
+<h3 id="plugin-marketplace">Plugin marketplace</h3>
+<p>A managed install: one command, the tool fetches and updates the skill for you.</p>
+<ul>
+<li><strong>Supported by:</strong> Claude Code (<code>/plugin install codeguard-security@project-codeguard</code>)</li>
+<li><strong>Best for:</strong> Claude Code users who want the lowest-maintenance setup.</li>
+<li><strong>Tradeoffs:</strong> Claude Code only. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin guide</a> for details.</li>
+<li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers (Claude Code) and AI System Governance for managed-settings enforcement.</li>
+</ul>
+<h3 id="ide-marketplace-extension">IDE marketplace extension</h3>
+<p>A VS Code-compatible extension (<code>.vsix</code>) published to an IDE marketplace. Installing the extension writes the CodeGuard rule/instruction files into the correct directory for the host IDE (<code>.cursor/rules/</code>, <code>.windsurf/rules/</code>, <code>.agent/rules/</code>, or <code>.github/instructions/</code>) and keeps them up to date through the marketplace's normal extension-update channel.</p>
+<ul>
+<li><strong>Supported by:</strong> Cursor, Windsurf, Antigravity, and VS Code (which is the host process for GitHub Copilot). All four are VS Code-family IDEs and consume the same <code>.vsix</code> format, typically via Open VSX and/or the Visual Studio Marketplace.</li>
+<li><strong>Best for:</strong> Developers who prefer the familiar "install an extension" UX over downloading release zips, and teams that want marketplace-driven auto-updates without running their own infrastructure.</li>
+<li><strong>Tradeoffs:</strong><ul>
+<li>Installs to <strong>user scope</strong> by default — rules apply to every workspace on the machine, not just a single repo. The extension can offer a command (e.g. <code>CodeGuard: Install Rules Into Workspace</code>) to copy the files into project scope when you want them committed to git.</li>
+<li>Because the extension writes standard rule files, the end state is the same as the <strong>Rule / instruction files</strong> route — marketplace install is just the delivery mechanism.</li>
+<li>Extension updates flow outside of repo history; if you rely on pinned, reviewed rules in git, prefer project-scoped rule files instead.</li>
+<li>Each IDE's marketplace has its own publishing workflow; a single <code>.vsix</code> covers all four IDEs but may need to be listed in multiple marketplaces (Open VSX, Visual Studio Marketplace, and any IDE-specific registry).</li>
+</ul>
+</li>
+<li><strong>Responsible CoSAI personas:</strong> Application Developer (installs and runs the extension), with Agentic Platform and Framework Providers (the IDEs hosting the extension) and AI System Governance (reviewing the extension before org-wide rollout).</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">CodeGuard does not currently ship a marketplace extension</p>
+<p>This route is shown for completeness. If you want to deliver CodeGuard through a VS Code-compatible extension, package the rule files from <code>sources/core/</code> into a <code>.vsix</code> that copies them into the appropriate IDE directory on activation. Until a signed CodeGuard extension is published, the supported ready-to-use paths are <strong>rule files</strong>, <strong>Agent Skills</strong>, and the <strong>Claude Code plugin marketplace</strong>.</p>
+</div>
+<h3 id="remote-installer">Remote / installer</h3>
+<p>The tool pulls rules from a URL or installer command at runtime — no local files.</p>
+<ul>
+<li><strong>Supported by:</strong> OpenCode (<code>opencode.json</code> remote <code>instructions</code> URLs), Codex (<code>$skill-installer</code>)</li>
+<li><strong>Best for:</strong> Always-current rules without managing files; ephemeral / CI environments.</li>
+<li><strong>Tradeoffs:</strong> Loads the <strong>full CodeGuard ruleset every session</strong> regardless of language — highest token cost. Requires network access. Pin to a release tag (e.g. <code>refs/tags/v1.3.0</code>) if you need a stable, auditable snapshot.</li>
+<li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers (OpenCode, Codex) owning the remote loader and installer behavior.</li>
+</ul>
+<h3 id="org-managed-admin-dashboard">Org-managed (admin dashboard)</h3>
+<p>An administrator configures the rules once in the vendor's team/org settings; they then apply to <strong>every member</strong> automatically, with no per-repo or per-machine setup.</p>
+<ul>
+<li><strong>Best for:</strong> Security/platform teams enforcing a baseline org-wide.</li>
+<li><strong>Tradeoffs:</strong> Free-form text — no glob scoping, so all rules load for every file. Updates require admin action.</li>
+<li><strong>Responsible CoSAI personas:</strong> AI System Governance, with Agentic Platform and Framework Providers (Cursor, GitHub Copilot, Claude Code) enforcing org-level configuration and AI Platform Provider for endpoint/MDM management where applicable.</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Cursor — Team Rules</label><label for="__tabbed_2_2">GitHub Copilot — Organization custom instructions</label><label for="__tabbed_2_3">Claude Code — Managed settings</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Cursor Business/Teams plans let admins define <strong>Team Rules</strong> in the Cursor dashboard. These rules are pushed to every team member's Cursor client and are applied in addition to any project-level <code>.cursor/rules/</code>.</p>
+<p><strong>Setup</strong></p>
+<ol>
+<li>Sign in to the <a href="https://cursor.com/dashboard">Cursor dashboard</a> as a team admin.</li>
+<li>Navigate to <strong>Settings → Rules</strong> for your team.</li>
+<li>Paste the CodeGuard rule content (concatenate the markdown files from <code>sources/core/</code>, or pick the always-apply subset to keep context cost down).</li>
+<li>Save — rules propagate to all team members on their next Cursor session.</li>
+</ol>
+<p><strong>Admin notes</strong></p>
+<ul>
+<li>Requires a Cursor Business/Teams plan and the <strong>team admin</strong> role.</li>
+<li>Team Rules are free-form text; there is no per-language glob scoping at this layer.</li>
+<li>Members cannot opt out, but project-level <code>.cursor/rules/</code> still load alongside Team Rules.</li>
+</ul>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg></span> <a href="https://docs.cursor.com/en/context/rules">Cursor Rules documentation</a></p>
+</div>
+<div class="tabbed-block">
+<p>GitHub organization owners can set <strong>custom instructions</strong> that apply to every Copilot seat in the org, across all repositories — independent of any repo-level <code>.github/instructions/</code> files.</p>
+<p><strong>Setup</strong></p>
+<ol>
+<li>Go to your organization on GitHub → <strong>Settings → Copilot → Custom instructions</strong>.</li>
+<li>Paste the CodeGuard rule content (concatenate the markdown files from <code>sources/core/</code>, or use the always-apply subset).</li>
+<li>Save — instructions take effect for all org members with a Copilot seat.</li>
+</ol>
+<p><strong>Admin notes</strong></p>
+<ul>
+<li>Requires <strong>organization owner</strong> (or delegated Copilot admin) permissions and a Copilot Business/Enterprise plan.</li>
+<li>Org instructions are free-form text; glob scoping is only available at the repository level via <code>.github/instructions/</code>.</li>
+<li>Repository-level <code>.github/instructions/</code> and <code>.github/copilot-instructions.md</code> continue to apply on top of org instructions.</li>
+</ul>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg></span> <a href="https://docs.github.com/en/copilot/how-tos/configure-custom-instructions">GitHub Copilot custom instructions documentation</a></p>
+</div>
+<div class="tabbed-block">
+<p>Claude Code supports an <strong>enterprise managed settings</strong> file deployed via your device-management tooling (MDM, Jamf, Intune, etc.). Settings in this file are enforced for every user on the machine and <strong>cannot be overridden</strong> by user or project settings — so you can guarantee the CodeGuard plugin is installed and enabled.</p>
+<p><strong>Setup</strong></p>
+<ol>
+<li>
+<p>Create a managed settings file at the system path for your platform:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Platform</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">macOS</td>
+<td style="text-align: left;"><code>/Library/Application Support/ClaudeCode/managed-settings.json</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Linux / WSL</td>
+<td style="text-align: left;"><code>/etc/claude-code/managed-settings.json</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Windows</td>
+<td style="text-align: left;"><code>C:\ProgramData\ClaudeCode\managed-settings.json</code></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Add the CodeGuard marketplace and plugin:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;marketplaces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w"> </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cosai-oasis/project-codeguard&quot;</span><span class="w"> </span><span class="p">}],</span>
+<span class="w">  </span><span class="nt">&quot;plugins&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;codeguard-security&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;marketplace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;project-codeguard&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+</li>
+<li>
+<p>Distribute the file to managed devices via your MDM / configuration-management system.</p>
+</li>
+</ol>
+<p><strong>Admin notes</strong></p>
+<ul>
+<li>Requires the ability to write to system-level paths on managed endpoints (typically IT / endpoint-management, not a web dashboard).</li>
+<li>Managed settings take precedence over <code>~/.claude/settings.json</code> and <code>&lt;repo&gt;/.claude/settings.json</code>; users cannot disable the plugin locally.</li>
+<li>Updates to the CodeGuard plugin itself flow from the marketplace — you only redeploy <code>managed-settings.json</code> if you change which plugins are enforced.</li>
+</ul>
+<p><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m19 2-5 4.5v11l5-4.5zM6.5 5C4.55 5 2.45 5.4 1 6.5v14.66c0 .25.25.5.5.5.1 0 .15-.07.25-.07 1.35-.65 3.3-1.09 4.75-1.09 1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.31 4.75 1.06.1.05.15.03.25.03.25 0 .5-.25.5-.5V6.5c-.6-.45-1.25-.75-2-1V19c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V6.5C10.55 5.4 8.45 5 6.5 5"/></svg></span> <a href="https://docs.claude.com/en/docs/claude-code/settings">Claude Code settings documentation</a> · <a href="../claude-code-skill-plugin/">Plugin guide</a></p>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Tools without an org-admin layer</p>
+<p>Not every tool offers centrally pushed rules. For these, use <strong>project-scope</strong> install (commit rules to each repo) or a shared template repository as your enforcement mechanism:</p>
+<ul>
+<li><strong>OpenCode</strong> — open-source CLI with no vendor dashboard; closest equivalent is a shared <code>opencode.json</code> committed to repos.</li>
+<li><strong>Codex, Antigravity, Windsurf</strong> — check current vendor documentation; at the time of writing we have not verified an org-level rule-push mechanism for these tools.</li>
+<li><strong>OpenClaw, Hermes</strong> — filesystem-based skill discovery only; no central admin layer.</li>
+</ul>
+</div>
+<h3 id="mcp-server">MCP server</h3>
+<p>The AI tool connects to a Model Context Protocol server that exposes CodeGuard rules as a resource or tool. Rules are fetched dynamically per query rather than stored as static files.</p>
+<ul>
+<li><strong>Supported by:</strong> Cursor, Windsurf, GitHub Copilot, Claude Code (any MCP-capable client)</li>
+<li><strong>Best for:</strong> Teams that already operate MCP infrastructure and want centralized, live rule serving.</li>
+<li><strong>Tradeoffs:</strong> Requires a running server process. Adds network latency. You manage the server lifecycle.</li>
+<li><strong>Responsible CoSAI personas:</strong> AI Platform Provider (hosts and operates the MCP server), with AI System Governance owning the served policy, Agentic Platform and Framework Providers integrating MCP into IDEs, and Application Developer consuming the MCP-served rules.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">CodeGuard does not currently ship an MCP server</p>
+<p>This route is shown for completeness. If you want to serve CodeGuard rules over MCP, wrap the markdown files from <code>sources/core/</code> in your own MCP server. The other routes on this page are the supported, ready-to-use paths.</p>
+</div>
+<hr />
+<h2 id="responsible-cosai-personas-per-install-route">Responsible CoSAI Personas Per Install Route</h2>
+<p>Project CodeGuard aligns with the <a href="../personas/">CoSAI standard personas</a> (see the <a href="https://github.com/cosai-oasis/secure-ai-tooling/blob/main/risk-map/yaml/personas.yaml">upstream YAML definitions</a>). Use this table to see who is typically responsible for implementing and operating each install route.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Install route</th>
+<th style="text-align: left;">Primary CoSAI personas</th>
+<th style="text-align: left;">Supporting CoSAI personas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Rule / instruction files (project scope)</td>
+<td style="text-align: left;">Application Developer</td>
+<td style="text-align: left;">AI System Governance (policy review and enforcement in PRs)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Rule / instruction files (user scope)</td>
+<td style="text-align: left;">Application Developer, AI System Users</td>
+<td style="text-align: left;">—</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agent Skills (project scope)</td>
+<td style="text-align: left;">Application Developer</td>
+<td style="text-align: left;">AI System Governance, Agentic Platform and Framework Providers</td>
+</tr>
+<tr>
+<td style="text-align: left;">Agent Skills (user scope)</td>
+<td style="text-align: left;">Application Developer, AI System Users</td>
+<td style="text-align: left;">Agentic Platform and Framework Providers</td>
+</tr>
+<tr>
+<td style="text-align: left;">Plugin marketplace (Claude Code)</td>
+<td style="text-align: left;">Application Developer</td>
+<td style="text-align: left;">Agentic Platform and Framework Providers, AI System Governance</td>
+</tr>
+<tr>
+<td style="text-align: left;">IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot)</td>
+<td style="text-align: left;">Application Developer</td>
+<td style="text-align: left;">Agentic Platform and Framework Providers, AI System Governance</td>
+</tr>
+<tr>
+<td style="text-align: left;">Remote instructions / installer (OpenCode, Codex)</td>
+<td style="text-align: left;">Application Developer</td>
+<td style="text-align: left;">Agentic Platform and Framework Providers</td>
+</tr>
+<tr>
+<td style="text-align: left;">Org-managed dashboard (Cursor Team Rules, GitHub Copilot org custom instructions, Claude Code managed settings)</td>
+<td style="text-align: left;">AI System Governance</td>
+<td style="text-align: left;">Agentic Platform and Framework Providers, AI Platform Provider (for endpoint management)</td>
+</tr>
+<tr>
+<td style="text-align: left;">MCP server (self-hosted)</td>
+<td style="text-align: left;">AI Platform Provider</td>
+<td style="text-align: left;">AI System Governance, Agentic Platform and Framework Providers, Application Developer</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Why these personas</p>
+<p>CodeGuard install routes are primarily operated by developers integrating AI tools into their workflows (Application Developer), the platforms that deliver those AI tools (Agentic Platform and Framework Providers), the central teams that set and enforce security policy (AI System Governance), and the platform teams that host shared services such as an MCP server (AI Platform Provider). Individual end users consuming AI-assisted code benefit from these controls (AI System Users), but are not usually the implementers of the install path.</p>
+</div>
+<h2 id="skills-vs-mcp-which-should-i-use">Skills vs MCP: Which Should I Use?</h2>
+<p>This choice is usually clearer if you compare <strong>three</strong> routes, not two:</p>
+<ul>
+<li><strong>Rule files</strong> are static markdown files committed to a repo or installed on a machine. They are the most predictable and reviewable option.</li>
+<li><strong>Agent Skills</strong> package those same rules as an on-demand capability the model can invoke when the task is security-relevant.</li>
+<li><strong>MCP</strong> turns the rules into a service the client fetches from at runtime, which is useful when you want central control or integration with existing platform infrastructure.</li>
+</ul>
+<p>In practice, the question is less "skills vs MCP" and more:</p>
+<ol>
+<li>Do you want the rules to live <strong>in the repo as files</strong>, or <strong>behind a service</strong>?</li>
+<li>Do you want security guidance to be <strong>always available/predictable</strong>, or <strong>loaded only when relevant</strong>?</li>
+<li>Are you optimizing for <strong>simplicity</strong>, or for <strong>centralized administration and live updates</strong>?</li>
+</ol>
+<h3 id="what-each-route-is-really-for">What each route is really for</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;"></th>
+<th style="text-align: left;">Rule files</th>
+<th style="text-align: left;">Agent Skills</th>
+<th style="text-align: left;">MCP server</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>What it is</strong></td>
+<td style="text-align: left;">Static rules/instructions on disk</td>
+<td style="text-align: left;">Static skill on disk that the model can invoke</td>
+<td style="text-align: left;">Dynamic rules served by a local or remote service</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Where rules live</strong></td>
+<td style="text-align: left;">In the repo or user's home directory</td>
+<td style="text-align: left;">In the repo or user's home directory</td>
+<td style="text-align: left;">On a running MCP server</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>How guidance appears</strong></td>
+<td style="text-align: left;">Tool loads applicable files automatically</td>
+<td style="text-align: left;">Model decides to invoke the skill when needed</td>
+<td style="text-align: left;">Agent calls an MCP tool/resource to fetch guidance</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Operational overhead</strong></td>
+<td style="text-align: left;">Lowest</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: left;">Highest</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Freshness</strong></td>
+<td style="text-align: left;">Pinned to what's installed/committed</td>
+<td style="text-align: left;">Pinned to what's installed/committed</td>
+<td style="text-align: left;">Can be updated centrally without touching every repo</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Auditability in PRs</strong></td>
+<td style="text-align: left;">Excellent</td>
+<td style="text-align: left;">Excellent when project-scoped</td>
+<td style="text-align: left;">Server changes happen outside repo history unless you add your own change-control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Offline support</strong></td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: left;">Only if the server is reachable locally</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Best fit</strong></td>
+<td style="text-align: left;">Default for most repos and teams</td>
+<td style="text-align: left;">On-demand guidance without running infrastructure</td>
+<td style="text-align: left;">Organizations that already operate MCP and want a central source of truth</td>
+</tr>
+</tbody>
+</table>
+<h3 id="decision-logic">Decision logic</h3>
+<p>If you want the shortest path to "secure-by-default AI output," choose <strong>rule files</strong> first.</p>
+<ul>
+<li>They are the easiest to explain to a team.</li>
+<li>They are visible in git history and code review.</li>
+<li>They work well with project-scope installs, which is the cleanest default for most repositories.</li>
+<li>They do not depend on the model recognizing when to invoke a skill or on a server being available.</li>
+</ul>
+<p>Choose <strong>Agent Skills</strong> when you want on-demand loading but still want a file-based install.</p>
+<ul>
+<li>Skills are especially useful in tools that support the Agent Skills pattern well.</li>
+<li>They can reduce unnecessary context loading in broader or polyglot repos.</li>
+<li>They are still simple to distribute because they are just files in the repo or user profile.</li>
+<li>The tradeoff is that activation is model-driven, so behavior is slightly less deterministic than with always-available rule files.</li>
+</ul>
+<p>Choose <strong>MCP</strong> when your real requirement is <strong>centralization</strong>, not just "on-demand loading."</p>
+<ul>
+<li>MCP is best when you already run platform infrastructure and want CodeGuard delivered from one managed place.</li>
+<li>It is a good fit when multiple repos, multiple teams, or multiple clients should all pull from the same live policy source.</li>
+<li>It also makes sense if you want to combine CodeGuard with other MCP-served context, approvals, logging, or platform workflows.</li>
+<li>It is usually the wrong starting point for a single repo because it adds server deployment, client registration, connectivity, and lifecycle management.</li>
+</ul>
+<h3 id="if-you-are-an-individual-user">If you are an individual user</h3>
+<p>For one developer deciding what to install on their own machine:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Your goal</th>
+<th style="text-align: left;">Recommended route</th>
+<th style="text-align: left;">Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>I want the simplest, most predictable setup</strong></td>
+<td style="text-align: left;">Rule files</td>
+<td style="text-align: left;">Lowest setup effort, easiest to understand, works offline, no extra moving parts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>I want lower context usage and my tool supports skills well</strong></td>
+<td style="text-align: left;">Agent Skills</td>
+<td style="text-align: left;">Keeps the install file-based but lets the model pull in security guidance only when relevant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>I want to experiment with a local AI platform or custom tooling</strong></td>
+<td style="text-align: left;">MCP</td>
+<td style="text-align: left;">Reasonable only if you are already running local MCP for other reasons</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Individual-user recommendation:</strong> start with <strong>project-scoped rule files</strong> if you control the repo, or <strong>user-scoped rule files / skills</strong> if you want CodeGuard everywhere on your machine. Use MCP only if you are intentionally building a more advanced local setup.</p>
+<h3 id="if-you-are-a-company-platform-team-or-security-team">If you are a company, platform team, or security team</h3>
+<p>For an organization, the decision is usually driven by <strong>governance and scale</strong>, not by raw install convenience.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Your goal</th>
+<th style="text-align: left;">Recommended route</th>
+<th style="text-align: left;">Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Standardize a specific repository or template repo</strong></td>
+<td style="text-align: left;">Project-scoped rule files or project-scoped skills</td>
+<td style="text-align: left;">Versioned with the codebase, reviewable in PRs, easy for developers to understand</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Give teams a shared baseline without running new infrastructure</strong></td>
+<td style="text-align: left;">Org-managed dashboard rules when the tool supports them</td>
+<td style="text-align: left;">Central admin control without per-repo installation, though usually with higher context cost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Serve one live policy source across many repos/tools/clients</strong></td>
+<td style="text-align: left;">MCP</td>
+<td style="text-align: left;">Best when centralization, dynamic delivery, and platform integration matter more than simplicity</td>
+</tr>
+</tbody>
+</table>
+<p>For most companies, a practical rollout looks like this:</p>
+<ol>
+<li>Start with <strong>project-scoped rule files</strong> in important repos to prove value and keep the rollout reviewable.</li>
+<li>Add <strong>skills</strong> in tools that benefit from on-demand loading.</li>
+<li>Move to <strong>org-managed rules</strong> or <strong>MCP</strong> only when you have a clear administrative reason: central policy ownership, shared platform services, audit workflows, or multi-repo standardization at scale.</li>
+</ol>
+<h3 id="bottom-line">Bottom line</h3>
+<ul>
+<li><strong>Rule files</strong> are the best default for most people and most repos.</li>
+<li><strong>Skills</strong> are the best file-based option when you want more selective, on-demand guidance.</li>
+<li><strong>MCP</strong> is the right answer when your main problem is centralized policy delivery and platform integration, not when you simply need to install CodeGuard in one repo.</li>
+</ul>
+<hr />
+<h2 id="project-scope-vs-user-scope">Project Scope vs User Scope</h2>
+<p>Most tools look for rules/skills in <strong>two</strong> places: inside the current repository (project scope) and in your home directory (user scope). Both are valid; pick based on who should get the rules.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Project scope (recommended)</label><label for="__tabbed_3_2">User scope</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Install into the repository so the rules are committed to git.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Tool</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Cursor</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.cursor/rules/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Windsurf</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.windsurf/rules/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">GitHub Copilot</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.github/instructions/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Antigravity</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.agent/rules/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">OpenCode</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.opencode/skills/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Codex</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.codex/skills/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Claude Code</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.claude/settings.json</code> (plugin entry)</td>
+</tr>
+<tr>
+<td style="text-align: left;">OpenClaw</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.openclaw/skills/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Hermes</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.hermes/skills/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Use when:</strong> You want every contributor to get CodeGuard automatically on <code>git clone</code>, and you want rule changes reviewed in PRs.</p>
+<div class="admonition tip">
+<p class="admonition-title">Repository Level Installation</p>
+<p>Installing at the repository level ensures all team members benefit from the security rules automatically when they clone the repository.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p>Install into your home directory so the rules apply to <strong>every</strong> project you open on this machine.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Tool</th>
+<th style="text-align: left;">Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Cursor</td>
+<td style="text-align: left;"><code>~/.cursor/rules/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Windsurf</td>
+<td style="text-align: left;"><code>~/.windsurf/rules/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">OpenCode</td>
+<td style="text-align: left;"><code>~/.config/opencode/skills/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Codex</td>
+<td style="text-align: left;"><code>~/.codex/skills/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Claude Code</td>
+<td style="text-align: left;"><code>~/.claude/skills/</code> or <code>/plugin install</code> (user-global by default)</td>
+</tr>
+<tr>
+<td style="text-align: left;">OpenClaw</td>
+<td style="text-align: left;"><code>~/.openclaw/skills/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Hermes</td>
+<td style="text-align: left;"><code>~/.hermes/skills/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Use when:</strong> You can't (or don't want to) commit files to the repo — e.g. open-source contributions, client projects, quick experiments — but still want CodeGuard active everywhere you work.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>User-scope installs are <strong>not shared</strong> with teammates and won't appear in code review. Prefer project scope for team repos.</p>
+</div>
+</div>
+</div>
+</div>
+<p><strong>Precedence:</strong> Most tools merge both locations. When the same rule exists in both, the project-scoped copy generally takes precedence — check your tool's documentation for exact behavior.</p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<p><a class="md-button md-button--primary" href="../getting-started/#installation">Install for your tool →</a>
+<a class="md-button" href="../claude-code-skill-plugin/">Claude Code Plugin →</a>
+<a class="md-button" href="../faq/">FAQ →</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../getting-started/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Getting Started">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Getting Started
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../personas/" class="md-footer__link md-footer__link--next" aria-label="Next: CoSAI Personas">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                CoSAI Personas
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
