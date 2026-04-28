@@ -57,6 +57,11 @@ Get started in minutes:
 - Additional details in the [Get Started →](https://project-codeguard.org/getting-started/)
 
 
+## CodeGuard MCP Server
+
+This repository also includes an [MCP](https://modelcontextprotocol.io/) server that exposes all CodeGuard security rules as tools over streamable HTTP. Organizations can deploy it on their infrastructure and connect every developer's AI coding assistant to a single, centrally managed instance. See the [CodeGuard MCP Server README](src/codeguard-mcp/README.md) for setup instructions.
+
+
 ## How It Works
 
 1. **Security skills and rules** are written in unified markdown format (`sources/` directory)

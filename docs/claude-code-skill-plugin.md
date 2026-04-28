@@ -292,7 +292,7 @@ This command:
 - Generates `skills/` directory with the 23 core security rules (Claude Code plugin)
 - Creates `dist/` with all supported agent-specific formats
 
-**Note:** The Claude Code plugin (`skills/`) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.
+**Note:** The Claude Code plugin (`skills/`) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core additional-skills/owasp`, but this only affects `dist/`, not `skills/`.
 
 ## Advanced Usage
 
@@ -338,7 +338,8 @@ cosai-oasis/project-codeguard/
 │
 ├── sources/                         # Source rules (version controlled)
 │   ├── core/                        # Core security rules
-│   └── owasp/                       # OWASP supplementary rules
+│   └── additional-skills/
+│       └── owasp/                   # OWASP supplementary rules
 │
 ├── skills/                          # Claude Code plugin (version controlled)
 │   └── software-security/

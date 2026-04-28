@@ -278,7 +278,7 @@ uv run python src/validate_unified_rules.py sources/
 uv run python src/convert_to_ide_formats.py
 
 # Or include all rules (core + owasp supplementary)
-uv run python src/convert_to_ide_formats.py --source core owasp
+uv run python src/convert_to_ide_formats.py --source core additional-skills/owasp
 
 # Copy the generated rules to your project
 cp -r dist/.cursor/ /path/to/your/project/
@@ -296,7 +296,7 @@ cp -r dist/.hermes/ /path/to/your/project/
 Project CodeGuard has two source rule sets:
 
 - `sources/core/`: Official Project CodeGuard rules. These are the main rules packaged in releases and enabled by default.
-- `sources/owasp/`: Supplementary rules originally derived from OWASP guidance. These are optional and are not enabled by default.
+- `sources/additional-skills/owasp/`: Supplementary rules originally derived from OWASP guidance. These are optional and are not enabled by default.
 
 Use OWASP supplementary rules when you explicitly want broader coverage, such as deeper security reviews or reference-driven review workflows.
 

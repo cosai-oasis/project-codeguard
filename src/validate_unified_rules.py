@@ -80,10 +80,11 @@ def main():
         print(f"❌ Directory {rules_dir} does not exist")
         sys.exit(1)
 
-    # Find all .md files recursively (excluding README and templates)
+    # Only validate codeguard rule files (codeguard-*.md), skipping READMEs,
+    # templates, skill manifests, and reference docs
     md_files = [
-        f for f in rules_dir.rglob("*.md") 
-        if f.name.lower() != "readme.md" and not f.name.endswith(".template")
+        f for f in rules_dir.rglob("codeguard-*.md")
+        if not f.name.endswith(".template")
     ]
 
     if not md_files:

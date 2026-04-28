@@ -50,12 +50,12 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
 
 ## Q: What are the OWASP supplementary rules?
 
-**A:** The `sources/owasp/` folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.
+**A:** The `sources/additional-skills/owasp/` folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.
 
 The official release bundles package the main `sources/core/` rules. If you [build from source](getting-started.md#option-2-build-from-source) and want the OWASP supplementary set too, include it explicitly:
 
 ```bash
-uv run python src/convert_to_ide_formats.py --source core owasp
+uv run python src/convert_to_ide_formats.py --source core additional-skills/owasp
 ```
 
 ---

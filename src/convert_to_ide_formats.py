@@ -291,6 +291,11 @@ def convert_rules(
     return results
 
 
+SOURCE_ALIASES = {
+    "owasp": "additional-skills/owasp",
+}
+
+
 def _resolve_source_paths(args) -> list[Path]:
     """
     Resolve source paths from CLI arguments.
@@ -298,7 +303,13 @@ def _resolve_source_paths(args) -> list[Path]:
     """
     # If --source flags provided, resolve under sources/
     if args.source:
-        return [Path("sources") / src for src in args.source]
+        resolved = []
+        for src in args.source:
+            canonical = SOURCE_ALIASES.get(src, src)
+            if canonical != src:
+                print(f"ℹ️  '{src}' is an alias for '{canonical}'")
+            resolved.append(Path("sources") / canonical)
+        return resolved
 
     # Default: core rules only
     return [Path("sources/core")]
@@ -314,7 +325,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--source",
         nargs="+",
-        help="Named sources under ./sources to convert (e.g., --source core owasp). Default: core",
+        help="Named sources under ./sources to convert (e.g., --source core additional-skills/owasp). 'owasp' is accepted as a shorthand alias. Default: core",
     )
     parser.add_argument(
         "--output-dir",

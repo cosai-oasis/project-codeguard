@@ -68,6 +68,29 @@ jobs:
             exit 1
           fi
 
+      - name: Check skills/software-security/ directory is up-to-date
+        run: |
+          echo "Checking if committed skills/software-security/ is up-to-date..."
+          
+          # Save the generated skill directory only
+          cp -r skills/software-security skills-committed
+          
+          # Regenerate (core rules only, matching default)
+          uv run python src/convert_to_ide_formats.py
+          
+          # Compare only the software-security subtree
+          if ! diff -r skills/software-security/ skills-committed/ > /dev/null 2>&1; then
+            echo "❌ skills/software-security/ is out of date!"
+            echo "Please regenerate by running: python src/convert_to_ide_formats.py"
+            echo "Then: git add skills/software-security/"
+            diff -r skills/software-security/ skills-committed/ || true
+            rm -rf skills-committed
+            exit 1
+          fi
+          
+          rm -rf skills-committed
+          echo "✅ skills/software-security/ is up-to-date"
+
       - name: Test conversion to IDE formats
         run: |
           echo "Testing IDE format conversion..."
@@ -115,30 +138,6 @@ jobs:
           fi
 
           echo "✅ All IDE formats generated successfully"
-
-      - name: Check skills/ directory is up-to-date
-        run: |
-          echo "Checking if committed skills/ directory is up-to-date..."
-          
-          # Save current skills
-          mv skills skills-committed
-          
-          # Regenerate skills (core rules only, matching default)
-          uv run python src/convert_to_ide_formats.py
-          
-          # Compare
-          if ! diff -r skills/ skills-committed/ > /dev/null 2>&1; then
-            echo "❌ The skills/ directory is out of date!"
-            echo "Please regenerate by running: python src/convert_to_ide_formats.py"
-            echo "Then: git add skills/"
-            mv skills-committed skills
-            exit 1
-          fi
-          
-          # Restore original
-          rm -rf skills
-          mv skills-committed skills
-          echo "✅ Committed skills/ directory is up-to-date"
 
       - name: Summary
         if: success()

@@ -7,9 +7,10 @@ Create custom rules to enforce your own policies, compliance requirements, or co
 1. **Create a source folder** under `sources/`:
 
         sources/
-          core/             # Project CodeGuard rules
-          owasp/            # OWASP supplementary rules
-          my-rules/         # Your custom rules
+          core/                        # Project CodeGuard rules
+          additional-skills/
+            owasp/                     # OWASP supplementary rules
+          my-rules/                    # Your custom rules
 
 2. **Copy the template** from `sources/templates/custom-rule-template.md.example` and customize it
 
@@ -45,7 +46,7 @@ Converts source rules to IDE-specific formats.
 uv run python src/convert_to_ide_formats.py
 
 # Include multiple sources
-uv run python src/convert_to_ide_formats.py --source core owasp my-rules
+uv run python src/convert_to_ide_formats.py --source core additional-skills/owasp my-rules
 
 # Custom output directory
 uv run python src/convert_to_ide_formats.py --source core my-rules -o build
