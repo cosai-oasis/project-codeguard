@@ -6,7 +6,7 @@ import pytest
 
 from codeguard_mcp.rule_processor import RuleProcessor
 
-RULES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "sources" / "core"
+RULES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "sources" / "rules" / "core"
 
 
 class TestRuleProcessor:

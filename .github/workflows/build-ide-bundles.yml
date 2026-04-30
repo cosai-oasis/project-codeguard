@@ -32,18 +32,21 @@ jobs:
 
       - name: Get version from release
         id: get_version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          TAG="${{ github.event.release.tag_name }}"
           VERSION=${TAG#v}
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Release version: $VERSION (tag: $TAG)"
 
       - name: Validate rules
         run: uv run python src/validate_unified_rules.py sources/
 
       - name: Validate versions match tag
-        run: uv run python src/validate_versions.py ${{ steps.get_version.outputs.version }}
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: uv run python src/validate_versions.py "$VERSION"
 
       - name: Generate IDE bundles
         run: uv run python src/convert_to_ide_formats.py
@@ -51,12 +54,14 @@ jobs:
       - name: Create release archives
         run: |
           cd dist
+          zip -r ../ide-rules-claude.zip .claude/
           zip -r ../ide-rules-cursor.zip .cursor/
           zip -r ../ide-rules-windsurf.zip .windsurf/
           zip -r ../ide-rules-copilot.zip .github/
-          zip -r ../ide-rules-antigravity.zip .agent/
+          # Antigravity + Codex share .agents/; scope each zip to its own subpath.
+          zip -r ../ide-rules-antigravity.zip .agents/rules/
           zip -r ../ide-rules-opencode.zip .opencode/
-          zip -r ../ide-rules-codex.zip .codex/
+          zip -r ../ide-rules-codex.zip .agents/skills/
           zip -r ../ide-rules-openclaw.zip .openclaw/
           zip -r ../ide-rules-hermes.zip .hermes/
           cd ..
@@ -66,9 +71,11 @@ jobs:
       - name: Upload release assets
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.get_version.outputs.tag }}
         run: |
-          gh release upload "${{ steps.get_version.outputs.tag }}" \
+          gh release upload "$TAG" \
             ide-rules-all.zip \
+            ide-rules-claude.zip \
             ide-rules-cursor.zip \
             ide-rules-windsurf.zip \
             ide-rules-copilot.zip \

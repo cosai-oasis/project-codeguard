@@ -4,15 +4,18 @@ Create custom rules to enforce your own policies, compliance requirements, or co
 
 ## Quick Start
 
-1. **Create a source folder** under `sources/`:
+1. **Create a source folder** under `sources/rules/`:
 
         sources/
-          core/                        # Project CodeGuard rules
-          additional-skills/
+          rules/
+            core/                      # Project CodeGuard rules
             owasp/                     # OWASP supplementary rules
-          my-rules/                    # Your custom rules
+            my-rules/                  # Your custom rules
+          skills/                      # Authored skills (ship in the plugin)
+          agents/                      # Subagent definitions
+          templates/                   # Rule template
 
-2. **Copy the template** from `sources/templates/custom-rule-template.md.example` and customize it
+2. **Copy the template** from `sources/templates/custom-rule-template.md.example`, customize it, and save it as `codeguard-<tier>-<topic>.md` (e.g., `codeguard-0-company-secrets.md`)
 
 3. **Build with your rules**:
 
@@ -35,7 +38,7 @@ Converts source rules to IDE-specific formats.
 
 | Option | Description |
 |--------|-------------|
-| `--source` | Source folders under `sources/` to include. Default: `core` |
+| `--source` | Source directories under `sources/rules/` to include. Default: `core` |
 | `--output-dir`, `-o` | Output directory for generated bundles. Default: `dist` |
 | `--tag` | Filter rules by tags (comma-separated, case-insensitive, AND logic) |
 
@@ -46,7 +49,7 @@ Converts source rules to IDE-specific formats.
 uv run python src/convert_to_ide_formats.py
 
 # Include multiple sources
-uv run python src/convert_to_ide_formats.py --source core additional-skills/owasp my-rules
+uv run python src/convert_to_ide_formats.py --source core owasp my-rules
 
 # Custom output directory
 uv run python src/convert_to_ide_formats.py --source core my-rules -o build
@@ -64,7 +67,7 @@ Validates rule files have correct frontmatter and structure before building.
 
 ```bash
 # Validate all rules in a directory
-uv run python src/validate_unified_rules.py sources/my-rules/
+uv run python src/validate_unified_rules.py sources/rules/my-rules/
 
 # Validate all sources
 uv run python src/validate_unified_rules.py sources/
@@ -73,6 +76,6 @@ uv run python src/validate_unified_rules.py sources/
 ## Notes
 
 - Filenames must be unique across all sources
-- Use `.md` extension for all rule files
+- Rule files must be named `codeguard-<tier>-<topic>.md` (tier `0` = guidance, `1` = critical). The converter, validator, and auto-update workflow only process files matching `codeguard-*.md`; other `.md` files are ignored.
 - Rules are converted to all supported IDE formats
 - To add new tags, update `KNOWN_TAGS` in `src/tag_mappings.py`

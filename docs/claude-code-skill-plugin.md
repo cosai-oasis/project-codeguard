@@ -292,7 +292,7 @@ This command:
 - Generates `skills/` directory with the 23 core security rules (Claude Code plugin)
 - Creates `dist/` with all supported agent-specific formats
 
-**Note:** The Claude Code plugin (`skills/`) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core additional-skills/owasp`, but this only affects `dist/`, not `skills/`.
+**Note:** The Claude Code plugin (`skills/`) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.
 
 ## Advanced Usage
 
@@ -336,23 +336,37 @@ cosai-oasis/project-codeguard/
 │   ├── plugin.json                  # Plugin metadata
 │   └── marketplace.json             # Marketplace catalog
 │
-├── sources/                         # Source rules (version controlled)
-│   ├── core/                        # Core security rules
-│   └── additional-skills/
-│       └── owasp/                   # OWASP supplementary rules
+├── sources/                         # Authored inputs (version controlled)
+│   ├── rules/
+│   │   ├── core/                    # Core security rules
+│   │   └── owasp/                   # OWASP supplementary rules
+│   ├── skills/                      # Authored skills (security-review, memory-safe-migration)
+│   ├── agents/                      # Subagent definitions
+│   └── templates/                   # Rule template
 │
-├── skills/                          # Claude Code plugin (version controlled)
+├── skills/                          # Generated — do not edit
 │   └── software-security/
-│       ├── SKILL.md                 # Generated skill file
-│       └── rules/                   # Generated rule files
+│       ├── SKILL.md                 # Regenerated from sources/rules/core/
+│       └── rules/                   # Regenerated rule files
 │
 ├── dist/                            # Release artifacts (not in git)
-│   ├── .cursor/                     # Cursor IDE format
+│   ├── .claude/                     # Claude Code bundle
+│   │   ├── skills/software-security/   # SKILL.md + rules/*.md
+│   │   └── agents/codeguard-reviewer.md # Subagent preloads the skill above
+│   ├── .cursor/                     # Cursor IDE format (+ subagent)
 │   ├── .windsurf/                   # Windsurf IDE format
-│   └── .github/                     # Copilot format
+│   ├── .github/                     # Copilot format
+│   ├── .agents/                     # Cross-tool dir (Antigravity + Codex)
+│   │   ├── rules/                      # Google Antigravity rules
+│   │   └── skills/software-security/   # OpenAI Codex skill (SKILL + rules/)
+│   ├── .opencode/                   # OpenCode bundle (skill only)
+│   ├── .openclaw/                   # OpenClaw bundle (skill only)
+│   └── .hermes/                     # Hermes bundle (skill only)
 │
 └── src/
-    └── convert_to_ide_formats.py    # Conversion script
+    ├── artifact_targets.py          # SKILL_COPY_HOSTS + AGENT_HOSTS
+    ├── emit_agents.py               # Emits AGENT.md bundles per host
+    └── convert_to_ide_formats.py    # Conversion entrypoint
 ```
 
 ### How Claude Uses the Skill

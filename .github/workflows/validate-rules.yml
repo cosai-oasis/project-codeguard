@@ -48,10 +48,10 @@ jobs:
         run: |
           echo "Checking for required core rule files..."
           required_files=(
-            "sources/core/codeguard-1-hardcoded-credentials.md"
-            "sources/core/codeguard-1-crypto-algorithms.md"
-            "sources/core/codeguard-1-digital-certificates.md"
-            "sources/core/codeguard-SKILLS.md.template"
+            "sources/rules/core/codeguard-1-hardcoded-credentials.md"
+            "sources/rules/core/codeguard-1-crypto-algorithms.md"
+            "sources/rules/core/codeguard-1-digital-certificates.md"
+            "sources/rules/core/codeguard-SKILLS.md.template"
           )
           
           missing=0
@@ -112,18 +112,20 @@ jobs:
             exit 1
           fi
           
-          if [ ! -d "test-output/.agent" ]; then
-            echo "❌ Antigravity rules not generated"
+          if [ ! -d "test-output/.agents/rules" ]; then
+            echo "❌ Antigravity rules not generated at .agents/rules/"
             exit 1
           fi
-          
+
           if [ ! -d "test-output/.opencode" ]; then
             echo "❌ OpenCode rules not generated"
             exit 1
           fi
-          
-          if [ ! -d "test-output/.codex" ]; then
-            echo "❌ Codex rules not generated"
+
+          # Codex discovers skills under .agents/skills/ (not .codex/skills/).
+          # See src/formats/codex.py for the rationale.
+          if [ ! -d "test-output/.agents/skills/software-security" ]; then
+            echo "❌ Codex skill not generated at .agents/skills/software-security/"
             exit 1
           fi
 
@@ -136,6 +138,21 @@ jobs:
             echo "❌ Hermes rules not generated"
             exit 1
           fi
+
+          AGENT_HOSTS=(
+            ".claude:.claude/skills/software-security/rules"
+            ".cursor:.cursor/rules"
+          )
+          for entry in "${AGENT_HOSTS[@]}"; do
+            h="${entry%%:*}"; rules_dir="${entry#*:}"
+            test -f "test-output/$h/agents/codeguard-reviewer.md" || { echo "❌ $h codeguard-reviewer.md missing"; exit 1; }
+            find "test-output/$rules_dir" -name 'codeguard-*.md*' 2>/dev/null | grep -q . || { echo "❌ $rules_dir has no rule files"; exit 1; }
+            if find "test-output/$h/agents" -name 'codeguard-[0-9]-*' 2>/dev/null | grep -q .; then
+              echo "❌ rule files leaked into $h/agents/ (would be misread as agents)"
+              exit 1
+            fi
+            echo "✅ $h agent bundle (rules: $rules_dir)"
+          done
 
           echo "✅ All IDE formats generated successfully"
 

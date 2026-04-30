@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8080, ge=1, le=65535)
     LOG_LEVEL: str = "INFO"
     TRANSPORT: str = "streamable-http"
-    RULES_DIR: str = str(_project_root() / "sources" / "core")
+    RULES_DIR: str = str(_project_root() / "sources" / "rules" / "core")
 
     APP_VERSION: str = "0.1.0"
 

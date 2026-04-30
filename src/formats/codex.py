@@ -5,10 +5,10 @@ Generates .md rule files for OpenAI Codex. The SKILL.md is copied from
 Agent Skills output (see convert_to_ide_formats.py); rule files are
 generated identically to Agent Skills via inheritance.
 
-Codex discovers skills by scanning for SKILL.md files in directory structures
-like .codex/skills/<skill-name>/SKILL.md. Individual rule files live in a
-rules/ subdirectory that the skill tool discovers at runtime.
-
+Codex discovers skills by scanning the cross-tool ``.agents/skills/``
+directory (see OpenAI Codex skills docs and the agentskills.io spec).
+Earlier releases emitted to ``.codex/skills/``, which is NOT one of the
+documented discovery paths and caused Codex to silently ignore the skill.
 See: https://developers.openai.com/codex/skills/
 """
 
@@ -20,14 +20,10 @@ class CodexFormat(AgentSkillsFormat):
     Codex format implementation (.md rule files).
 
     OpenAI Codex (https://openai.com/codex) is an AI coding agent that
-    discovers skills by scanning for SKILL.md files in specific directory
-    structures. Each skill must live in its own named directory:
+    discovers skills by scanning ``.agents/skills/<skill-name>/SKILL.md``:
 
-        .codex/skills/<skill-name>/SKILL.md
-
-    Individual rule files are placed in a rules/ subdirectory:
-
-        .codex/skills/<skill-name>/rules/<rule>.md
+        .agents/skills/<skill-name>/SKILL.md
+        .agents/skills/<skill-name>/rules/<rule>.md
 
     The rule files preserve the original YAML frontmatter (description,
     languages, alwaysApply) so rules remain complete and can be referenced
@@ -41,4 +37,4 @@ class CodexFormat(AgentSkillsFormat):
         return "codex"
 
     def get_output_subpath(self) -> str:
-        return ".codex/skills/software-security/rules"
+        return ".agents/skills/software-security/rules"

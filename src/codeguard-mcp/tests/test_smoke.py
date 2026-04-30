@@ -7,7 +7,7 @@ import pytest
 from codeguard_mcp.rule_processor import RuleProcessor
 from codeguard_mcp.tool_factory import RuleToolFactory
 
-RULES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "sources" / "core"
+RULES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "sources" / "rules" / "core"
 
 
 @pytest.fixture(scope="module")

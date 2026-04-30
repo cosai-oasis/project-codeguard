@@ -10,7 +10,7 @@ ENV UV_COMPILE_BYTECODE=1 \
 COPY src/codeguard-mcp/pyproject.toml src/codeguard-mcp/uv.lock src/codeguard-mcp/README.md ./src/codeguard-mcp/
 RUN cd src/codeguard-mcp && uv sync --locked --no-dev --no-editable
 
-COPY sources/core/ ./sources/core/
+COPY sources/rules/core/ ./sources/rules/core/
 COPY src/codeguard-mcp/src/ ./src/codeguard-mcp/src/
 COPY src/codeguard-mcp/.agents/ ./src/codeguard-mcp/.agents/
 
@@ -24,13 +24,13 @@ WORKDIR /app
 COPY --from=builder /app/src/codeguard-mcp/.venv  /app/src/codeguard-mcp/.venv
 COPY --from=builder /app/src/codeguard-mcp/src    /app/src/codeguard-mcp/src
 COPY --from=builder /app/src/codeguard-mcp/.agents  /app/src/codeguard-mcp/.agents
-COPY --from=builder /app/sources/core             /app/sources/core
+COPY --from=builder /app/sources/rules/core       /app/sources/rules/core
 
 ENV PATH="/app/src/codeguard-mcp/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src/codeguard-mcp/src \
     CODEGUARD_HOST=0.0.0.0 \
-    CODEGUARD_RULES_DIR=/app/sources/core
+    CODEGUARD_RULES_DIR=/app/sources/rules/core
 
 USER codeguard
 EXPOSE 8080

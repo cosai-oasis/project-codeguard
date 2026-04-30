@@ -32,7 +32,8 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
     :material-book-open-page-variant: [GitHub Copilot Instructions](https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions)
 
 === "Antigravity"
-    Antigravity uses `.agent/rules` for rule configuration.
+    Antigravity uses `.agents/rules` for rule configuration (the legacy
+    `.agent/rules` path is still accepted for backward compatibility).
 
     :material-book-open-page-variant: [Antigravity Instructions](https://codelabs.developers.google.com/getting-started-google-antigravity#8)
 
@@ -97,13 +98,19 @@ Select your AI coding tool and follow the instructions:
 
     1. **Download** [`ide-rules-antigravity.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
-    3. **Copy** the `.agent/` directory to your project root:
+    3. **Copy** the `.agents/` directory to your project root:
 
         ```bash
-        cp -r .agent/ /path/to/your/project/
+        cp -r .agents/ /path/to/your/project/
         ```
 
     4. **Restart** Antigravity to load the rules
+
+    !!! info "Migrating from `.agent/rules`"
+        Earlier releases shipped to the legacy `.agent/rules` path.
+        Antigravity now defaults to `.agents/rules` (the old path still
+        works). If you have an existing `.agent/rules/` directory, delete
+        it after extracting the new zip so you don't run duplicate rules.
 
 === "OpenCode"
 
@@ -133,29 +140,29 @@ Select your AI coding tool and follow the instructions:
         {
           "$schema": "https://opencode.ai/config.json",
           "instructions": [
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-additional-cryptography.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-api-web-services.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-authentication-mfa.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-authorization-access-control.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-client-side-web-security.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-cloud-orchestration-kubernetes.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-data-storage.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-devops-ci-cd-containers.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-file-handling-and-uploads.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-framework-and-languages.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-iac-security.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-input-validation-injection.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-logging.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-mcp-security.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-mobile-apps.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-privacy-data-protection.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-safe-c-functions.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-session-management-and-cookies.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-supply-chain-security.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-0-xml-and-serialization.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-crypto-algorithms.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-digital-certificates.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/core/codeguard-1-hardcoded-credentials.md"
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-additional-cryptography.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-api-web-services.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-authentication-mfa.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-authorization-access-control.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-client-side-web-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-cloud-orchestration-kubernetes.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-data-storage.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-devops-ci-cd-containers.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-file-handling-and-uploads.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-framework-and-languages.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-iac-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-input-validation-injection.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-logging.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-mcp-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-mobile-apps.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-privacy-data-protection.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-safe-c-functions.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-session-management-and-cookies.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-supply-chain-security.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-xml-and-serialization.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-1-crypto-algorithms.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-1-digital-certificates.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-1-hardcoded-credentials.md"
           ]
         }
         ```
@@ -192,13 +199,22 @@ Select your AI coding tool and follow the instructions:
 
     1. **Download** [`ide-rules-codex.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
-    3. **Copy** the `.codex/` directory to your project root:
+    3. **Copy** the `.agents/` directory to your project root (Codex
+       discovers skills under `.agents/skills/`):
 
         ```bash
-        cp -r .codex/ /path/to/your/project/
+        cp -r .agents/ /path/to/your/project/
         ```
 
     4. **Restart** Codex to load the skill
+
+    !!! info "Migrating from `.codex/skills/`"
+        Earlier releases shipped the Codex skill to `.codex/skills/`,
+        which is not one of Codex's documented discovery paths and was
+        silently ignored. The skill now lives at
+        `.agents/skills/software-security/`. If you have an old
+        `.codex/skills/` directory, delete it after installing the new
+        zip to avoid stale files.
 
     **Option B: Skill installer**
 
@@ -269,15 +285,14 @@ uv run python src/validate_unified_rules.py sources/
 uv run python src/convert_to_ide_formats.py
 
 # Or include all rules (core + owasp supplementary)
-uv run python src/convert_to_ide_formats.py --source core additional-skills/owasp
+uv run python src/convert_to_ide_formats.py --source core owasp
 
 # Copy the generated rules to your project
 cp -r dist/.cursor/ /path/to/your/project/
 cp -r dist/.windsurf/ /path/to/your/project/
 cp -r dist/.github/ /path/to/your/project/
-cp -r dist/.agent/ /path/to/your/project/
+cp -r dist/.agents/ /path/to/your/project/   # Antigravity rules + Codex skills
 cp -r dist/.opencode/ /path/to/your/project/
-cp -r dist/.codex/ /path/to/your/project/
 cp -r dist/.openclaw/ /path/to/your/project/
 cp -r dist/.hermes/ /path/to/your/project/
 ```
@@ -286,8 +301,8 @@ cp -r dist/.hermes/ /path/to/your/project/
 
 Project CodeGuard has two source rule sets:
 
-- `sources/core/`: Official Project CodeGuard rules. These are the main rules packaged in releases and enabled by default.
-- `sources/additional-skills/owasp/`: Supplementary rules originally derived from OWASP guidance. These are optional and are not enabled by default.
+- `sources/rules/core/`: Official Project CodeGuard rules. These are the main rules packaged in releases and enabled by default.
+- `sources/rules/owasp/`: Supplementary rules originally derived from OWASP guidance. These are optional and are not enabled by default.
 
 Use OWASP supplementary rules when you explicitly want broader coverage, such as deeper security reviews or reference-driven review workflows.
 
@@ -307,9 +322,9 @@ For GitHub repositories, you can automate rule updates with a workflow that runs
 - Cursor (`.cursor/rules/`)
 - Windsurf (`.windsurf/rules/`)
 - GitHub Copilot (`.github/instructions/`)
-- Antigravity (`.agent/rules/`)
+- Antigravity (`.agents/rules/`)
 - OpenCode (`.opencode/skills/software-security/rules/`)
-- Codex (`.codex/skills/software-security/rules/`)
+- Codex (`.agents/skills/software-security/rules/`)
 - OpenClaw (`.openclaw/skills/software-security/rules/`)
 - Hermes (`.hermes/skills/software-security/rules/`)
 
@@ -327,11 +342,10 @@ After installation, your project structure should include:
 
 ```
 your-project/
-├── .agent/
-│   └── rules/
-├── .codex/
+├── .agents/                           # cross-tool: Antigravity + Codex
+│   ├── rules/                         # Antigravity rules
 │   └── skills/
-│       └── software-security/
+│       └── software-security/         # Codex skill (SKILL.md + rules/)
 ├── .cursor/
 │   └── rules/
 ├── .github/

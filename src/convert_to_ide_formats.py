@@ -12,7 +12,9 @@ import shutil
 from pathlib import Path
 from collections import defaultdict
 
+from artifact_targets import SKILL_COPY_HOSTS
 from converter import RuleConverter
+from emit_agents import emit_agents
 from formats import (
     CursorFormat,
     WindsurfFormat,
@@ -23,12 +25,15 @@ from formats import (
     CodexFormat,
     OpenClawFormat,
     HermesFormat,
+    ClaudeFormat,
 )
 from utils import get_version_from_pyproject
 from validate_versions import set_plugin_version, set_marketplace_version
 
 # Project root is always one level up from src/
 PROJECT_ROOT = Path(__file__).parent.parent
+_CORE_RULES_REL = Path("sources/rules/core")
+_SKILL_TEMPLATE = PROJECT_ROOT / _CORE_RULES_REL / "codeguard-SKILLS.md.template"
 
 
 def sync_plugin_metadata(version: str) -> None:
@@ -117,14 +122,10 @@ def convert_rules(
         filter_tags: Optional list of tags to filter by (AND logic, case-insensitive)
 
     Returns:
-        Dictionary with 'success' and 'errors' lists:
-        {
-            "success": ["rule1.md", "rule2.md"],
-            "errors": ["rule3.md: error message"]
-        }
+        Dictionary with 'success', 'errors', and 'skipped' lists.
 
     Example:
-        results = convert_rules("sources/core", "dist", include_agentskills=True)
+        results = convert_rules("sources/rules/core", "dist")
         print(f"Converted {len(results['success'])} rules")
     """
     if version is None:
@@ -145,6 +146,7 @@ def convert_rules(
         all_formats.append(CodexFormat(version))
         all_formats.append(OpenClawFormat(version))
         all_formats.append(HermesFormat(version))
+        all_formats.append(ClaudeFormat(version))
 
     converter = RuleConverter(formats=all_formats)
     path = Path(input_path)
@@ -152,16 +154,26 @@ def convert_rules(
     if not path.exists():
         raise FileNotFoundError(f"{input_path} does not exist")
 
-    # Determine files to process
+    # Only ``codeguard-*.md`` are rule files; filter at the glob so SKILL.md /
+    # READMEs don't hit RuleConverter.parse_rule and spam frontmatter errors.
     if path.is_file():
         if path.suffix != ".md":
             raise ValueError(f"{input_path} is not a .md file")
+        if not path.name.startswith("codeguard-"):
+            raise ValueError(
+                f"{input_path} is not a rule file (name must start with "
+                f"'codeguard-'). To convert a skill or reference doc, add it "
+                f"to the appropriate sources/skills/<name>/ bundle instead."
+            )
         md_files = [path]
     else:
-        # Use rglob to recursively find all .md files in subdirectories
-        md_files = sorted(list(path.rglob("*.md")))
+        md_files = sorted(path.rglob("codeguard-*.md"))
         if not md_files:
-            raise ValueError(f"No .md files found in {input_path}")
+            raise ValueError(
+                f"No rule files (codeguard-*.md) found in {input_path}. "
+                f"--source expects a directory of rules; skills and reference "
+                f"docs are not valid sources for IDE format conversion."
+            )
 
     print(f"Converting {len(md_files)} files from: {path}")
 
@@ -205,7 +217,6 @@ def convert_rules(
             print(f"Success: {result.filename} → {', '.join(output_files)}")
             results["success"].append(result.filename)
 
-            # Update language mappings for SKILL.md
             for language in result.languages:
                 language_to_rules[language].append(result.filename)
 
@@ -236,13 +247,9 @@ def convert_rules(
 
     # Generate SKILL.md with language mappings (only if Agent Skills is included)
     if include_agentskills and language_to_rules:
-        template_path = (
-            PROJECT_ROOT / "sources" / "core" / "codeguard-SKILLS.md.template"
-        )
-
-        if not template_path.exists():
+        if not _SKILL_TEMPLATE.exists():
             raise FileNotFoundError(
-                f"SKILL.md template not found at {template_path}. "
+                f"SKILL.md template not found at {_SKILL_TEMPLATE}. "
                 "This file is required for skill-based format generation."
             )
 
@@ -250,69 +257,49 @@ def convert_rules(
         output_skill_dir.mkdir(parents=True, exist_ok=True)
         output_skill_path = output_skill_dir / "SKILL.md"
 
-        # Read template and inject current version from pyproject.toml
-        template_content = template_path.read_text(encoding="utf-8")
-        # Replace the hardcoded version with actual version
+        # Callable repl so re.sub treats the version as literal (no \1 backrefs).
+        template_content = _SKILL_TEMPLATE.read_text(encoding="utf-8")
+        replacement = f'codeguard-version: "{version}"'
         template_content = re.sub(
             r'codeguard-version:\s*"[^"]*"',
-            f'codeguard-version: "{version}"',
+            lambda _match: replacement,
             template_content,
         )
         output_skill_path.write_text(template_content, encoding="utf-8")
 
         update_skill_md(language_to_rules, output_skill_path)
 
-        # Copy the populated Agent Skills SKILL.md to the OpenCode skill directory.
-        # OpenCode ignores unknown frontmatter fields, and the existing SKILL.md
-        # already has the required `name` and `description` fields.
-        opencode_skill_dir = Path(output_dir) / ".opencode" / "skills" / "software-security"
-        opencode_skill_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(output_skill_path, opencode_skill_dir / "SKILL.md")
-        print(f"Copied SKILL.md to {opencode_skill_dir / 'SKILL.md'}")
-
-        # Copy SKILL.md to the Codex skill directory (.codex/skills/software-security/).
-        codex_skill_dir = Path(output_dir) / ".codex" / "skills" / "software-security"
-        codex_skill_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(output_skill_path, codex_skill_dir / "SKILL.md")
-        print(f"Copied SKILL.md to {codex_skill_dir / 'SKILL.md'}")
-
-        # Copy SKILL.md to the OpenClaw skill directory (.openclaw/skills/software-security/).
-        openclaw_skill_dir = Path(output_dir) / ".openclaw" / "skills" / "software-security"
-        openclaw_skill_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(output_skill_path, openclaw_skill_dir / "SKILL.md")
-        print(f"Copied SKILL.md to {openclaw_skill_dir / 'SKILL.md'}")
-
-        # Copy SKILL.md to the Hermes skill directory (.hermes/skills/software-security/).
-        hermes_skill_dir = Path(output_dir) / ".hermes" / "skills" / "software-security"
-        hermes_skill_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(output_skill_path, hermes_skill_dir / "SKILL.md")
-        print(f"Copied SKILL.md to {hermes_skill_dir / 'SKILL.md'}")
+        for host_dir in SKILL_COPY_HOSTS:
+            host_skill_dir = Path(output_dir) / host_dir / "skills" / "software-security"
+            host_skill_dir.mkdir(parents=True, exist_ok=True)
+            dest = host_skill_dir / "SKILL.md"
+            shutil.copy2(output_skill_path, dest)
+            print(f"Copied SKILL.md to {dest}")
 
     return results
 
 
-SOURCE_ALIASES = {
-    "owasp": "additional-skills/owasp",
-}
-
-
 def _resolve_source_paths(args) -> list[Path]:
-    """
-    Resolve source paths from CLI arguments.
-    Priority: --source flags > default (core)
-    """
-    # If --source flags provided, resolve under sources/
-    if args.source:
-        resolved = []
-        for src in args.source:
-            canonical = SOURCE_ALIASES.get(src, src)
-            if canonical != src:
-                print(f"ℹ️  '{src}' is an alias for '{canonical}'")
-            resolved.append(Path("sources") / canonical)
-        return resolved
+    """Resolve ``--source <name>`` arguments to ``sources/rules/<name>`` paths.
 
-    # Default: core rules only
-    return [Path("sources/core")]
+    Rejects absolute paths and ``..`` so a CLI invocation can't escape
+    ``sources/rules/`` (``Path("sources/rules") / "/etc"`` would otherwise
+    collapse to ``/etc``).
+    """
+    if not args.source:
+        return [_CORE_RULES_REL]
+
+    resolved = []
+    for src in args.source:
+        src_path = Path(src)
+        if not src.strip() or src_path.is_absolute() or ".." in src_path.parts:
+            raise ValueError(
+                f"--source '{src}' must be a non-empty relative name under "
+                f"sources/rules/ (no absolute paths, no '..'). "
+                f"Examples: 'core', 'owasp', 'my-rules'."
+            )
+        resolved.append(Path("sources/rules") / src)
+    return resolved
 
 
 if __name__ == "__main__":
@@ -325,7 +312,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--source",
         nargs="+",
-        help="Named sources under ./sources to convert (e.g., --source core additional-skills/owasp). 'owasp' is accepted as a shorthand alias. Default: core",
+        help="Rule source directories under sources/rules/ to convert (e.g., --source core owasp my-rules). Each must contain codeguard-*.md files. Default: core",
     )
     parser.add_argument(
         "--output-dir",
@@ -341,7 +328,11 @@ if __name__ == "__main__":
     )
 
     cli_args = parser.parse_args()
-    source_paths = _resolve_source_paths(cli_args)
+    try:
+        source_paths = _resolve_source_paths(cli_args)
+    except ValueError as exc:
+        print(f"❌ {exc}")
+        sys.exit(1)
 
     # Validate all source paths exist
     missing = [p for p in source_paths if not p.exists()]
@@ -349,11 +340,11 @@ if __name__ == "__main__":
         print(f"❌ Source path(s) not found: {', '.join(str(p) for p in missing)}")
         sys.exit(1)
 
-    # Check for duplicate filenames across sources if multiple sources
+    # Duplicate check uses the same codeguard-*.md filter as convert_rules.
     if len(source_paths) > 1:
         filename_to_sources = defaultdict(list)
         for source_path in source_paths:
-            for md_file in source_path.rglob("*.md"):
+            for md_file in source_path.rglob("codeguard-*.md"):
                 filename_to_sources[md_file.name].append(source_path.name)
 
         duplicates = {
@@ -366,21 +357,14 @@ if __name__ == "__main__":
             print("\nPlease rename files to have unique names across all sources.")
             sys.exit(1)
 
-    # Get version once and sync to metadata files
     version = get_version_from_pyproject()
-    sync_plugin_metadata(version)
 
     # Check if core is in the sources for Agent Skills generation
-    has_core = Path("sources/core") in source_paths
-    if has_core:
-        # Validate template exists early
-        template_path = (
-            PROJECT_ROOT / "sources" / "core" / "codeguard-SKILLS.md.template"
-        )
-        if not template_path.exists():
-            print(f"❌ SKILL.md template not found at {template_path}")
-            print("This file is required for Agent Skills, OpenCode, and Codex generation.")
-            sys.exit(1)
+    has_core = _CORE_RULES_REL in source_paths
+    if has_core and not _SKILL_TEMPLATE.exists():
+        print(f"❌ SKILL.md template not found at {_SKILL_TEMPLATE}")
+        print("This file is required for Agent Skills, OpenCode, and Codex generation.")
+        sys.exit(1)
 
     # Clean output directories once before processing
     output_path = Path(cli_args.output_dir)
@@ -418,16 +402,20 @@ if __name__ == "__main__":
         )
 
     for source_path in source_paths:
-        is_core = source_path == Path("sources/core")
+        is_core = source_path == _CORE_RULES_REL
 
         print(f"Processing: {source_path}")
-        results = convert_rules(
-            str(source_path),
-            cli_args.output_dir,
-            include_agentskills=is_core,
-            version=version,
-            filter_tags=filter_tags,
-        )
+        try:
+            results = convert_rules(
+                str(source_path),
+                cli_args.output_dir,
+                include_agentskills=is_core,
+                version=version,
+                filter_tags=filter_tags,
+            )
+        except ValueError as exc:
+            print(f"❌ {exc}")
+            sys.exit(1)
 
         aggregated["success"].extend(results["success"])
         aggregated["errors"].extend(results["errors"])
@@ -438,5 +426,22 @@ if __name__ == "__main__":
     if aggregated["errors"]:
         print("❌ Some conversions failed")
         sys.exit(1)
+
+    # Agents read rules from each host's existing rules dir, which only
+    # the core build populates for skill-bundle hosts.
+    if has_core:
+        try:
+            emit_agents(
+                agents_source_dir=PROJECT_ROOT / "sources" / "agents",
+                output_dir=Path(cli_args.output_dir),
+            )
+        except (ValueError, FileNotFoundError) as exc:
+            print(f"❌ Agent emission failed: {exc}")
+            sys.exit(1)
+    else:
+        print("ℹ️  Skipped agent emission (no 'core' source).")
+
+    # Sync metadata last so a failed build doesn't leave plugin.json dirty.
+    sync_plugin_metadata(version)
 
     print("✅ All conversions successful")

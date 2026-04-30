@@ -16,10 +16,13 @@ class AntigravityFormat(BaseFormat):
     - globs: (if trigger is 'glob') File matching patterns
     - description: Rule description
     - version: Rule version
-    
+
     Rules use activation types (Always On or Glob) to determine when
     they apply, similar to Windsurf's implementation.
-    See: https://antigravity.google/docs/rules-workflows
+
+    Emits to ``.agents/rules/`` — Antigravity's current default (legacy
+    ``.agent/rules`` still supported). Shares the cross-tool ``.agents/``
+    directory with Codex's ``.agents/skills/`` without conflict.
     """
 
     def get_format_name(self) -> str:
@@ -32,7 +35,7 @@ class AntigravityFormat(BaseFormat):
 
     def get_output_subpath(self) -> str:
         """Return Antigravity output subdirectory."""
-        return ".agent/rules"
+        return ".agents/rules"
 
     def generate(self, rule: ProcessedRule, globs: str) -> str:
         """
