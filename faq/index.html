@@ -766,9 +766,9 @@
 </ul>
 <hr />
 <h2 id="q-what-are-the-owasp-supplementary-rules">Q: What are the OWASP supplementary rules?</h2>
-<p><strong>A:</strong> The <code>sources/additional-skills/owasp/</code> folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.</p>
-<p>The official release bundles package the main <code>sources/core/</code> rules. If you <a href="../getting-started/#option-2-build-from-source">build from source</a> and want the OWASP supplementary set too, include it explicitly:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>additional-skills/owasp
+<p><strong>A:</strong> The <code>sources/rules/owasp/</code> folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.</p>
+<p>The official release bundles package the main <code>sources/rules/core/</code> rules. If you <a href="../getting-started/#option-2-build-from-source">build from source</a> and want the OWASP supplementary set too, include it explicitly:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp
 </code></pre></div>
 <hr />
 <h2 id="q-can-i-create-my-own-custom-rules">Q: Can I create my own custom rules?</h2>

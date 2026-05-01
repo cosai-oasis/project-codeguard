@@ -621,16 +621,19 @@
 <h2 id="quick-start">Quick Start</h2>
 <ol>
 <li>
-<p><strong>Create a source folder</strong> under <code>sources/</code>:</p>
+<p><strong>Create a source folder</strong> under <code>sources/rules/</code>:</p>
 <pre><code>sources/
-  core/                        # Project CodeGuard rules
-  additional-skills/
+  rules/
+    core/                      # Project CodeGuard rules
     owasp/                     # OWASP supplementary rules
-  my-rules/                    # Your custom rules
+    my-rules/                  # Your custom rules
+  skills/                      # Authored skills (ship in the plugin)
+  agents/                      # Subagent definitions
+  templates/                   # Rule template
 </code></pre>
 </li>
 <li>
-<p><strong>Copy the template</strong> from <code>sources/templates/custom-rule-template.md.example</code> and customize it</p>
+<p><strong>Copy the template</strong> from <code>sources/templates/custom-rule-template.md.example</code>, customize it, and save it as <code>codeguard-&lt;tier&gt;-&lt;topic&gt;.md</code> (e.g., <code>codeguard-0-company-secrets.md</code>)</p>
 </li>
 <li>
 <p><strong>Build with your rules</strong>:</p>
@@ -683,7 +686,7 @@
 <tbody>
 <tr>
 <td><code>--source</code></td>
-<td>Source folders under <code>sources/</code> to include. Default: <code>core</code></td>
+<td>Source directories under <code>sources/rules/</code> to include. Default: <code>core</code></td>
 </tr>
 <tr>
 <td><code>--output-dir</code>, <code>-o</code></td>
@@ -700,7 +703,7 @@
 uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py
 
 <span class="c1"># Include multiple sources</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>additional-skills/owasp<span class="w"> </span>my-rules
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp<span class="w"> </span>my-rules
 
 <span class="c1"># Custom output directory</span>
 uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>my-rules<span class="w"> </span>-o<span class="w"> </span>build
@@ -714,7 +717,7 @@ uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </sp
 <h3 id="validate_unified_rulespy">validate_unified_rules.py</h3>
 <p>Validates rule files have correct frontmatter and structure before building.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Validate all rules in a directory</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/my-rules/
+uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/rules/my-rules/
 
 <span class="c1"># Validate all sources</span>
 uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/
@@ -722,7 +725,7 @@ uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </sp
 <h2 id="notes">Notes</h2>
 <ul>
 <li>Filenames must be unique across all sources</li>
-<li>Use <code>.md</code> extension for all rule files</li>
+<li>Rule files must be named <code>codeguard-&lt;tier&gt;-&lt;topic&gt;.md</code> (tier <code>0</code> = guidance, <code>1</code> = critical). The converter, validator, and auto-update workflow only process files matching <code>codeguard-*.md</code>; other <code>.md</code> files are ignored.</li>
 <li>Rules are converted to all supported IDE formats</li>
 <li>To add new tags, update <code>KNOWN_TAGS</code> in <code>src/tag_mappings.py</code></li>
 </ul>
