@@ -1,6 +1,6 @@
 """Parse security-rule markdown files with YAML frontmatter.
 
-Reads the unified rule sources from ``sources/core/`` in the
+Reads the unified rule sources from ``sources/rules/core/`` in the
 cosai-project-codeguard repository.  The frontmatter schema matches
 the converter's ``ProcessedRule``.
 """
@@ -29,7 +29,7 @@ class ProcessedRule:
 
 
 class RuleProcessor:
-    """Load ``*.md`` rule files from the repo's ``sources/core/`` directory."""
+    """Load ``*.md`` rule files from the repo's ``sources/rules/core/`` directory."""
 
     def __init__(self, rules_dir: str | Path | None = None) -> None:
         if rules_dir is None:

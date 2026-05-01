@@ -166,3 +166,6 @@ AGENTS.md
 
 # Generated IDE-specific rule bundles (not committed, built for releases)
 dist/
+
+# Local CI simulation output from convert_to_ide_formats.py --output-dir
+test-output/

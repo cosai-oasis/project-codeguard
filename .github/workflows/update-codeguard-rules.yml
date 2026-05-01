@@ -33,14 +33,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Format configurations: directory -> zip asset name
+          # Format configurations: directory -> zip asset name.
           declare -A FORMATS=(
             [".cursor/rules"]="ide-rules-cursor.zip"
             [".windsurf/rules"]="ide-rules-windsurf.zip"
             [".github/instructions"]="ide-rules-copilot.zip"
-            [".agent/rules"]="ide-rules-antigravity.zip"
+            [".agents/rules"]="ide-rules-antigravity.zip"
             [".opencode/skills/software-security/rules"]="ide-rules-opencode.zip"
-            [".codex/skills/software-security/rules"]="ide-rules-codex.zip"
+            [".agents/skills/software-security/rules"]="ide-rules-codex.zip"
           )
 
           # File patterns for each format
@@ -48,10 +48,23 @@ jobs:
             [".cursor/rules"]="codeguard-*.mdc"
             [".windsurf/rules"]="codeguard-*.md"
             [".github/instructions"]="codeguard-*.instructions.md"
-            [".agent/rules"]="codeguard-*.md"
+            [".agents/rules"]="codeguard-*.md"
             [".opencode/skills/software-security/rules"]="codeguard-*.md"
-            [".codex/skills/software-security/rules"]="codeguard-*.md"
+            [".agents/skills/software-security/rules"]="codeguard-*.md"
           )
+
+          # Legacy paths: warn so users migrate instead of silently going stale.
+          declare -A LEGACY_PATHS=(
+            [".agent/rules"]="Antigravity (moved to .agents/rules/)"
+            [".codex/skills/software-security/rules"]="Codex (moved to .agents/skills/software-security/rules/)"
+          )
+          LEGACY_FOUND=""
+          for legacy_dir in "${!LEGACY_PATHS[@]}"; do
+            if [ -d "$legacy_dir" ] && ls "$legacy_dir"/codeguard-*.md* 1>/dev/null 2>&1; then
+              echo "::warning::Legacy CodeGuard path detected at $legacy_dir (${LEGACY_PATHS[$legacy_dir]}). This path is no longer auto-updated — please migrate by moving its contents to the new location and deleting the old directory."
+              LEGACY_FOUND="yes"
+            fi
+          done
 
           # Detect which formats exist
           DETECTED_DIRS=""
@@ -65,6 +78,10 @@ jobs:
           DETECTED_DIRS=$(echo "$DETECTED_DIRS" | xargs)
 
           if [ -z "$DETECTED_DIRS" ]; then
+            if [ -n "$LEGACY_FOUND" ]; then
+              echo "::error::Only legacy CodeGuard paths were found. Nothing was updated. Migrate to the current layout (see warnings above) and re-run this workflow."
+              exit 1
+            fi
             echo "No CodeGuard rules directories found. Nothing to update."
             exit 0
           fi

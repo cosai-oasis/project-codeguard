@@ -4,7 +4,7 @@ An [MCP](https://modelcontextprotocol.io/) server that exposes [CoSAI CodeGuard]
 
 ## What It Does
 
-The server reads the **23 security rules** from `sources/core/` in this repository and registers each one as a no-argument MCP tool. AI assistants invoke the tools at code-generation time and apply the returned guidance.
+The server reads the **23 security rules** from `sources/rules/core/` in this repository and registers each one as a no-argument MCP tool. AI assistants invoke the tools at code-generation time and apply the returned guidance.
 
 Rules cover: hardcoded credentials, cryptography, authentication & MFA, authorization, input validation, API security, session management, client-side web security, container/K8s/IaC hardening, logging, file uploads, supply chain, mobile security, and more.
 
@@ -103,7 +103,7 @@ All settings via environment variables (prefix `CODEGUARD_`):
 | `CODEGUARD_PORT` | `8080` | Bind port |
 | `CODEGUARD_LOG_LEVEL` | `INFO` | Log level |
 | `CODEGUARD_TRANSPORT` | `streamable-http` | `streamable-http` or `stdio` |
-| `CODEGUARD_RULES_DIR` | `sources/core/` | Path to rule markdown files |
+| `CODEGUARD_RULES_DIR` | `sources/rules/core/` | Path to rule markdown files |
 
 ## Endpoints
 

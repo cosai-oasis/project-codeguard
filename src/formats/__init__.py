@@ -13,9 +13,10 @@ Available Formats:
 - CodexFormat: Generates .md files for OpenAI Codex
 - OpenClawFormat: Generates .md files for OpenClaw AI assistant
 - HermesFormat: Generates .md files for Hermes AI coding agent
+- ClaudeFormat: Generates .md files for Claude Code Agent Skills under .claude/
 
 Usage:
-    from formats import BaseFormat, ProcessedRule, CursorFormat, WindsurfFormat, CopilotFormat, AgentSkillsFormat, AntigravityFormat, OpenCodeFormat, CodexFormat, OpenClawFormat, HermesFormat
+    from formats import BaseFormat, ProcessedRule, CursorFormat, WindsurfFormat, CopilotFormat, AgentSkillsFormat, AntigravityFormat, OpenCodeFormat, CodexFormat, OpenClawFormat, HermesFormat, ClaudeFormat
 
     version = "1.0.0"
     formats = [
@@ -28,6 +29,7 @@ Usage:
         CodexFormat(version),
         OpenClawFormat(version),
         HermesFormat(version),
+        ClaudeFormat(version),
     ]
 """
 
@@ -41,6 +43,7 @@ from formats.opencode import OpenCodeFormat
 from formats.codex import CodexFormat
 from formats.openclaw import OpenClawFormat
 from formats.hermes import HermesFormat
+from formats.claude import ClaudeFormat
 
 __all__ = [
     "BaseFormat",
@@ -54,4 +57,5 @@ __all__ = [
     "CodexFormat",
     "OpenClawFormat",
     "HermesFormat",
+    "ClaudeFormat",
 ]

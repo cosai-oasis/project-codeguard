@@ -20,6 +20,12 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[tool.uv]
+# CVE floors for transitive deps (remove once upstream raises its floor).
+constraint-dependencies = [
+    "authlib>=1.6.11",  # GHSA-jj8c-mmj3-mmgv; via fastmcp
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",

@@ -32,7 +32,7 @@ If the repo path is missing or unclear, ask the user for it before proceeding.
    - Load all core security rules from Project CodeGuard:
 
      ```text
-     https://github.com/cosai-oasis/project-codeguard/tree/main/sources/core
+     https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core
      ```
 
      These are mandatory foundational rules that must be loaded for every review.
@@ -40,7 +40,7 @@ If the repo path is missing or unclear, ask the user for it before proceeding.
    - Load relevant OWASP rules for the detected tech stack from:
 
      ```text
-     https://github.com/cosai-oasis/project-codeguard/tree/main/sources/owasp
+     https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp
      ```
 
      Only load OWASP rules that match the target repository's technology stack.
