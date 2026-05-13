@@ -59,7 +59,7 @@ Before picking a mechanism, decide **who** should end up with CodeGuard active. 
 
     **Responsible CoSAI personas:** Application Developer, AI System Users
 
-    **Install location:** [User scope](#project-scope-vs-user-scope) (`~/.cursor/rules/`, `~/.codex/skills/`, Claude Code `/plugin install`, etc.)
+    **Install location:** [User scope](#project-scope-vs-user-scope) (`~/.cursor/rules/`, `~/.agents/skills/`, Claude Code `/plugin install`, etc.)
 
     **Admin responsibilities**
 
@@ -115,7 +115,7 @@ Before picking a mechanism, decide **who** should end up with CodeGuard active. 
 
 Static markdown files the AI tool reads from a known directory. Each rule declares which file globs it applies to, so only relevant rules load per file.
 
-- **Supported by:** Cursor (`.cursor/rules/`), Windsurf (`.windsurf/rules/`), GitHub Copilot (`.github/instructions/`), Antigravity (`.agent/rules/`)
+- **Supported by:** Cursor (`.cursor/rules/`), Windsurf (`.windsurf/rules/`), GitHub Copilot (`.github/instructions/`), Antigravity (`.agents/rules/`)
 - **Best for:** Most users. Predictable, version-controlled, diffable in PRs.
 - **Tradeoffs:** You update by re-downloading (or use the [auto-update workflow](getting-started.md#keeping-rules-updated-automated)).
 - **Responsible CoSAI personas:** Application Developer, with AI System Governance for policy review in PRs.
@@ -124,7 +124,7 @@ Static markdown files the AI tool reads from a known directory. Each rule declar
 
 A skill is a self-describing capability the model invokes **on demand** when the task is security-relevant. Nothing loads until the model decides it's needed.
 
-- **Supported by:** Cursor (`.cursor/skills/`), Windsurf (`.windsurf/skills/`), OpenCode (`.opencode/skills/`), Codex (`.codex/skills/`), OpenClaw (`.openclaw/skills/`), Hermes (`.hermes/skills/`)
+- **Supported by:** Cursor (`.cursor/skills/`), Windsurf (`.windsurf/skills/`), OpenCode (`.opencode/skills/`), Codex (`.agents/skills/`), OpenClaw (`.openclaw/skills/`), Hermes (`.hermes/skills/`)
 - **Best for:** Context-sensitive workflows, polyglot repos, tools that natively support the [Agent Skills standard](https://agentskills.io/).
 - **Tradeoffs:** Activation depends on the model recognizing the task as security-relevant. Slightly less deterministic than always-on rule files.
 - **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers supplying the skill discovery and invocation model.
@@ -140,7 +140,7 @@ A managed install: one command, the tool fetches and updates the skill for you.
 
 ### IDE marketplace extension
 
-A VS Code-compatible extension (`.vsix`) published to an IDE marketplace. Installing the extension writes the CodeGuard rule/instruction files into the correct directory for the host IDE (`.cursor/rules/`, `.windsurf/rules/`, `.agent/rules/`, or `.github/instructions/`) and keeps them up to date through the marketplace's normal extension-update channel.
+A VS Code-compatible extension (`.vsix`) published to an IDE marketplace. Installing the extension writes the CodeGuard rule/instruction files into the correct directory for the host IDE (`.cursor/rules/`, `.windsurf/rules/`, `.agents/rules/`, or `.github/instructions/`) and keeps them up to date through the marketplace's normal extension-update channel.
 
 - **Supported by:** Cursor, Windsurf, Antigravity, and VS Code (which is the host process for GitHub Copilot). All four are VS Code-family IDEs and consume the same `.vsix` format, typically via Open VSX and/or the Visual Studio Marketplace.
 - **Best for:** Developers who prefer the familiar "install an extension" UX over downloading release zips, and teams that want marketplace-driven auto-updates without running their own infrastructure.
@@ -152,7 +152,7 @@ A VS Code-compatible extension (`.vsix`) published to an IDE marketplace. Instal
 - **Responsible CoSAI personas:** Application Developer (installs and runs the extension), with Agentic Platform and Framework Providers (the IDEs hosting the extension) and AI System Governance (reviewing the extension before org-wide rollout).
 
 !!! note "CodeGuard does not currently ship a marketplace extension"
-    This route is shown for completeness. If you want to deliver CodeGuard through a VS Code-compatible extension, package the rule files from `sources/core/` into a `.vsix` that copies them into the appropriate IDE directory on activation. Until a signed CodeGuard extension is published, the supported ready-to-use paths are **rule files**, **Agent Skills**, and the **Claude Code plugin marketplace**.
+    This route is shown for completeness. If you want to deliver CodeGuard through a VS Code-compatible extension, package the rule files from `sources/rules/core/` into a `.vsix` that copies them into the appropriate IDE directory on activation. Until a signed CodeGuard extension is published, the supported ready-to-use paths are **rule files**, **Agent Skills**, and the **Claude Code plugin marketplace**.
 
 ### Remote / installer
 
@@ -179,7 +179,7 @@ An administrator configures the rules once in the vendor's team/org settings; th
 
     1. Sign in to the [Cursor dashboard](https://cursor.com/dashboard) as a team admin.
     2. Navigate to **Settings → Rules** for your team.
-    3. Paste the CodeGuard rule content (concatenate the markdown files from `sources/core/`, or pick the always-apply subset to keep context cost down).
+    3. Paste the CodeGuard rule content (concatenate the markdown files from `sources/rules/core/`, or pick the always-apply subset to keep context cost down).
     4. Save — rules propagate to all team members on their next Cursor session.
 
     **Admin notes**
@@ -197,7 +197,7 @@ An administrator configures the rules once in the vendor's team/org settings; th
     **Setup**
 
     1. Go to your organization on GitHub → **Settings → Copilot → Custom instructions**.
-    2. Paste the CodeGuard rule content (concatenate the markdown files from `sources/core/`, or use the always-apply subset).
+    2. Paste the CodeGuard rule content (concatenate the markdown files from `sources/rules/core/`, or use the always-apply subset).
     3. Save — instructions take effect for all org members with a Copilot seat.
 
     **Admin notes**
@@ -262,9 +262,6 @@ The AI tool connects to a Model Context Protocol server that exposes CodeGuard r
 - **Best for:** Teams that already operate MCP infrastructure and want centralized, live rule serving.
 - **Tradeoffs:** Requires a running server process. Adds network latency. You manage the server lifecycle.
 - **Responsible CoSAI personas:** AI Platform Provider (hosts and operates the MCP server), with AI System Governance owning the served policy, Agentic Platform and Framework Providers integrating MCP into IDEs, and Application Developer consuming the MCP-served rules.
-
-!!! note "CodeGuard does not currently ship an MCP server"
-    This route is shown for completeness. If you want to serve CodeGuard rules over MCP, wrap the markdown files from `sources/core/` in your own MCP server. The other routes on this page are the supported, ready-to-use paths.
 
 ---
 
@@ -386,9 +383,9 @@ Most tools look for rules/skills in **two** places: inside the current repositor
     | Cursor | `<repo>/.cursor/rules/` |
     | Windsurf | `<repo>/.windsurf/rules/` |
     | GitHub Copilot | `<repo>/.github/instructions/` |
-    | Antigravity | `<repo>/.agent/rules/` |
+    | Antigravity | `<repo>/.agents/rules/` |
     | OpenCode | `<repo>/.opencode/skills/` |
-    | Codex | `<repo>/.codex/skills/` |
+    | Codex | `<repo>/.agents/skills/` |
     | Claude Code | `<repo>/.claude/settings.json` (plugin entry) |
     | OpenClaw | `<repo>/.openclaw/skills/` |
     | Hermes | `<repo>/.hermes/skills/` |
@@ -407,7 +404,7 @@ Most tools look for rules/skills in **two** places: inside the current repositor
     | Cursor | `~/.cursor/rules/` |
     | Windsurf | `~/.windsurf/rules/` |
     | OpenCode | `~/.config/opencode/skills/` |
-    | Codex | `~/.codex/skills/` |
+    | Codex | `~/.agents/skills/` |
     | Claude Code | `~/.claude/skills/` or `/plugin install` (user-global by default) |
     | OpenClaw | `~/.openclaw/skills/` |
     | Hermes | `~/.hermes/skills/` |

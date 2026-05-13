@@ -282,7 +282,7 @@ If you want to customize or contribute to the rules:
 ```bash
 # Clone the repository
 git clone https://github.com/cosai-oasis/project-codeguard.git
-cd rules
+cd project-codeguard
 
 # Install dependencies (requires Python 3.11+)
 uv sync
