@@ -75,7 +75,7 @@ When generating or reviewing code, Claude follows this 3-step workflow:
 - `codeguard-1-crypto-algorithms` - Use modern cryptographic algorithms
 - `codeguard-1-digital-certificates` - Validate certificate security
 
-**Context-Specific Rules** (19 rules applied based on technology and features):
+**Context-Specific Rules** (20 rules applied based on technology and features):
 - Input validation, authentication, authorization, APIs, data storage, privacy, logging, cryptography, file handling, serialization, supply chain, DevOps, cloud, Kubernetes, IaC, frameworks, mobile security, and memory safety (C/C++)
 
 ## Usage Examples
@@ -152,7 +152,7 @@ For organizations, deploy CodeGuard to all developers automatically:
 
 ## All Security Rules
 
-The plugin includes 22 comprehensive security rules organized into two categories:
+The plugin includes 23 comprehensive security rules organized into two categories:
 
 ### Always-Apply Rules (3 rules)
 
@@ -164,7 +164,7 @@ These critical rules are checked on **every** code operation:
 | `codeguard-1-crypto-algorithms` | Ban weak algorithms (MD5, SHA-1, DES); use modern alternatives |
 | `codeguard-1-digital-certificates` | Validate certificate expiration, key strength, signature algorithms |
 
-### Context-Specific Rules (19 rules)
+### Context-Specific Rules (20 rules)
 
 These rules apply based on the programming language, framework, or feature being implemented. Claude automatically selects relevant rules based on context:
 
@@ -181,6 +181,7 @@ These rules apply based on the programming language, framework, or feature being
 | **Infrastructure** | `codeguard-0-supply-chain-security`, `codeguard-0-devops-ci-cd-containers`, `codeguard-0-cloud-orchestration-kubernetes`, `codeguard-0-iac-security` |
 | **Platforms** | `codeguard-0-framework-and-languages`, `codeguard-0-mobile-apps` |
 | **Memory Safety (C/C++)** | `codeguard-0-safe-c-functions` |
+| **MCP Security** | `codeguard-0-mcp-security` |
 
 > **Note:** Each rule file contains detailed guidance, checklists, and examples. Claude references these automatically based on the code context.
 
