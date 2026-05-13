@@ -1,5 +1,7 @@
 # Project CodeGuard: Security Skills and Rules for AI Coding Agents
 
+[![Latest Release](https://img.shields.io/github/v/release/cosai-oasis/project-codeguard)](https://github.com/cosai-oasis/project-codeguard/releases/latest)
+
 [Project CodeGuard](https://github.com/cosai-oasis/project-codeguard) is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides comprehensive security rules that guide AI assistants to generate more secure code automatically.
 
 ## Why Project CodeGuard?
