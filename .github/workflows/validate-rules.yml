@@ -139,6 +139,16 @@ jobs:
             exit 1
           fi
 
+          if [ ! -d "test-output/.clinerules" ]; then
+            echo "❌ Cline rules not generated at .clinerules/"
+            exit 1
+          fi
+
+          if [ ! -d "test-output/.continue/rules" ]; then
+            echo "❌ Continue.dev rules not generated at .continue/rules/"
+            exit 1
+          fi
+
           AGENT_HOSTS=(
             ".claude:.claude/skills/software-security/rules"
             ".cursor:.cursor/rules"

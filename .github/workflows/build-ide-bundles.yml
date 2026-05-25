@@ -64,6 +64,8 @@ jobs:
           zip -r ../ide-rules-codex.zip .agents/skills/
           zip -r ../ide-rules-openclaw.zip .openclaw/
           zip -r ../ide-rules-hermes.zip .hermes/
+          zip -r ../ide-rules-cline.zip .clinerules/
+          zip -r ../ide-rules-continuedev.zip .continue/
           cd ..
           zip -r ide-rules-all.zip dist/
           ls -lh ide-rules-*.zip
@@ -84,5 +86,7 @@ jobs:
             ide-rules-codex.zip \
             ide-rules-openclaw.zip \
             ide-rules-hermes.zip \
+            ide-rules-cline.zip \
+            ide-rules-continuedev.zip \
             --clobber
 

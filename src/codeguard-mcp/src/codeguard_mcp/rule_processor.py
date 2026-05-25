@@ -26,6 +26,7 @@ class ProcessedRule:
     always_apply: bool = False
     content: str = ""
     filename: str = ""
+    tags: list[str] = field(default_factory=list)
 
 
 class RuleProcessor:
@@ -36,6 +37,7 @@ class RuleProcessor:
             self.rules_dir = Path(settings.RULES_DIR)
         else:
             self.rules_dir = Path(rules_dir)
+        self._cache: list[ProcessedRule] | None = None
 
     @staticmethod
     def _split_frontmatter(text: str) -> tuple[dict | None, str]:
@@ -91,6 +93,9 @@ class RuleProcessor:
                 f"{', '.join(languages)}."
             )
 
+        tags_raw = fm.get("tags", [])
+        tags = [t.lower().strip() for t in tags_raw] if isinstance(tags_raw, list) else []
+
         return ProcessedRule(
             rule_id=filepath.stem,
             description=tool_desc,
@@ -98,9 +103,14 @@ class RuleProcessor:
             always_apply=always_apply,
             content=body,
             filename=filepath.name,
+            tags=tags,
         )
 
     def get_all_rules(self) -> list[ProcessedRule]:
+        """Return all parsed rules, using a cached copy after the first load."""
+        if self._cache is not None:
+            return self._cache
+
         if not self.rules_dir.exists():
             logger.error("Rules directory missing: %s", self.rules_dir)
             return []
@@ -109,7 +119,11 @@ class RuleProcessor:
         for md in sorted(self.rules_dir.glob("*.md")):
             if "template" in md.name.lower():
                 continue
-            rules.append(self.parse_rule(md))
+            try:
+                rules.append(self.parse_rule(md))
+            except (ValueError, OSError) as exc:
+                logger.warning("Skipping malformed rule %s: %s", md.name, exc)
 
         logger.info("Loaded %d security rules from %s", len(rules), self.rules_dir)
+        self._cache = rules
         return rules

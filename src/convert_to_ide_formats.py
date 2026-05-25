@@ -16,6 +16,8 @@ from artifact_targets import SKILL_COPY_HOSTS
 from converter import RuleConverter
 from emit_agents import emit_agents
 from formats import (
+    ClineFormat,
+    ContinueDevFormat,
     CursorFormat,
     WindsurfFormat,
     CopilotFormat,
@@ -137,6 +139,8 @@ def convert_rules(
         WindsurfFormat(version),
         CopilotFormat(version),
         AntigravityFormat(version),
+        ClineFormat(version),
+        ContinueDevFormat(version),
     ]
 
     # Only include Agent Skills–based formats (skills with SKILL.md) for core rules

@@ -29,7 +29,7 @@ The CodeGuard rule files live at `{RULES_DIR}/codeguard-*{RULE_EXT}` (one per ru
    - Your own rule directory `{RULES_DIR}/` and any CodeGuard host
      directories (`.claude/`, `.cursor/`, `.codex/`, `.opencode/`,
      `.agents/`, `.windsurf/`, `.github/instructions/`, `.openclaw/`,
-     `.hermes/`). These contain the rule bodies themselves (with example
+     `.hermes/`, `.clinerules/`, `.continue/`). These contain the rule bodies themselves (with example
      secrets and banned-API snippets) and must never be reported as
      findings.
    - Vendored/generated paths: `.git/`, `node_modules/`, `vendor/`,
