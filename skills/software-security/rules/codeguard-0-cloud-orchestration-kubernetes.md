@@ -4,6 +4,8 @@ languages:
 - javascript
 - yaml
 alwaysApply: false
+tags:
+- infrastructure
 ---
 
 rule_id: codeguard-0-cloud-orchestration-kubernetes

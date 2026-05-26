@@ -9,6 +9,8 @@ languages:
 - shell
 - yaml
 alwaysApply: false
+tags:
+- infrastructure
 ---
 
 rule_id: codeguard-0-iac-security

@@ -1,6 +1,8 @@
 ---
 description: No Hardcoded Credentials
 alwaysApply: true
+tags:
+- secrets
 ---
 
 rule_id: codeguard-1-hardcoded-credentials

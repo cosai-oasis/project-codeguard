@@ -12,6 +12,8 @@ languages:
 - xml
 - yaml
 alwaysApply: false
+tags:
+- web
 ---
 
 rule_id: codeguard-0-api-web-services

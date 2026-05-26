@@ -13,8 +13,9 @@ class CopilotFormat(BaseFormat):
 
     Copilot uses .instructions.md files with YAML frontmatter containing:
     - applyTo: File matching patterns
-    - title: Rule title/description
+    - description: Rule description
     - version: Rule version
+    - tags: (optional) List of categorization tags
     """
 
     def get_format_name(self) -> str:
@@ -52,5 +53,9 @@ class CopilotFormat(BaseFormat):
 
         # Add version
         yaml_lines.append(f"version: {self.version}")
+
+        if rule.tags:
+            tags_str = ", ".join(rule.tags)
+            yaml_lines.append(f"tags: [{tags_str}]")
 
         return self._build_yaml_frontmatter(yaml_lines, rule.content)

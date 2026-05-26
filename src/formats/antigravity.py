@@ -16,6 +16,7 @@ class AntigravityFormat(BaseFormat):
     - globs: (if trigger is 'glob') File matching patterns
     - description: Rule description
     - version: Rule version
+    - tags: (optional) List of categorization tags
 
     Rules use activation types (Always On or Glob) to determine when
     they apply, similar to Windsurf's implementation.
@@ -69,5 +70,9 @@ class AntigravityFormat(BaseFormat):
 
         # Add version
         yaml_lines.append(f"version: {self.version}")
+
+        if rule.tags:
+            tags_str = ", ".join(rule.tags)
+            yaml_lines.append(f"tags: [{tags_str}]")
 
         return self._build_yaml_frontmatter(yaml_lines, rule.content)

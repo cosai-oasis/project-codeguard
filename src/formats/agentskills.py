@@ -41,9 +41,9 @@ class AgentSkillsFormat(BaseFormat):
         """
         Generate Agent Skills .md format.
 
-        Agent Skills should preserve the original YAML frontmatter
-        (description, languages, alwaysApply) so the rules remain complete
-        and can be referenced properly by AI coding agents.
+        Agent Skills preserves the original YAML frontmatter (description,
+        languages, alwaysApply, tags) so the rules remain complete and can
+        be referenced properly by AI coding agents.
 
         Args:
             rule: The processed rule to format
@@ -69,5 +69,11 @@ class AgentSkillsFormat(BaseFormat):
 
         # Add alwaysApply
         yaml_lines.append(f"alwaysApply: {str(rule.always_apply).lower()}")
+
+        # Add tags as expanded YAML list (preserves the source format)
+        if rule.tags:
+            yaml_lines.append("tags:")
+            for tag in rule.tags:
+                yaml_lines.append(f"- {tag}")
 
         return self._build_yaml_frontmatter(yaml_lines, rule.content)

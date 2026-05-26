@@ -15,6 +15,9 @@ languages:
 - xml
 - yaml
 alwaysApply: false
+tags:
+- data-security
+- secrets
 ---
 
 rule_id: codeguard-0-additional-cryptography

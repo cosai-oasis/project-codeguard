@@ -15,6 +15,8 @@ languages:
 - sql
 - typescript
 alwaysApply: false
+tags:
+- web
 ---
 
 rule_id: codeguard-0-input-validation-injection

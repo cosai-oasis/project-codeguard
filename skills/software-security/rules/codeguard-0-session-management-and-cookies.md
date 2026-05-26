@@ -11,6 +11,9 @@ languages:
 - ruby
 - typescript
 alwaysApply: false
+tags:
+- authentication
+- web
 ---
 
 rule_id: codeguard-0-session-management-and-cookies

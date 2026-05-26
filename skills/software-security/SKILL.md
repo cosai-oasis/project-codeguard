@@ -24,7 +24,20 @@ When writing or reviewing code:
 - `codeguard-1-hardcoded-credentials.md` - Never hardcode secrets, passwords, API keys, or tokens
 - `codeguard-1-crypto-algorithms.md` - Use only modern, secure cryptographic algorithms
 - `codeguard-1-digital-certificates.md` - Validate and manage digital certificates securely
-2. Context-Specific Rules: Apply rules from /rules directory based on the language of the feature being implemented using the table given below:
+2. Tag-Based Rules: When you identify any of these security contexts in the code, apply ALL rules with the matching tag:
+
+
+| Security Context (Tag) | Rule Files to Apply |
+|------------------------|---------------------|
+| authentication | codeguard-0-authentication-mfa.md, codeguard-0-session-management-and-cookies.md |
+| data-security | codeguard-0-additional-cryptography.md, codeguard-0-data-storage.md |
+| infrastructure | codeguard-0-cloud-orchestration-kubernetes.md, codeguard-0-data-storage.md, codeguard-0-devops-ci-cd-containers.md, codeguard-0-iac-security.md |
+| privacy | codeguard-0-logging.md, codeguard-0-privacy-data-protection.md |
+| secrets | codeguard-0-additional-cryptography.md, codeguard-1-digital-certificates.md, codeguard-1-hardcoded-credentials.md |
+| web | codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-client-side-web-security.md, codeguard-0-input-validation-injection.md, codeguard-0-session-management-and-cookies.md |
+
+
+3. Language-Specific Rules: Apply rules from /rules directory based on the programming language of the feature being implemented using the table given below:
 
 
 | Language | Rule Files to Apply |
@@ -55,7 +68,7 @@ When writing or reviewing code:
 | yaml | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authorization-access-control.md, codeguard-0-cloud-orchestration-kubernetes.md, codeguard-0-data-storage.md, codeguard-0-devops-ci-cd-containers.md, codeguard-0-framework-and-languages.md, codeguard-0-iac-security.md, codeguard-0-logging.md, codeguard-0-privacy-data-protection.md, codeguard-0-supply-chain-security.md |
 
 
-3. Proactive Security: Don't just avoid vulnerabilities-actively implement secure patterns:
+4. Proactive Security: Don't just avoid vulnerabilities-actively implement secure patterns:
 - Use parameterized queries for database access
 - Validate and sanitize all user input
 - Apply least-privilege principles
@@ -71,8 +84,8 @@ When generating or reviewing code, follow this workflow:
 ### 1. Initial Security Check
 Before writing any code:
 - Check: Will this handle credentials? → Apply codeguard-1-hardcoded-credentials
+- Check: What security tags apply? → Load all rules with matching tags (e.g., "authentication", "web", "secrets")
 - Check: What language am I using? → Identify applicable language-specific rules
-- Check: What security domains are involved? → Load relevant rule files
 
 ### 2. Code Generation
 While writing code:

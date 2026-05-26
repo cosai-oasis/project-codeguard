@@ -16,6 +16,7 @@ class CursorFormat(BaseFormat):
     - globs: File matching patterns
     - version: Rule version
     - alwaysApply: (optional) Whether to apply to all files
+    - tags: (optional) List of categorization tags
     """
 
     def get_format_name(self) -> str:
@@ -55,5 +56,9 @@ class CursorFormat(BaseFormat):
         # Add alwaysApply if needed
         if rule.always_apply:
             yaml_lines.append("alwaysApply: true")
+
+        if rule.tags:
+            tags_str = ", ".join(rule.tags)
+            yaml_lines.append(f"tags: [{tags_str}]")
 
         return self._build_yaml_frontmatter(yaml_lines, rule.content)

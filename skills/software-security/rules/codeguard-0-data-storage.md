@@ -6,6 +6,9 @@ languages:
 - sql
 - yaml
 alwaysApply: false
+tags:
+- data-security
+- infrastructure
 ---
 
 rule_id: codeguard-0-data-storage

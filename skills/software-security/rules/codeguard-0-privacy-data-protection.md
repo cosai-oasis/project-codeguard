@@ -5,6 +5,8 @@ languages:
 - matlab
 - yaml
 alwaysApply: false
+tags:
+- privacy
 ---
 
 rule_id: codeguard-0-privacy-data-protection

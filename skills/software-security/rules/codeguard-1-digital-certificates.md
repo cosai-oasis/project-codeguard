@@ -1,6 +1,8 @@
 ---
 description: Certificate Best Practices
 alwaysApply: true
+tags:
+- secrets
 ---
 
 rule_id: codeguard-1-digital-certificates

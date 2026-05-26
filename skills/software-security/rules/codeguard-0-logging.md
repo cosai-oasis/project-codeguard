@@ -5,6 +5,8 @@ languages:
 - javascript
 - yaml
 alwaysApply: false
+tags:
+- privacy
 ---
 
 rule_id: codeguard-0-logging

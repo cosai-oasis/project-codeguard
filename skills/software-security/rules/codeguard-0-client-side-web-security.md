@@ -8,6 +8,8 @@ languages:
 - typescript
 - vlang
 alwaysApply: false
+tags:
+- web
 ---
 
 rule_id: codeguard-0-client-side-web-security

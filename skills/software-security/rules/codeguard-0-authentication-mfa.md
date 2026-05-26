@@ -13,6 +13,9 @@ languages:
 - swift
 - typescript
 alwaysApply: false
+tags:
+- authentication
+- web
 ---
 
 rule_id: codeguard-0-authentication-mfa
