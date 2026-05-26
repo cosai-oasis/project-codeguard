@@ -606,6 +606,72 @@
   
   
     <li class="md-nav__item">
+      <a href="../mcp-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    MCP Server
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../codeguard-reviewer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    CodeGuard Reviewer
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../skills/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Skills
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../custom-rules/" class="md-nav__link">
         
   
@@ -877,6 +943,11 @@
 
 
   
+    <a href="https://github.com/cosai-oasis/project-codeguard/edit/main/docs/install-paths.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
   
 
 
@@ -963,7 +1034,7 @@
 <div class="tabbed-block">
 <p>You install CodeGuard on your own machine; no one else is affected.</p>
 <p><strong>Responsible CoSAI personas:</strong> Application Developer, AI System Users</p>
-<p><strong>Install location:</strong> <a href="#project-scope-vs-user-scope">User scope</a> (<code>~/.cursor/rules/</code>, <code>~/.codex/skills/</code>, Claude Code <code>/plugin install</code>, etc.)</p>
+<p><strong>Install location:</strong> <a href="#project-scope-vs-user-scope">User scope</a> (<code>~/.cursor/rules/</code>, <code>~/.agents/skills/</code>, Claude Code <code>/plugin install</code>, etc.)</p>
 <p><strong>Admin responsibilities</strong></p>
 <ul>
 <li>None beyond your own machine — no approvals, no PRs.</li>
@@ -1010,7 +1081,7 @@
 <h3 id="rule-instruction-files">Rule / instruction files</h3>
 <p>Static markdown files the AI tool reads from a known directory. Each rule declares which file globs it applies to, so only relevant rules load per file.</p>
 <ul>
-<li><strong>Supported by:</strong> Cursor (<code>.cursor/rules/</code>), Windsurf (<code>.windsurf/rules/</code>), GitHub Copilot (<code>.github/instructions/</code>), Antigravity (<code>.agent/rules/</code>)</li>
+<li><strong>Supported by:</strong> Cursor (<code>.cursor/rules/</code>), Windsurf (<code>.windsurf/rules/</code>), GitHub Copilot (<code>.github/instructions/</code>), Antigravity (<code>.agents/rules/</code>)</li>
 <li><strong>Best for:</strong> Most users. Predictable, version-controlled, diffable in PRs.</li>
 <li><strong>Tradeoffs:</strong> You update by re-downloading (or use the <a href="../getting-started/#keeping-rules-updated-automated">auto-update workflow</a>).</li>
 <li><strong>Responsible CoSAI personas:</strong> Application Developer, with AI System Governance for policy review in PRs.</li>
@@ -1018,7 +1089,7 @@
 <h3 id="agent-skills">Agent Skills</h3>
 <p>A skill is a self-describing capability the model invokes <strong>on demand</strong> when the task is security-relevant. Nothing loads until the model decides it's needed.</p>
 <ul>
-<li><strong>Supported by:</strong> Cursor (<code>.cursor/skills/</code>), Windsurf (<code>.windsurf/skills/</code>), OpenCode (<code>.opencode/skills/</code>), Codex (<code>.codex/skills/</code>), OpenClaw (<code>.openclaw/skills/</code>), Hermes (<code>.hermes/skills/</code>)</li>
+<li><strong>Supported by:</strong> Cursor (<code>.cursor/skills/</code>), Windsurf (<code>.windsurf/skills/</code>), OpenCode (<code>.opencode/skills/</code>), Codex (<code>.agents/skills/</code>), OpenClaw (<code>.openclaw/skills/</code>), Hermes (<code>.hermes/skills/</code>)</li>
 <li><strong>Best for:</strong> Context-sensitive workflows, polyglot repos, tools that natively support the <a href="https://agentskills.io/">Agent Skills standard</a>.</li>
 <li><strong>Tradeoffs:</strong> Activation depends on the model recognizing the task as security-relevant. Slightly less deterministic than always-on rule files.</li>
 <li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers supplying the skill discovery and invocation model.</li>
@@ -1032,7 +1103,7 @@
 <li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers (Claude Code) and AI System Governance for managed-settings enforcement.</li>
 </ul>
 <h3 id="ide-marketplace-extension">IDE marketplace extension</h3>
-<p>A VS Code-compatible extension (<code>.vsix</code>) published to an IDE marketplace. Installing the extension writes the CodeGuard rule/instruction files into the correct directory for the host IDE (<code>.cursor/rules/</code>, <code>.windsurf/rules/</code>, <code>.agent/rules/</code>, or <code>.github/instructions/</code>) and keeps them up to date through the marketplace's normal extension-update channel.</p>
+<p>A VS Code-compatible extension (<code>.vsix</code>) published to an IDE marketplace. Installing the extension writes the CodeGuard rule/instruction files into the correct directory for the host IDE (<code>.cursor/rules/</code>, <code>.windsurf/rules/</code>, <code>.agents/rules/</code>, or <code>.github/instructions/</code>) and keeps them up to date through the marketplace's normal extension-update channel.</p>
 <ul>
 <li><strong>Supported by:</strong> Cursor, Windsurf, Antigravity, and VS Code (which is the host process for GitHub Copilot). All four are VS Code-family IDEs and consume the same <code>.vsix</code> format, typically via Open VSX and/or the Visual Studio Marketplace.</li>
 <li><strong>Best for:</strong> Developers who prefer the familiar "install an extension" UX over downloading release zips, and teams that want marketplace-driven auto-updates without running their own infrastructure.</li>
@@ -1047,7 +1118,7 @@
 </ul>
 <div class="admonition note">
 <p class="admonition-title">CodeGuard does not currently ship a marketplace extension</p>
-<p>This route is shown for completeness. If you want to deliver CodeGuard through a VS Code-compatible extension, package the rule files from <code>sources/core/</code> into a <code>.vsix</code> that copies them into the appropriate IDE directory on activation. Until a signed CodeGuard extension is published, the supported ready-to-use paths are <strong>rule files</strong>, <strong>Agent Skills</strong>, and the <strong>Claude Code plugin marketplace</strong>.</p>
+<p>This route is shown for completeness. If you want to deliver CodeGuard through a VS Code-compatible extension, package the rule files from <code>sources/rules/core/</code> into a <code>.vsix</code> that copies them into the appropriate IDE directory on activation. Until a signed CodeGuard extension is published, the supported ready-to-use paths are <strong>rule files</strong>, <strong>Agent Skills</strong>, and the <strong>Claude Code plugin marketplace</strong>.</p>
 </div>
 <h3 id="remote-installer">Remote / installer</h3>
 <p>The tool pulls rules from a URL or installer command at runtime — no local files.</p>
@@ -1072,7 +1143,7 @@
 <ol>
 <li>Sign in to the <a href="https://cursor.com/dashboard">Cursor dashboard</a> as a team admin.</li>
 <li>Navigate to <strong>Settings → Rules</strong> for your team.</li>
-<li>Paste the CodeGuard rule content (concatenate the markdown files from <code>sources/core/</code>, or pick the always-apply subset to keep context cost down).</li>
+<li>Paste the CodeGuard rule content (concatenate the markdown files from <code>sources/rules/core/</code>, or pick the always-apply subset to keep context cost down).</li>
 <li>Save — rules propagate to all team members on their next Cursor session.</li>
 </ol>
 <p><strong>Admin notes</strong></p>
@@ -1088,7 +1159,7 @@
 <p><strong>Setup</strong></p>
 <ol>
 <li>Go to your organization on GitHub → <strong>Settings → Copilot → Custom instructions</strong>.</li>
-<li>Paste the CodeGuard rule content (concatenate the markdown files from <code>sources/core/</code>, or use the always-apply subset).</li>
+<li>Paste the CodeGuard rule content (concatenate the markdown files from <code>sources/rules/core/</code>, or use the always-apply subset).</li>
 <li>Save — instructions take effect for all org members with a Copilot seat.</li>
 </ol>
 <p><strong>Admin notes</strong></p>
@@ -1173,10 +1244,6 @@
 <li><strong>Tradeoffs:</strong> Requires a running server process. Adds network latency. You manage the server lifecycle.</li>
 <li><strong>Responsible CoSAI personas:</strong> AI Platform Provider (hosts and operates the MCP server), with AI System Governance owning the served policy, Agentic Platform and Framework Providers integrating MCP into IDEs, and Application Developer consuming the MCP-served rules.</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">CodeGuard does not currently ship an MCP server</p>
-<p>This route is shown for completeness. If you want to serve CodeGuard rules over MCP, wrap the markdown files from <code>sources/core/</code> in your own MCP server. The other routes on this page are the supported, ready-to-use paths.</p>
-</div>
 <hr />
 <h2 id="responsible-cosai-personas-per-install-route">Responsible CoSAI Personas Per Install Route</h2>
 <p>Project CodeGuard aligns with the <a href="../personas/">CoSAI standard personas</a> (see the <a href="https://github.com/cosai-oasis/secure-ai-tooling/blob/main/risk-map/yaml/personas.yaml">upstream YAML definitions</a>). Use this table to see who is typically responsible for implementing and operating each install route.</p>
@@ -1434,7 +1501,7 @@
 </tr>
 <tr>
 <td style="text-align: left;">Antigravity</td>
-<td style="text-align: left;"><code>&lt;repo&gt;/.agent/rules/</code></td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.agents/rules/</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">OpenCode</td>
@@ -1442,7 +1509,7 @@
 </tr>
 <tr>
 <td style="text-align: left;">Codex</td>
-<td style="text-align: left;"><code>&lt;repo&gt;/.codex/skills/</code></td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.agents/skills/</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">Claude Code</td>
@@ -1488,7 +1555,7 @@
 </tr>
 <tr>
 <td style="text-align: left;">Codex</td>
-<td style="text-align: left;"><code>~/.codex/skills/</code></td>
+<td style="text-align: left;"><code>~/.agents/skills/</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">Claude Code</td>
@@ -1609,7 +1676,7 @@
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select", "content.tabs.link"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.footer", "navigation.instant", "navigation.sections", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.select", "content.tabs.link", "content.action.edit"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
