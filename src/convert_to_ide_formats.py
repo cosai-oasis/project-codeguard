@@ -65,6 +65,81 @@ def matches_tag_filter(rule_tags: list[str], filter_tags: list[str]) -> bool:
     return all(tag in rule_tags for tag in filter_tags)
 
 
+def update_claude_cache(version: str) -> bool:
+    """Refresh the local Claude Code plugin cache with generated rules.
+
+    Copies ``skills/software-security/`` into Claude Code's cache directory
+    so locally modified or custom rules can be tested without waiting for a
+    marketplace release.
+
+    Cache path mirrors the marketplace layout:
+      ``~/.claude/plugins/cache/<marketplace>/<plugin>/<version>/skills/software-security``
+
+    Args:
+        version: Version string from pyproject.toml (e.g., "1.3.1")
+
+    Returns:
+        True on success, False on any failure (logs an error message).
+    """
+    # Marketplace and plugin names are pinned to the local manifest so the
+    # path stays in sync if the marketplace structure ever changes.
+    marketplace_name = "project-codeguard"
+    plugin_name = "codeguard-security"
+
+    # Validate the version string against an allow-list before splicing it
+    # into a filesystem path (defense-in-depth against path traversal).
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", version):
+        print(f"❌ Refusing to update cache: invalid version format '{version}'")
+        return False
+
+    source_dir = PROJECT_ROOT / "skills" / "software-security"
+    if not source_dir.exists():
+        print(f"❌ Source directory not found: {source_dir}")
+        return False
+
+    cache_base = (
+        Path.home()
+        / ".claude"
+        / "plugins"
+        / "cache"
+        / marketplace_name
+        / plugin_name
+        / version
+    )
+    cache_dir = cache_base / "skills" / "software-security"
+
+    try:
+        if cache_base.exists():
+            shutil.rmtree(cache_base)
+            print(f"🗑️  Cleared existing cache: {cache_base}")
+    except OSError as exc:
+        print(f"❌ Failed to clear existing cache: {exc}")
+        return False
+
+    try:
+        cache_dir.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(source_dir, cache_dir)
+    except (OSError, shutil.Error) as exc:
+        print(f"❌ Failed to copy to cache: {exc}")
+        return False
+
+    rules_dir = cache_dir / "rules"
+    if not rules_dir.exists():
+        print("⚠️  Warning: rules directory missing after copy")
+        return False
+
+    rule_count = sum(1 for _ in rules_dir.glob("*.md"))
+    if rule_count == 0:
+        print("⚠️  Warning: no rules found in cache after copy")
+        return False
+
+    print(f"✅ Updated cache: {cache_dir}")
+    print(f"   → {rule_count} rules copied")
+    if (cache_dir / "SKILL.md").exists():
+        print("   → SKILL.md copied")
+    return True
+
+
 def update_skill_md(language_to_rules: dict[str, list[str]], skill_path: Path) -> None:
     """
     Update SKILL.md with language-to-rules mapping table.
@@ -326,6 +401,16 @@ if __name__ == "__main__":
         dest="tags",
         help="Filter rules by tags (comma-separated, case-insensitive, AND logic). Example: --tag api,web-security",
     )
+    parser.add_argument(
+        "--update-cache",
+        action="store_true",
+        help=(
+            "After a successful build, refresh the local Claude Code plugin "
+            "cache (~/.claude/plugins/cache/project-codeguard/codeguard-security/"
+            "<version>/skills/software-security) so modified rules are picked "
+            "up immediately without waiting for a marketplace release."
+        ),
+    )
 
     cli_args = parser.parse_args()
     try:
@@ -445,3 +530,12 @@ if __name__ == "__main__":
     sync_plugin_metadata(version)
 
     print("✅ All conversions successful")
+
+    # Optional developer convenience: refresh the local Claude Code plugin
+    # cache so the just-built rules can be exercised in Claude Code without
+    # waiting for a marketplace release. Off by default.
+    if cli_args.update_cache:
+        print("\nUpdating Claude Code plugin cache...")
+        if not update_claude_cache(version):
+            print("❌ Failed to update cache")
+            sys.exit(1)
