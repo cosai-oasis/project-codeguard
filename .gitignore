@@ -169,3 +169,6 @@ dist/
 
 # Local CI simulation output from convert_to_ide_formats.py --output-dir
 test-output/
+
+# Local outputs from the optional Inspect evaluation harness
+evaluations/codeguard-inspect/logs/
