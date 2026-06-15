@@ -870,10 +870,11 @@
 <hr />
 <h2 id="q-can-i-use-this-with-claude-code">Q: Can I use this with Claude Code?</h2>
 <p><strong>A:</strong> Yes! Install the Project CodeGuard Claude Code plugin (Agent Skill) and Claude will apply the security rules automatically while you code.</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
-/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
+<div class="highlight"><pre><span></span><code>/plugin marketplace add cosai-oasis/project-codeguard
+/plugin install codeguard-security@project-codeguard
+/reload-plugins
 </code></pre></div>
-<p>For team/repo defaults, add the plugin in <code>.claude/settings.json</code> so it’s enabled for all contributors. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for details and troubleshooting.</p>
+<p>For team/repo defaults, add the plugin in <code>.claude/settings.json</code> so contributors who trust the repository are prompted to install and enable it. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for the current settings schema, updates, and troubleshooting.</p>
 <h2 id="q-how-can-i-report-a-problem-or-enhancement-to-any-of-the-rules">Q: How can I report a problem or enhancement to any of the rules?</h2>
 <p><strong>A:</strong> You can report problems, successes, or suggest enhancements to any of the rules by:</p>
 <ol>

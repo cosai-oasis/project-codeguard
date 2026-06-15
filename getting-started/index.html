@@ -1170,16 +1170,24 @@ it after extracting the new zip so you don't run duplicate rules.</p>
 <ol>
 <li>
 <p><strong>Add</strong> the Project CodeGuard marketplace:</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
+<div class="highlight"><pre><span></span><code>/plugin marketplace add cosai-oasis/project-codeguard
 </code></pre></div>
 </li>
 <li>
 <p><strong>Install</strong> the security plugin:</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
+<div class="highlight"><pre><span></span><code>/plugin install codeguard-security@project-codeguard
 </code></pre></div>
 </li>
+<li>
+<p><strong>Reload plugins</strong> so Claude Code picks up the new skill:</p>
+<div class="highlight"><pre><span></span><code>/reload-plugins
+</code></pre></div>
+</li>
+<li>
+<p><strong>Verify</strong> the plugin is enabled from <code>/plugin</code> → <strong>Installed</strong>.</p>
+</li>
 </ol>
-<p>The plugin automatically loads and applies security rules. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for details.</p>
+<p>See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for team setup, updates, and troubleshooting.</p>
 </div>
 <div class="tabbed-block">
 <p>OpenAI Codex uses <a href="https://agentskills.io/">agent skills</a> for task-specific instructions.</p>

@@ -727,6 +727,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Building the Plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Local Development
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -810,39 +825,6 @@
       Contributing
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#version-history" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version History
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Version History">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#version-101" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version 1.0.1
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#version-100" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version 1.0.0
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1345,6 +1327,21 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Building the Plugin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Local Development
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1432,39 +1429,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#version-history" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version History
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Version History">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#version-101" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version 1.0.1
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#version-100" class="md-nav__link">
-    <span class="md-ellipsis">
-      Version 1.0.0
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#resources" class="md-nav__link">
     <span class="md-ellipsis">
       Resources
@@ -1524,27 +1488,33 @@
 <h2 id="installation">Installation</h2>
 <h3 id="prerequisites">Prerequisites</h3>
 <ul>
-<li>Claude Code installed</li>
+<li>Claude Code installed with <code>/plugin</code> support</li>
 <li>Basic familiarity with Claude Code's plugin system</li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">Trust note</p>
+<p>Claude Code plugins can provide skills, agents, hooks, MCP servers, and executable components. Only install marketplaces and plugins from sources you trust.</p>
+</div>
 <h3 id="installation-steps">Installation Steps</h3>
 <ol>
 <li>
 <p><strong>Add the Project CodeGuard marketplace:</strong>
-   <div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>marketplace<span class="w"> </span>add<span class="w"> </span>cosai-oasis/project-codeguard
+   <div class="highlight"><pre><span></span><code>/plugin marketplace add cosai-oasis/project-codeguard
 </code></pre></div></p>
 </li>
 <li>
 <p><strong>Install the security plugin:</strong>
-   <div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>install<span class="w"> </span>codeguard-security@project-codeguard
+   <div class="highlight"><pre><span></span><code>/plugin install codeguard-security@project-codeguard
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Restart Claude Code</strong> (if prompted)</p>
+<p><strong>Reload plugins:</strong>
+   <div class="highlight"><pre><span></span><code>/reload-plugins
+</code></pre></div></p>
 </li>
 <li>
 <p><strong>Verify installation:</strong>
-   The skill is automatically loaded. Start coding and Claude will apply security rules automatically.</p>
+   Open <code>/plugin</code> and check the <strong>Installed</strong> tab. <code>codeguard-security@project-codeguard</code> should be listed and enabled.</p>
 </li>
 </ol>
 <h2 id="how-it-works">How It Works</h2>
@@ -1617,19 +1587,22 @@
 <span class="p">});</span>
 </code></pre></div>
 <h2 id="team-deployment">Team Deployment</h2>
-<p>For organizations, deploy CodeGuard to all developers automatically:</p>
+<p>For teams, make CodeGuard available through repository settings:</p>
 <ol>
 <li>
 <p>Add to your project's <code>.claude/settings.json</code>:
    <div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;marketplaces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cosai-oasis/project-codeguard&quot;</span><span class="p">}],</span>
-<span class="w">  </span><span class="nt">&quot;plugins&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;codeguard-security&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;marketplace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;project-codeguard&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;enabled&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="nt">&quot;extraKnownMarketplaces&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;project-codeguard&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;github&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;repo&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cosai-oasis/project-codeguard&quot;</span>
+<span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">]</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;enabledPlugins&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;codeguard-security@project-codeguard&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></p>
 </li>
@@ -1637,9 +1610,10 @@
 <p>Team members trust the repository folder</p>
 </li>
 <li>
-<p>CodeGuard installs automatically for everyone</p>
+<p>Claude Code prompts team members to install and enable CodeGuard</p>
 </li>
 </ol>
+<p>For managed environments, administrators can restrict allowed marketplaces with <code>strictKnownMarketplaces</code>.</p>
 <h2 id="all-security-rules">All Security Rules</h2>
 <p>The plugin includes 23 comprehensive security rules organized into two categories:</p>
 <h3 id="always-apply-rules-3-rules">Always-Apply Rules (3 rules)</h3>
@@ -1730,17 +1704,23 @@
 <p><strong>Note:</strong> Each rule file contains detailed guidance, checklists, and examples. Claude references these automatically based on the code context.</p>
 </blockquote>
 <h2 id="updating">Updating</h2>
-<p>To update to the latest security rules:</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>update<span class="w"> </span>codeguard-security@project-codeguard
+<p>To refresh the CodeGuard marketplace listing:</p>
+<div class="highlight"><pre><span></span><code>/plugin marketplace update project-codeguard
 </code></pre></div>
+<p>To update the installed plugin from a shell:</p>
+<div class="highlight"><pre><span></span><code>claude<span class="w"> </span>plugin<span class="w"> </span>update<span class="w"> </span>codeguard-security@project-codeguard
+</code></pre></div>
+<p>Restart Claude Code after updating. If an open session prompts you to reload plugin changes, run <code>/reload-plugins</code>.</p>
+<p>You can also run <code>/plugin</code>, open the <strong>Marketplaces</strong> tab, select <code>project-codeguard</code>, and enable auto-update.</p>
 <h2 id="customization">Customization</h2>
 <h3 id="disabling-the-plugin">Disabling the Plugin</h3>
 <p>If needed, temporarily disable:</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>disable<span class="w"> </span>codeguard-security@project-codeguard
+<div class="highlight"><pre><span></span><code>/plugin disable codeguard-security@project-codeguard
 </code></pre></div>
 <p>Re-enable:</p>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>codeguard-security@project-codeguard
+<div class="highlight"><pre><span></span><code>/plugin enable codeguard-security@project-codeguard
 </code></pre></div>
+<p>Run <code>/reload-plugins</code> after changing plugin state.</p>
 <h3 id="using-specific-rule-files">Using Specific Rule Files</h3>
 <p>All rule files are available in the <code>skills/software-security/rules/</code> directory within the plugin. You can reference specific rules in prompts:</p>
 <div class="highlight"><pre><span></span><code>Claude, please review this authentication code against the 
@@ -1758,9 +1738,9 @@ Use the relevant CodeGuard rules for each check.
 <h2 id="troubleshooting">Troubleshooting</h2>
 <h3 id="plugin-not-loading">Plugin Not Loading</h3>
 <ol>
-<li>Verify installation: <code>/plugin</code> → "Manage Plugins"</li>
-<li>Check that <code>codeguard-security</code> is listed and enabled</li>
-<li>Restart Claude Code</li>
+<li>Verify installation: <code>/plugin</code> → <strong>Installed</strong></li>
+<li>Check that <code>codeguard-security@project-codeguard</code> is listed and enabled</li>
+<li>Run <code>/reload-plugins</code></li>
 </ol>
 <h3 id="rules-not-being-applied">Rules Not Being Applied</h3>
 <ol>
@@ -1769,9 +1749,7 @@ Use the relevant CodeGuard rules for each check.
 <li>Check that you're working with supported languages</li>
 </ol>
 <h3 id="checking-plugin-version">Checking Plugin Version</h3>
-<div class="highlight"><pre><span></span><code>/plugin<span class="w"> </span>list
-</code></pre></div>
-<p>Look for <code>codeguard-security@project-codeguard</code> and note the version number.</p>
+<p>Open <code>/plugin</code> and check the <strong>Installed</strong> tab. Look for <code>codeguard-security@project-codeguard</code> and note the version number.</p>
 <h2 id="best-practices">Best Practices</h2>
 <h3 id="during-development">During Development</h3>
 <ol>
@@ -1806,7 +1784,13 @@ uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </sp
 - Converts unified rules from <code>sources/</code> to IDE-specific formats
 - Generates <code>skills/</code> directory with the 23 core security rules (Claude Code plugin)
 - Creates <code>dist/</code> with all supported agent-specific formats</p>
-<p><strong>Note:</strong> The Claude Code plugin (<code>skills/</code>) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use <code>--source core owasp</code>, but this only affects <code>dist/</code>, not <code>skills/</code>.</p>
+<p><strong>Note:</strong> The Claude Code plugin (<code>skills/</code>) uses the curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use <code>--source core owasp</code>, but this only affects <code>dist/</code>, not <code>skills/</code>.</p>
+<h3 id="local-development">Local Development</h3>
+<p>To test the plugin from a local checkout without installing it:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py
+claude<span class="w"> </span>--plugin-dir<span class="w"> </span>.
+</code></pre></div>
+<p><code>--plugin-dir</code> loads the local plugin for that Claude Code session. If the session is already running and you regenerate files, run <code>/reload-plugins</code>.</p>
 <h2 id="advanced-usage">Advanced Usage</h2>
 <h3 id="language-specific-security-reviews">Language-Specific Security Reviews</h3>
 <p>Request focused reviews for specific languages:</p>
@@ -1891,22 +1875,6 @@ Use CodeGuard rules to guide the architecture.
 <li><strong>Suggest rules</strong>: <a href="https://github.com/cosai-oasis/project-codeguard/discussions">GitHub Discussions</a></li>
 <li><strong>Contribute</strong>: <a href="https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md">Contributing Guide</a></li>
 </ol>
-<h2 id="version-history">Version History</h2>
-<h3 id="version-101">Version 1.0.1</h3>
-<ul>
-<li>Changed <code>codeguard-1-safe-c-functions</code> from always-apply to <code>codeguard-0-safe-c-functions</code> context-specific rule (C/C++ only)</li>
-<li>Updated rule counts: 3 always-apply rules, 19 context-specific rules</li>
-<li>Fixed GitHub Copilot instructions to use <code>description</code> field instead of <code>title</code></li>
-</ul>
-<h3 id="version-100">Version 1.0.0</h3>
-<ul>
-<li>Initial release</li>
-<li>22 comprehensive security rules</li>
-<li>4 always-apply rules</li>
-<li>18 context-specific rules</li>
-<li>Support for all major programming languages</li>
-<li>Complete technology stack coverage</li>
-</ul>
 <h2 id="resources">Resources</h2>
 <ul>
 <li><strong>Project Website</strong>: <a href="https://project-codeguard.org">https://project-codeguard.org</a></li>
