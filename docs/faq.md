@@ -96,12 +96,13 @@ Once hidden files are visible, copy the appropriate directory to your project ro
 
 **A:** Yes! Install the Project CodeGuard Claude Code plugin (Agent Skill) and Claude will apply the security rules automatically while you code.
 
-```bash
+```text
 /plugin marketplace add cosai-oasis/project-codeguard
 /plugin install codeguard-security@project-codeguard
+/reload-plugins
 ```
 
-For team/repo defaults, add the plugin in `.claude/settings.json` so it’s enabled for all contributors. See the [Claude Code Plugin documentation](claude-code-skill-plugin.md) for details and troubleshooting.
+For team/repo defaults, add the plugin in `.claude/settings.json` so contributors who trust the repository are prompted to install and enable it. See the [Claude Code Plugin documentation](claude-code-skill-plugin.md) for the current settings schema, updates, and troubleshooting.
 
 
 ## Q: How can I report a problem or enhancement to any of the rules?
@@ -141,6 +142,3 @@ See [CONTRIBUTING.md](https://github.com/cosai-oasis/project-codeguard/blob/main
 
 - [Open an issue](https://github.com/cosai-oasis/project-codeguard/issues) with your question
 - [Start a discussion](https://github.com/cosai-oasis/project-codeguard/discussions) to chat with the community
-
-
-

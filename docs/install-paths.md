@@ -220,20 +220,23 @@ An administrator configures the rules once in the vendor's team/org settings; th
         |:---|:---|
         | macOS | `/Library/Application Support/ClaudeCode/managed-settings.json` |
         | Linux / WSL | `/etc/claude-code/managed-settings.json` |
-        | Windows | `C:\ProgramData\ClaudeCode\managed-settings.json` |
+        | Windows | `C:\Program Files\ClaudeCode\managed-settings.json` |
 
     2. Add the CodeGuard marketplace and plugin:
 
         ```json
         {
-          "marketplaces": [{ "source": "cosai-oasis/project-codeguard" }],
-          "plugins": [
-            {
-              "name": "codeguard-security",
-              "marketplace": "project-codeguard",
-              "enabled": true
+          "extraKnownMarketplaces": {
+            "project-codeguard": {
+              "source": {
+                "source": "github",
+                "repo": "cosai-oasis/project-codeguard"
+              }
             }
-          ]
+          },
+          "enabledPlugins": {
+            "codeguard-security@project-codeguard": true
+          }
         }
         ```
 
@@ -245,7 +248,7 @@ An administrator configures the rules once in the vendor's team/org settings; th
     - Managed settings take precedence over `~/.claude/settings.json` and `<repo>/.claude/settings.json`; users cannot disable the plugin locally.
     - Updates to the CodeGuard plugin itself flow from the marketplace — you only redeploy `managed-settings.json` if you change which plugins are enforced.
 
-    :material-book-open-page-variant: [Claude Code settings documentation](https://docs.claude.com/en/docs/claude-code/settings) · [Plugin guide](claude-code-skill-plugin.md)
+    :material-book-open-page-variant: [Claude Code settings documentation](https://code.claude.com/docs/en/settings) · [Plugin guide](claude-code-skill-plugin.md)
 
 !!! note "Tools without an org-admin layer"
     Not every tool offers centrally pushed rules. For these, use **project-scope** install (commit rules to each repo) or a shared template repository as your enforcement mechanism:

@@ -183,17 +183,25 @@ Select your AI coding tool and follow the instructions:
 
     1. **Add** the Project CodeGuard marketplace:
 
-        ```bash
+        ```text
         /plugin marketplace add cosai-oasis/project-codeguard
         ```
 
     2. **Install** the security plugin:
 
-        ```bash
+        ```text
         /plugin install codeguard-security@project-codeguard
         ```
 
-    The plugin automatically loads and applies security rules. See the [Claude Code Plugin documentation](claude-code-skill-plugin.md) for details.
+    3. **Reload plugins** so Claude Code picks up the new skill:
+
+        ```text
+        /reload-plugins
+        ```
+
+    4. **Verify** the plugin is enabled from `/plugin` → **Installed**.
+
+    See the [Claude Code Plugin documentation](claude-code-skill-plugin.md) for team setup, updates, and troubleshooting.
 
 === "Codex"
 

@@ -14,25 +14,31 @@ Agent Skills are model-invoked capabilities that Claude autonomously uses based 
 
 ### Prerequisites
 
-- Claude Code installed
+- Claude Code installed with `/plugin` support
 - Basic familiarity with Claude Code's plugin system
+
+!!! warning "Trust note"
+    Claude Code plugins can provide skills, agents, hooks, MCP servers, and executable components. Only install marketplaces and plugins from sources you trust.
 
 ### Installation Steps
 
 1. **Add the Project CodeGuard marketplace:**
-   ```bash
+   ```text
    /plugin marketplace add cosai-oasis/project-codeguard
    ```
 
 2. **Install the security plugin:**
-   ```bash
+   ```text
    /plugin install codeguard-security@project-codeguard
    ```
 
-3. **Restart Claude Code** (if prompted)
+3. **Reload plugins:**
+   ```text
+   /reload-plugins
+   ```
 
 4. **Verify installation:**
-   The skill is automatically loaded. Start coding and Claude will apply security rules automatically.
+   Open `/plugin` and check the **Installed** tab. `codeguard-security@project-codeguard` should be listed and enabled.
 
 ## How It Works
 
@@ -130,25 +136,30 @@ const upload = multer({
 
 ## Team Deployment
 
-For organizations, deploy CodeGuard to all developers automatically:
+For teams, make CodeGuard available through repository settings:
 
 1. Add to your project's `.claude/settings.json`:
    ```json
    {
-     "marketplaces": [{"source": "cosai-oasis/project-codeguard"}],
-     "plugins": [
-       {
-         "name": "codeguard-security",
-         "marketplace": "project-codeguard",
-         "enabled": true
+     "extraKnownMarketplaces": {
+       "project-codeguard": {
+         "source": {
+           "source": "github",
+           "repo": "cosai-oasis/project-codeguard"
+         }
        }
-     ]
+     },
+     "enabledPlugins": {
+       "codeguard-security@project-codeguard": true
+     }
    }
    ```
 
 2. Team members trust the repository folder
 
-3. CodeGuard installs automatically for everyone
+3. Claude Code prompts team members to install and enable CodeGuard
+
+For managed environments, administrators can restrict allowed marketplaces with `strictKnownMarketplaces`.
 
 ## All Security Rules
 
@@ -187,11 +198,21 @@ These rules apply based on the programming language, framework, or feature being
 
 ## Updating
 
-To update to the latest security rules:
+To refresh the CodeGuard marketplace listing:
+
+```text
+/plugin marketplace update project-codeguard
+```
+
+To update the installed plugin from a shell:
 
 ```bash
-/plugin update codeguard-security@project-codeguard
+claude plugin update codeguard-security@project-codeguard
 ```
+
+Restart Claude Code after updating. If an open session prompts you to reload plugin changes, run `/reload-plugins`.
+
+You can also run `/plugin`, open the **Marketplaces** tab, select `project-codeguard`, and enable auto-update.
 
 ## Customization
 
@@ -199,15 +220,17 @@ To update to the latest security rules:
 
 If needed, temporarily disable:
 
-```bash
+```text
 /plugin disable codeguard-security@project-codeguard
 ```
 
 Re-enable:
 
-```bash
+```text
 /plugin enable codeguard-security@project-codeguard
 ```
+
+Run `/reload-plugins` after changing plugin state.
 
 ### Using Specific Rule Files
 
@@ -235,9 +258,9 @@ Use the relevant CodeGuard rules for each check.
 
 ### Plugin Not Loading
 
-1. Verify installation: `/plugin` → "Manage Plugins"
-2. Check that `codeguard-security` is listed and enabled
-3. Restart Claude Code
+1. Verify installation: `/plugin` → **Installed**
+2. Check that `codeguard-security@project-codeguard` is listed and enabled
+3. Run `/reload-plugins`
 
 ### Rules Not Being Applied
 
@@ -247,11 +270,7 @@ Use the relevant CodeGuard rules for each check.
 
 ### Checking Plugin Version
 
-```bash
-/plugin list
-```
-
-Look for `codeguard-security@project-codeguard` and note the version number.
+Open `/plugin` and check the **Installed** tab. Look for `codeguard-security@project-codeguard` and note the version number.
 
 ## Best Practices
 
@@ -293,7 +312,18 @@ This command:
 - Generates `skills/` directory with the 23 core security rules (Claude Code plugin)
 - Creates `dist/` with all supported agent-specific formats
 
-**Note:** The Claude Code plugin (`skills/`) always contains only the 23 curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.
+**Note:** The Claude Code plugin (`skills/`) uses the curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.
+
+### Local Development
+
+To test the plugin from a local checkout without installing it:
+
+```bash
+uv run python src/convert_to_ide_formats.py
+claude --plugin-dir .
+```
+
+`--plugin-dir` loads the local plugin for that Claude Code session. If the session is already running and you regenerate files, run `/reload-plugins`.
 
 ## Advanced Usage
 
@@ -398,21 +428,6 @@ Found an issue with the plugin or want to improve it?
 2. **Suggest rules**: [GitHub Discussions](https://github.com/cosai-oasis/project-codeguard/discussions)
 3. **Contribute**: [Contributing Guide](https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md)
 
-## Version History
-
-### Version 1.0.1
-- Changed `codeguard-1-safe-c-functions` from always-apply to `codeguard-0-safe-c-functions` context-specific rule (C/C++ only)
-- Updated rule counts: 3 always-apply rules, 19 context-specific rules
-- Fixed GitHub Copilot instructions to use `description` field instead of `title`
-
-### Version 1.0.0
-- Initial release
-- 22 comprehensive security rules
-- 4 always-apply rules
-- 18 context-specific rules
-- Support for all major programming languages
-- Complete technology stack coverage
-
 ## Resources
 
 - **Project Website**: [https://project-codeguard.org](https://project-codeguard.org)
@@ -432,5 +447,3 @@ Need help? We're here for you:
 1. **Documentation**: Start with [Getting Started Guide](https://project-codeguard.org/getting-started/)
 2. **Community**: Join [GitHub Discussions](https://github.com/cosai-oasis/project-codeguard/discussions)
 3. **Issues**: Report bugs via [GitHub Issues](https://github.com/cosai-oasis/project-codeguard/issues)
-
-
