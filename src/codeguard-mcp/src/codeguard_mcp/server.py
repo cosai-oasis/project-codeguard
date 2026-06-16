@@ -71,11 +71,22 @@ def _register_rules() -> None:
     factory = RuleToolFactory()
     rules = processor.get_all_rules()
 
+    if not rules:
+        logger.warning(
+            "No rules loaded from %s - the server will start with zero "
+            "rule tools.  Check CODEGUARD_RULES_DIR.",
+            processor.rules_dir,
+        )
+        return
+
     logger.info("Registering %d security rules as MCP tools", len(rules))
     for rule in rules:
         mcp.add_tool(factory.create_tool(rule))
 
-    logger.info("All %d tools registered", len(rules))
+    # Register the search/filter meta-tool
+    mcp.add_tool(factory.create_search_tool(rules))
+
+    logger.info("All %d tools registered (+1 search_rules)", len(rules))
 
 
 _register_rules()

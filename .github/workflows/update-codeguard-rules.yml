@@ -41,6 +41,8 @@ jobs:
             [".agents/rules"]="ide-rules-antigravity.zip"
             [".opencode/skills/software-security/rules"]="ide-rules-opencode.zip"
             [".agents/skills/software-security/rules"]="ide-rules-codex.zip"
+            [".clinerules"]="ide-rules-cline.zip"
+            [".continue/rules"]="ide-rules-continuedev.zip"
           )
 
           # File patterns for each format
@@ -51,6 +53,8 @@ jobs:
             [".agents/rules"]="codeguard-*.md"
             [".opencode/skills/software-security/rules"]="codeguard-*.md"
             [".agents/skills/software-security/rules"]="codeguard-*.md"
+            [".clinerules"]="codeguard-*.md"
+            [".continue/rules"]="codeguard-*.md"
           )
 
           # Legacy paths: warn so users migrate instead of silently going stale.
