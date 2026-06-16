@@ -1214,14 +1214,14 @@ it after extracting the new zip so you don't run duplicate rules.</p>
 <p>Earlier releases shipped the Codex skill to <code>.codex/skills/</code>,
 which is not one of Codex's documented discovery paths and was
 silently ignored. The skill now lives at
-<code>.agents/skills/software-security/</code>. If you have an old
+<code>.agents/skills/codeguard/</code>. If you have an old
 <code>.codex/skills/</code> directory, delete it after installing the new
 zip to avoid stale files.</p>
 </div>
 <p><strong>Option B: Skill installer</strong></p>
-<div class="highlight"><pre><span></span><code>$skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
+<div class="highlight"><pre><span></span><code>$skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard
 </code></pre></div>
-<p>Once installed, invoke the skill with <code>$software-security</code> or let Codex use it automatically when writing or reviewing code.</p>
+<p>Once installed, invoke the skill with <code>$codeguard</code> or let Codex use it automatically when writing or reviewing code.</p>
 <div class="admonition info">
 <p class="admonition-title">Codex Skills Documentation</p>
 <p>For more information, see the <a href="https://developers.openai.com/codex/skills/">OpenAI Codex Skills documentation</a>.</p>
@@ -1322,10 +1322,10 @@ cp<span class="w"> </span>-r<span class="w"> </span>dist/.hermes/<span class="w"
 <li>Windsurf (<code>.windsurf/rules/</code>)</li>
 <li>GitHub Copilot (<code>.github/instructions/</code>)</li>
 <li>Antigravity (<code>.agents/rules/</code>)</li>
-<li>OpenCode (<code>.opencode/skills/software-security/rules/</code>)</li>
-<li>Codex (<code>.agents/skills/software-security/rules/</code>)</li>
-<li>OpenClaw (<code>.openclaw/skills/software-security/rules/</code>)</li>
-<li>Hermes (<code>.hermes/skills/software-security/rules/</code>)</li>
+<li>OpenCode (<code>.opencode/skills/codeguard/rules/</code>)</li>
+<li>Codex (<code>.agents/skills/codeguard/rules/</code>)</li>
+<li>OpenClaw (<code>.openclaw/skills/codeguard/rules/</code>)</li>
+<li>Hermes (<code>.hermes/skills/codeguard/rules/</code>)</li>
 </ul>
 <h3 id="setup">Setup</h3>
 <ol>
@@ -1340,20 +1340,20 @@ cp<span class="w"> </span>-r<span class="w"> </span>dist/.hermes/<span class="w"
 ├── .agents/                           # cross-tool: Antigravity + Codex
 │   ├── rules/                         # Antigravity rules
 │   └── skills/
-│       └── software-security/         # Codex skill (SKILL.md + rules/)
+│       └── codeguard/                 # Codex skill (SKILL.md + rules/)
 ├── .cursor/
 │   └── rules/
 ├── .github/
 │   └── instructions/
 ├── .hermes/
 │   └── skills/
-│       └── software-security/
+│       └── codeguard/
 ├── .openclaw/
 │   └── skills/
-│       └── software-security/
+│       └── codeguard/
 ├── .opencode/
 │   └── skills/
-│       └── software-security/
+│       └── codeguard/
 ├── .windsurf/
 │   └── rules/
 └── ... (your project files)
