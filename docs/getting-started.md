@@ -227,17 +227,17 @@ Select your AI coding tool and follow the instructions:
         Earlier releases shipped the Codex skill to `.codex/skills/`,
         which is not one of Codex's documented discovery paths and was
         silently ignored. The skill now lives at
-        `.agents/skills/software-security/`. If you have an old
+        `.agents/skills/codeguard/`. If you have an old
         `.codex/skills/` directory, delete it after installing the new
         zip to avoid stale files.
 
     **Option B: Skill installer**
 
     ```
-    $skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/software-security
+    $skill-installer install from https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard
     ```
 
-    Once installed, invoke the skill with `$software-security` or let Codex use it automatically when writing or reviewing code.
+    Once installed, invoke the skill with `$codeguard` or let Codex use it automatically when writing or reviewing code.
 
     !!! info "Codex Skills Documentation"
         For more information, see the [OpenAI Codex Skills documentation](https://developers.openai.com/codex/skills/).
@@ -342,10 +342,10 @@ For GitHub repositories, you can automate rule updates with a workflow that runs
 - Windsurf (`.windsurf/rules/`)
 - GitHub Copilot (`.github/instructions/`)
 - Antigravity (`.agents/rules/`)
-- OpenCode (`.opencode/skills/software-security/rules/`)
-- Codex (`.agents/skills/software-security/rules/`)
-- OpenClaw (`.openclaw/skills/software-security/rules/`)
-- Hermes (`.hermes/skills/software-security/rules/`)
+- OpenCode (`.opencode/skills/codeguard/rules/`)
+- Codex (`.agents/skills/codeguard/rules/`)
+- OpenClaw (`.openclaw/skills/codeguard/rules/`)
+- Hermes (`.hermes/skills/codeguard/rules/`)
 
 ### Setup
 
@@ -364,20 +364,20 @@ your-project/
 ├── .agents/                           # cross-tool: Antigravity + Codex
 │   ├── rules/                         # Antigravity rules
 │   └── skills/
-│       └── software-security/         # Codex skill (SKILL.md + rules/)
+│       └── codeguard/                 # Codex skill (SKILL.md + rules/)
 ├── .cursor/
 │   └── rules/
 ├── .github/
 │   └── instructions/
 ├── .hermes/
 │   └── skills/
-│       └── software-security/
+│       └── codeguard/
 ├── .openclaw/
 │   └── skills/
-│       └── software-security/
+│       └── codeguard/
 ├── .opencode/
 │   └── skills/
-│       └── software-security/
+│       └── codeguard/
 ├── .windsurf/
 │   └── rules/
 └── ... (your project files)

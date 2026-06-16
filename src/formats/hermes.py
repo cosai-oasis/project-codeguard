@@ -42,4 +42,4 @@ class HermesFormat(AgentSkillsFormat):
         return "hermes"
 
     def get_output_subpath(self) -> str:
-        return ".hermes/skills/software-security/rules"
+        return ".hermes/skills/codeguard/rules"

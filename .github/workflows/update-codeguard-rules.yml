@@ -39,8 +39,8 @@ jobs:
             [".windsurf/rules"]="ide-rules-windsurf.zip"
             [".github/instructions"]="ide-rules-copilot.zip"
             [".agents/rules"]="ide-rules-antigravity.zip"
-            [".opencode/skills/software-security/rules"]="ide-rules-opencode.zip"
-            [".agents/skills/software-security/rules"]="ide-rules-codex.zip"
+            [".opencode/skills/codeguard/rules"]="ide-rules-opencode.zip"
+            [".agents/skills/codeguard/rules"]="ide-rules-codex.zip"
           )
 
           # File patterns for each format
@@ -49,14 +49,15 @@ jobs:
             [".windsurf/rules"]="codeguard-*.md"
             [".github/instructions"]="codeguard-*.instructions.md"
             [".agents/rules"]="codeguard-*.md"
-            [".opencode/skills/software-security/rules"]="codeguard-*.md"
-            [".agents/skills/software-security/rules"]="codeguard-*.md"
+            [".opencode/skills/codeguard/rules"]="codeguard-*.md"
+            [".agents/skills/codeguard/rules"]="codeguard-*.md"
           )
 
           # Legacy paths: warn so users migrate instead of silently going stale.
           declare -A LEGACY_PATHS=(
             [".agent/rules"]="Antigravity (moved to .agents/rules/)"
-            [".codex/skills/software-security/rules"]="Codex (moved to .agents/skills/software-security/rules/)"
+            [".codex/skills/software-security/rules"]="Codex (moved to .agents/skills/codeguard/rules/)"
+            [".codex/skills/codeguard/rules"]="Codex (moved to .agents/skills/codeguard/rules/)"
           )
           LEGACY_FOUND=""
           for legacy_dir in "${!LEGACY_PATHS[@]}"; do

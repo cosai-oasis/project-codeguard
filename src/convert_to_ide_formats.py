@@ -249,7 +249,7 @@ def convert_rules(
                 "This file is required for skill-based format generation."
             )
 
-        output_skill_dir = PROJECT_ROOT / "skills" / "software-security"
+        output_skill_dir = PROJECT_ROOT / "skills" / "codeguard"
         output_skill_dir.mkdir(parents=True, exist_ok=True)
         output_skill_path = output_skill_dir / "SKILL.md"
 
@@ -277,7 +277,7 @@ def convert_rules(
         )
 
         for host_dir in SKILL_COPY_HOSTS:
-            host_skill_dir = Path(output_dir) / host_dir / "skills" / "software-security"
+            host_skill_dir = Path(output_dir) / host_dir / "skills" / "codeguard"
             host_skill_dir.mkdir(parents=True, exist_ok=True)
             dest = host_skill_dir / "SKILL.md"
             shutil.copy2(output_skill_path, dest)
@@ -380,7 +380,7 @@ if __name__ == "__main__":
         print(f"✅ Cleaned {cli_args.output_dir}/ directory")
 
     if has_core:
-        skills_rules_dir = PROJECT_ROOT / "skills" / "software-security" / "rules"
+        skills_rules_dir = PROJECT_ROOT / "skills" / "codeguard" / "rules"
         if skills_rules_dir.exists():
             shutil.rmtree(skills_rules_dir)
             print(f"✅ Cleaned skills/ directory")

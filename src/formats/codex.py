@@ -37,4 +37,4 @@ class CodexFormat(AgentSkillsFormat):
         return "codex"
 
     def get_output_subpath(self) -> str:
-        return ".agents/skills/software-security/rules"
+        return ".agents/skills/codeguard/rules"

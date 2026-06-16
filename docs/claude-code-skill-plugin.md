@@ -234,7 +234,7 @@ Run `/reload-plugins` after changing plugin state.
 
 ### Using Specific Rule Files
 
-All rule files are available in the `skills/software-security/rules/` directory within the plugin. You can reference specific rules in prompts:
+All rule files are available in the `skills/codeguard/rules/` directory within the plugin. You can reference specific rules in prompts:
 
 ```
 Claude, please review this authentication code against the 
@@ -376,20 +376,20 @@ cosai-oasis/project-codeguard/
 │   └── templates/                   # Rule template
 │
 ├── skills/                          # Generated — do not edit
-│   └── software-security/
+│   └── codeguard/
 │       ├── SKILL.md                 # Regenerated from sources/rules/core/
 │       └── rules/                   # Regenerated rule files
 │
 ├── dist/                            # Release artifacts (not in git)
 │   ├── .claude/                     # Claude Code bundle
-│   │   ├── skills/software-security/   # SKILL.md + rules/*.md
+│   │   ├── skills/codeguard/      # SKILL.md + rules/*.md
 │   │   └── agents/codeguard-reviewer.md # Subagent preloads the skill above
 │   ├── .cursor/                     # Cursor IDE format (+ subagent)
 │   ├── .windsurf/                   # Windsurf IDE format
 │   ├── .github/                     # Copilot format
 │   ├── .agents/                     # Cross-tool dir (Antigravity + Codex)
 │   │   ├── rules/                      # Google Antigravity rules
-│   │   └── skills/software-security/   # OpenAI Codex skill (SKILL + rules/)
+│   │   └── skills/codeguard/      # OpenAI Codex skill (SKILL + rules/)
 │   ├── .opencode/                   # OpenCode bundle (skill only)
 │   ├── .openclaw/                   # OpenClaw bundle (skill only)
 │   └── .hermes/                     # Hermes bundle (skill only)

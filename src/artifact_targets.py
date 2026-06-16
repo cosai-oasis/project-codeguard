@@ -32,8 +32,8 @@ class AgentHost(TypedDict):
 # ``<host>/agents/`` — hosts scan that path for agent definitions.
 AGENT_HOSTS: dict[str, AgentHost] = {
     ".claude": {
-        "fm": {"skills": ["software-security"]},
-        "rules_dir": ".claude/skills/software-security/rules",
+        "fm": {"skills": ["codeguard"]},
+        "rules_dir": ".claude/skills/codeguard/rules",
         "rule_ext": ".md",
     },
     ".cursor": {

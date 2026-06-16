@@ -41,4 +41,4 @@ class OpenClawFormat(AgentSkillsFormat):
         return "openclaw"
 
     def get_output_subpath(self) -> str:
-        return ".openclaw/skills/software-security/rules"
+        return ".openclaw/skills/codeguard/rules"

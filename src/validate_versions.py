@@ -90,8 +90,8 @@ def _read_front_matter_value(path: Path, key: str) -> str:
 
 
 def get_skill_codeguard_version(root: Path) -> str:
-    """Get codeguard-version from skills/software-security/SKILL.md."""
-    skill_path = root / "skills" / "software-security" / "SKILL.md"
+    """Get codeguard-version from skills/codeguard/SKILL.md."""
+    skill_path = root / "skills" / "codeguard" / "SKILL.md"
     return _read_front_matter_value(skill_path, "codeguard-version")
 
 

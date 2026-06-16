@@ -22,7 +22,7 @@ class AgentSkillsFormat(BaseFormat):
     - Other AI coding tools
 
     The original rule content is preserved and placed in the
-    skills/software-security/rules/ directory for distribution.
+    skills/codeguard/rules/ directory for distribution.
     """
 
     def get_format_name(self) -> str:
@@ -35,7 +35,7 @@ class AgentSkillsFormat(BaseFormat):
 
     def get_output_subpath(self) -> str:
         """Return Agent Skills output subdirectory."""
-        return "skills/software-security/rules"
+        return "skills/codeguard/rules"
 
     def generate(self, rule: ProcessedRule, globs: str) -> str:
         """

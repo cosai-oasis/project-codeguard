@@ -78,7 +78,7 @@ class BaseFormat(ABC):
         Return the subdirectory path for this format.
 
         Returns:
-            Subdirectory path (e.g., '.cursor/rules', 'skills/software-security/rules')
+            Subdirectory path (e.g., '.cursor/rules', 'skills/codeguard/rules')
         """
         pass
 

@@ -41,4 +41,4 @@ class OpenCodeFormat(AgentSkillsFormat):
         return "opencode"
 
     def get_output_subpath(self) -> str:
-        return ".opencode/skills/software-security/rules"
+        return ".opencode/skills/codeguard/rules"

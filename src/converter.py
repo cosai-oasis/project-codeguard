@@ -23,7 +23,7 @@ class FormatOutput:
     Attributes:
         content: The fully formatted content with frontmatter
         extension: File extension including dot (e.g., '.mdc')
-        subpath: Subdirectory path (e.g., '.cursor/rules', 'skills/software-security/rules')
+        subpath: Subdirectory path (e.g., '.cursor/rules', 'skills/codeguard/rules')
     """
 
     content: str

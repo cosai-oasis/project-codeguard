@@ -68,28 +68,28 @@ jobs:
             exit 1
           fi
 
-      - name: Check skills/software-security/ directory is up-to-date
+      - name: Check skills/codeguard/ directory is up-to-date
         run: |
-          echo "Checking if committed skills/software-security/ is up-to-date..."
+          echo "Checking if committed skills/codeguard/ is up-to-date..."
           
           # Save the generated skill directory only
-          cp -r skills/software-security skills-committed
+          cp -r skills/codeguard skills-committed
           
           # Regenerate (core rules only, matching default)
           uv run python src/convert_to_ide_formats.py
           
-          # Compare only the software-security subtree
-          if ! diff -r skills/software-security/ skills-committed/ > /dev/null 2>&1; then
-            echo "❌ skills/software-security/ is out of date!"
+          # Compare only the codeguard subtree
+          if ! diff -r skills/codeguard/ skills-committed/ > /dev/null 2>&1; then
+            echo "❌ skills/codeguard/ is out of date!"
             echo "Please regenerate by running: python src/convert_to_ide_formats.py"
-            echo "Then: git add skills/software-security/"
-            diff -r skills/software-security/ skills-committed/ || true
+            echo "Then: git add skills/codeguard/"
+            diff -r skills/codeguard/ skills-committed/ || true
             rm -rf skills-committed
             exit 1
           fi
           
           rm -rf skills-committed
-          echo "✅ skills/software-security/ is up-to-date"
+          echo "✅ skills/codeguard/ is up-to-date"
 
       - name: Test conversion to IDE formats
         run: |
@@ -124,8 +124,8 @@ jobs:
 
           # Codex discovers skills under .agents/skills/ (not .codex/skills/).
           # See src/formats/codex.py for the rationale.
-          if [ ! -d "test-output/.agents/skills/software-security" ]; then
-            echo "❌ Codex skill not generated at .agents/skills/software-security/"
+          if [ ! -d "test-output/.agents/skills/codeguard" ]; then
+            echo "❌ Codex skill not generated at .agents/skills/codeguard/"
             exit 1
           fi
 
@@ -140,7 +140,7 @@ jobs:
           fi
 
           AGENT_HOSTS=(
-            ".claude:.claude/skills/software-security/rules"
+            ".claude:.claude/skills/codeguard/rules"
             ".cursor:.cursor/rules"
           )
           for entry in "${AGENT_HOSTS[@]}"; do
