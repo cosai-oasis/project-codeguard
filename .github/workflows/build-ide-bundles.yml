@@ -28,7 +28,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --locked
 
       - name: Get version from release
         id: get_version
@@ -52,37 +52,31 @@ jobs:
         run: uv run python src/convert_to_ide_formats.py
 
       - name: Create release archives
+        shell: bash
         run: |
           cd dist
-          zip -r ../ide-rules-claude.zip .claude/
-          zip -r ../ide-rules-cursor.zip .cursor/
-          zip -r ../ide-rules-windsurf.zip .windsurf/
-          zip -r ../ide-rules-copilot.zip .github/
+          zip -r ../codeguard-claude.zip .claude/
+          zip -r ../codeguard-cursor.zip .cursor/
+          zip -r ../codeguard-windsurf.zip .windsurf/
+          zip -r ../codeguard-copilot.zip .github/
           # Antigravity + Codex share .agents/; scope each zip to its own subpath.
-          zip -r ../ide-rules-antigravity.zip .agents/rules/
-          zip -r ../ide-rules-opencode.zip .opencode/
-          zip -r ../ide-rules-codex.zip .agents/skills/
-          zip -r ../ide-rules-openclaw.zip .openclaw/
-          zip -r ../ide-rules-hermes.zip .hermes/
+          zip -r ../codeguard-antigravity.zip .agents/rules/
+          zip -r ../codeguard-opencode.zip .opencode/
+          zip -r ../codeguard-codex.zip .agents/skills/
+          zip -r ../codeguard-openclaw.zip .openclaw/
+          zip -r ../codeguard-hermes.zip .hermes/
           cd ..
-          zip -r ide-rules-all.zip dist/
-          ls -lh ide-rules-*.zip
+          zip -r codeguard-all.zip dist/
+
+          sha256sum codeguard-*.zip > SHA256SUMS
+          sha256sum --check SHA256SUMS
+
+          ls -lh codeguard-*.zip SHA256SUMS
 
       - name: Upload release assets
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.get_version.outputs.tag }}
         run: |
-          gh release upload "$TAG" \
-            ide-rules-all.zip \
-            ide-rules-claude.zip \
-            ide-rules-cursor.zip \
-            ide-rules-windsurf.zip \
-            ide-rules-copilot.zip \
-            ide-rules-antigravity.zip \
-            ide-rules-opencode.zip \
-            ide-rules-codex.zip \
-            ide-rules-openclaw.zip \
-            ide-rules-hermes.zip \
-            --clobber
-
+          gh release upload "$TAG" codeguard-*.zip SHA256SUMS

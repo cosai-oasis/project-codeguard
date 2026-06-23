@@ -67,7 +67,7 @@ Select your AI coding tool and follow the instructions:
 
 === "Cursor"
 
-    1. **Download** [`ide-rules-cursor.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-cursor.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.cursor/` directory to your project root:
 
@@ -79,7 +79,7 @@ Select your AI coding tool and follow the instructions:
 
 === "Windsurf"
 
-    1. **Download** [`ide-rules-windsurf.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-windsurf.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.windsurf/` directory to your project root:
 
@@ -91,7 +91,7 @@ Select your AI coding tool and follow the instructions:
 
 === "GitHub Copilot"
 
-    1. **Download** [`ide-rules-copilot.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-copilot.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.github/` directory to your project root:
 
@@ -103,7 +103,7 @@ Select your AI coding tool and follow the instructions:
 
 === "Antigravity"
 
-    1. **Download** [`ide-rules-antigravity.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-antigravity.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.agents/` directory to your project root:
 
@@ -125,7 +125,7 @@ Select your AI coding tool and follow the instructions:
 
     Using skills is more context-efficient as only relevant rules are loaded per session based on the files you're working with.
 
-    1. **Download** [`ide-rules-opencode.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-opencode.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.opencode/` directory to your project root:
 
@@ -212,7 +212,7 @@ Select your AI coding tool and follow the instructions:
 
     **Option A: Pre-built download (recommended)**
 
-    1. **Download** [`ide-rules-codex.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-codex.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.agents/` directory to your project root (Codex
        discovers skills under `.agents/skills/`):
@@ -246,7 +246,7 @@ Select your AI coding tool and follow the instructions:
 
     OpenClaw uses the [Agent Skills standard](https://agentskills.io/) for skill discovery.
 
-    1. **Download** [`ide-rules-openclaw.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-openclaw.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.openclaw/` directory to your project root:
 
@@ -260,7 +260,7 @@ Select your AI coding tool and follow the instructions:
 
     Hermes uses the [Agent Skills standard](https://agentskills.io/) for skill discovery.
 
-    1. **Download** [`ide-rules-hermes.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    1. **Download** [`codeguard-hermes.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
     3. **Copy** the `.hermes/` directory to your project root:
 
@@ -270,7 +270,7 @@ Select your AI coding tool and follow the instructions:
 
     4. **Start a new session** in Hermes to load the rules
 
-**Using multiple tools?** Download [`ide-rules-all.zip`](https://github.com/cosai-oasis/project-codeguard/releases) for all formats in one archive.
+**Using multiple tools?** Download [`codeguard-all.zip`](https://github.com/cosai-oasis/project-codeguard/releases) for all formats in one archive.
 
 !!! tip "Repository Level Installation"
     Installing at the repository level ensures all team members benefit from the security rules automatically when they clone the repository.
@@ -330,11 +330,11 @@ Project CodeGuard supports two rule activation types:
 - **Always-on rules**: Apply to all files in the project. These rules are for baseline safeguards that should always be in context.
 - **Glob-scoped rules**: Apply only to matching file patterns (derived from `languages` in source frontmatter). These rules are for language- or framework-specific guidance.
 
-## Keeping Rules Updated (Automated)
+## Keeping Vendored Rules Updated (Optional)
 
 Typically owned by the **Application Developer** persona (repository maintainer) with **AI System Governance** reviewing and merging update PRs to keep policy current.
 
-For GitHub repositories, you can automate rule updates with a workflow that runs monthly and creates PRs when new versions are available.
+For GitHub repositories that copy CodeGuard files directly into source control, you can optionally automate rule updates with a workflow that runs monthly and creates PRs when new versions are available. This is not needed for install paths that already update through a plugin, marketplace, or remote instructions.
 
 ### Supported Formats
 
@@ -354,6 +354,8 @@ For GitHub repositories, you can automate rule updates with a workflow that runs
 3. Commit and push
 
 The workflow runs monthly (1st at 9:00 UTC) and can also be triggered manually from the **Actions** tab.
+
+This workflow refreshes CodeGuard rule files only. To update bundled skills, agents, or other generated support files, re-download the release archive for your tool.
 
 ## Verify Installation
 

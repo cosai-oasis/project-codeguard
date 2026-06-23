@@ -35,12 +35,14 @@ jobs:
 
           # Format configurations: directory -> zip asset name.
           declare -A FORMATS=(
-            [".cursor/rules"]="ide-rules-cursor.zip"
-            [".windsurf/rules"]="ide-rules-windsurf.zip"
-            [".github/instructions"]="ide-rules-copilot.zip"
-            [".agents/rules"]="ide-rules-antigravity.zip"
-            [".opencode/skills/codeguard/rules"]="ide-rules-opencode.zip"
-            [".agents/skills/codeguard/rules"]="ide-rules-codex.zip"
+            [".cursor/rules"]="codeguard-cursor.zip"
+            [".windsurf/rules"]="codeguard-windsurf.zip"
+            [".github/instructions"]="codeguard-copilot.zip"
+            [".agents/rules"]="codeguard-antigravity.zip"
+            [".opencode/skills/codeguard/rules"]="codeguard-opencode.zip"
+            [".agents/skills/codeguard/rules"]="codeguard-codex.zip"
+            [".openclaw/skills/codeguard/rules"]="codeguard-openclaw.zip"
+            [".hermes/skills/codeguard/rules"]="codeguard-hermes.zip"
           )
 
           # File patterns for each format
@@ -51,6 +53,8 @@ jobs:
             [".agents/rules"]="codeguard-*.md"
             [".opencode/skills/codeguard/rules"]="codeguard-*.md"
             [".agents/skills/codeguard/rules"]="codeguard-*.md"
+            [".openclaw/skills/codeguard/rules"]="codeguard-*.md"
+            [".hermes/skills/codeguard/rules"]="codeguard-*.md"
           )
 
           # Legacy paths: warn so users migrate instead of silently going stale.

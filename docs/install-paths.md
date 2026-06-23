@@ -80,7 +80,7 @@ Before picking a mechanism, decide **who** should end up with CodeGuard active. 
     **Admin responsibilities**
 
     - Requires write access to the repo and a reviewed PR to land the rule files.
-    - Someone on the team owns updates — either manually on each CodeGuard release or via the [auto-update GitHub Action](getting-started.md#keeping-rules-updated-automated), which still needs a reviewer to merge its PRs.
+    - Someone on the team owns updates — either manually on each CodeGuard release or via the [optional auto-update GitHub Action](getting-started.md#keeping-vendored-rules-updated-optional), which still needs a reviewer to merge its PRs.
     - Rule changes are visible in diff/PR history, so treat them like any other code change (review, CODEOWNERS, branch protection).
     - If contributors use different AI tools, you may need to commit multiple format directories (`.cursor/`, `.windsurf/`, `.github/`, …) and keep them in sync.
 
@@ -117,7 +117,7 @@ Static markdown files the AI tool reads from a known directory. Each rule declar
 
 - **Supported by:** Cursor (`.cursor/rules/`), Windsurf (`.windsurf/rules/`), GitHub Copilot (`.github/instructions/`), Antigravity (`.agents/rules/`)
 - **Best for:** Most users. Predictable, version-controlled, diffable in PRs.
-- **Tradeoffs:** You update by re-downloading (or use the [auto-update workflow](getting-started.md#keeping-rules-updated-automated)).
+- **Tradeoffs:** You update by re-downloading (or use the [optional auto-update workflow](getting-started.md#keeping-vendored-rules-updated-optional)).
 - **Responsible CoSAI personas:** Application Developer, with AI System Governance for policy review in PRs.
 
 ### Agent Skills
