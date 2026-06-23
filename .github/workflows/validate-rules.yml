@@ -7,6 +7,7 @@ permissions:
 on:
   pull_request:
     paths:
+      - '.github/workflows/validate-rules.yml'
       - 'sources/**'
       - 'src/**'
       - 'pyproject.toml'
@@ -15,6 +16,7 @@ on:
       - main
       - develop
     paths:
+      - '.github/workflows/validate-rules.yml'
       - 'sources/**'
       - 'src/**'
       - 'pyproject.toml'
@@ -156,6 +158,9 @@ jobs:
 
           echo "✅ All IDE formats generated successfully"
 
+      - name: Test core and OWASP conversion together
+        run: uv run python src/convert_to_ide_formats.py --source core owasp --output-dir /tmp/validate-all-output
+
       - name: Summary
         if: success()
         run: |
@@ -165,4 +170,3 @@ jobs:
           echo "Required files: ✅"
           echo "IDE conversion: ✅"
           echo "Skills directory: ✅"
-

@@ -33,6 +33,7 @@ from validate_versions import set_plugin_version, set_marketplace_version
 # Project root is always one level up from src/
 PROJECT_ROOT = Path(__file__).parent.parent
 _CORE_RULES_REL = Path("sources/rules/core")
+_RULES_ROOT_REL = Path("sources/rules")
 _SKILL_TEMPLATE = PROJECT_ROOT / _CORE_RULES_REL / "codeguard-SKILLS.md.template"
 
 
@@ -309,6 +310,31 @@ def _resolve_source_paths(args) -> list[Path]:
     return resolved
 
 
+def _find_duplicate_rule_filenames(rules_root: Path) -> dict[str, list[Path]]:
+    """Return rule filenames that appear more than once under rules_root."""
+    filename_to_paths: defaultdict[str, list[Path]] = defaultdict(list)
+
+    for source_dir in sorted(path for path in rules_root.iterdir() if path.is_dir()):
+        for rule_file in sorted(source_dir.rglob("codeguard-*.md")):
+            filename_to_paths[rule_file.name].append(rule_file)
+
+    return {
+        filename: paths
+        for filename, paths in filename_to_paths.items()
+        if len(paths) > 1
+    }
+
+
+def _print_duplicate_rule_filenames(
+    duplicates: dict[str, list[Path]], rules_root: Path
+) -> None:
+    print(f"❌ Found {len(duplicates)} duplicate rule filename(s) under {rules_root}:")
+    for filename, paths in sorted(duplicates.items()):
+        relative_paths = [str(path.relative_to(rules_root)) for path in sorted(paths)]
+        print(f"   - {filename} in: {', '.join(relative_paths)}")
+    print("\nPlease rename or remove duplicate rule files.")
+
+
 if __name__ == "__main__":
     import sys
     from argparse import ArgumentParser
@@ -347,22 +373,10 @@ if __name__ == "__main__":
         print(f"❌ Source path(s) not found: {', '.join(str(p) for p in missing)}")
         sys.exit(1)
 
-    # Duplicate check uses the same codeguard-*.md filter as convert_rules.
-    if len(source_paths) > 1:
-        filename_to_sources = defaultdict(list)
-        for source_path in source_paths:
-            for md_file in source_path.rglob("codeguard-*.md"):
-                filename_to_sources[md_file.name].append(source_path.name)
-
-        duplicates = {
-            name: srcs for name, srcs in filename_to_sources.items() if len(srcs) > 1
-        }
-        if duplicates:
-            print(f"❌ Found {len(duplicates)} duplicate filename(s) across sources:")
-            for filename, sources in duplicates.items():
-                print(f"   - {filename} in: {', '.join(sources)}")
-            print("\nPlease rename files to have unique names across all sources.")
-            sys.exit(1)
+    duplicates = _find_duplicate_rule_filenames(PROJECT_ROOT / _RULES_ROOT_REL)
+    if duplicates:
+        _print_duplicate_rule_filenames(duplicates, PROJECT_ROOT / _RULES_ROOT_REL)
+        sys.exit(1)
 
     version = get_version_from_pyproject()
 
