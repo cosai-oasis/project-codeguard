@@ -1050,7 +1050,7 @@
 <p><strong>Admin responsibilities</strong></p>
 <ul>
 <li>Requires write access to the repo and a reviewed PR to land the rule files.</li>
-<li>Someone on the team owns updates — either manually on each CodeGuard release or via the <a href="../getting-started/#keeping-rules-updated-automated">auto-update GitHub Action</a>, which still needs a reviewer to merge its PRs.</li>
+<li>Someone on the team owns updates — either manually on each CodeGuard release or via the <a href="../getting-started/#keeping-vendored-rules-updated-optional">optional auto-update GitHub Action</a>, which still needs a reviewer to merge its PRs.</li>
 <li>Rule changes are visible in diff/PR history, so treat them like any other code change (review, CODEOWNERS, branch protection).</li>
 <li>If contributors use different AI tools, you may need to commit multiple format directories (<code>.cursor/</code>, <code>.windsurf/</code>, <code>.github/</code>, …) and keep them in sync.</li>
 </ul>
@@ -1083,7 +1083,7 @@
 <ul>
 <li><strong>Supported by:</strong> Cursor (<code>.cursor/rules/</code>), Windsurf (<code>.windsurf/rules/</code>), GitHub Copilot (<code>.github/instructions/</code>), Antigravity (<code>.agents/rules/</code>)</li>
 <li><strong>Best for:</strong> Most users. Predictable, version-controlled, diffable in PRs.</li>
-<li><strong>Tradeoffs:</strong> You update by re-downloading (or use the <a href="../getting-started/#keeping-rules-updated-automated">auto-update workflow</a>).</li>
+<li><strong>Tradeoffs:</strong> You update by re-downloading (or use the <a href="../getting-started/#keeping-vendored-rules-updated-optional">optional auto-update workflow</a>).</li>
 <li><strong>Responsible CoSAI personas:</strong> Application Developer, with AI System Governance for policy review in PRs.</li>
 </ul>
 <h3 id="agent-skills">Agent Skills</h3>
