@@ -1,7 +1,7 @@
 ---
 name: codeguard
 description: A CodeGuard security skill that helps AI coding agents write secure code and prevent common vulnerabilities. Use this skill when writing, reviewing, or modifying code to ensure secure-by-default practices are followed.
-codeguard-version: "1.3.1"
+codeguard-version: "1.4.0"
 framework: "Project CodeGuard"
 purpose: "Embed secure-by-default practices into AI coding workflows"
 ---
