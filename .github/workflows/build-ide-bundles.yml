@@ -62,7 +62,7 @@ jobs:
           # Antigravity + Codex share .agents/; scope each zip to its own subpath.
           zip -r ../codeguard-antigravity.zip .agents/rules/
           zip -r ../codeguard-opencode.zip .opencode/
-          zip -r ../codeguard-codex.zip .agents/skills/
+          zip -r ../codeguard-codex.zip .agents/skills/ .codex/agents/
           zip -r ../codeguard-openclaw.zip .openclaw/
           zip -r ../codeguard-hermes.zip .hermes/
           cd ..

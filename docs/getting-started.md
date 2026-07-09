@@ -75,7 +75,7 @@ Select your AI coding tool and follow the instructions:
         cp -r .cursor/ /path/to/your/project/
         ```
 
-    4. **Restart** Cursor to load the rules
+    4. **Restart** Cursor to load the rules and reviewer agent
 
 === "Windsurf"
 
@@ -99,7 +99,7 @@ Select your AI coding tool and follow the instructions:
         cp -r .github/ /path/to/your/project/
         ```
 
-    4. **Restart** your IDE to load the instructions
+    4. **Restart** your IDE to load the instructions and reviewer agent
 
 === "Antigravity"
 
@@ -133,7 +133,7 @@ Select your AI coding tool and follow the instructions:
         cp -r .opencode/ /path/to/your/project/
         ```
 
-    4. **Restart** OpenCode to load the skill
+    4. **Restart** OpenCode to load the skill and reviewer agent
 
     **Option B: Remote Instructions (zero-maintenance)**
 
@@ -177,6 +177,9 @@ Select your AI coding tool and follow the instructions:
     !!! info "Tradeoff"
         The skills approach (Option A) uses glob-scoped rules so only relevant rules are loaded based on the files you're editing. Remote instructions load all 23 rules into every session regardless of language. Remote URLs point to the `main` branch -- pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
 
+        Remote instructions do not install the reviewer agent. Use Option A if
+        you want to invoke `@codeguard-reviewer`.
+
 === "Claude Code"
 
     Claude Code uses a plugin system instead of manual file installation:
@@ -214,14 +217,16 @@ Select your AI coding tool and follow the instructions:
 
     1. **Download** [`codeguard-codex.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
     2. **Extract** the ZIP file
-    3. **Copy** the `.agents/` directory to your project root (Codex
-       discovers skills under `.agents/skills/`):
+    3. **Copy** the `.agents/` and `.codex/` directories to your project root
+       (`.agents/skills/` contains the CodeGuard skill, and `.codex/agents/`
+       contains the optional CodeGuard reviewer agent):
 
         ```bash
         cp -r .agents/ /path/to/your/project/
+        cp -r .codex/ /path/to/your/project/
         ```
 
-    4. **Restart** Codex to load the skill
+    4. **Restart** Codex to load the skill and reviewer agent
 
     !!! info "Migrating from `.codex/skills/`"
         Earlier releases shipped the Codex skill to `.codex/skills/`,
@@ -238,6 +243,9 @@ Select your AI coding tool and follow the instructions:
     ```
 
     Once installed, invoke the skill with `$codeguard` or let Codex use it automatically when writing or reviewing code.
+
+    The skill installer installs the skill only. To use the reviewer agent,
+    copy `.codex/agents/` from the Codex release archive or a source build.
 
     !!! info "Codex Skills Documentation"
         For more information, see the [OpenAI Codex Skills documentation](https://developers.openai.com/codex/skills/).
@@ -308,7 +316,8 @@ uv run python src/convert_to_ide_formats.py --source core owasp
 cp -r dist/.cursor/ /path/to/your/project/
 cp -r dist/.windsurf/ /path/to/your/project/
 cp -r dist/.github/ /path/to/your/project/
-cp -r dist/.agents/ /path/to/your/project/   # Antigravity rules + Codex skills
+cp -r dist/.agents/ /path/to/your/project/   # Antigravity rules + Codex skill
+cp -r dist/.codex/ /path/to/your/project/    # Codex reviewer agent
 cp -r dist/.opencode/ /path/to/your/project/
 cp -r dist/.openclaw/ /path/to/your/project/
 cp -r dist/.hermes/ /path/to/your/project/
@@ -359,7 +368,8 @@ This workflow refreshes CodeGuard rule files only. To update bundled skills, age
 
 ## Verify Installation
 
-After installation, your project structure should include:
+After installation, your project structure should include the directories for
+the tool or tools you selected:
 
 ```
 your-project/
@@ -367,9 +377,16 @@ your-project/
 │   ├── rules/                         # Antigravity rules
 │   └── skills/
 │       └── codeguard/                 # Codex skill (SKILL.md + rules/)
+├── .codex/
+│   └── agents/
+│       └── codeguard-reviewer.toml
 ├── .cursor/
+│   ├── agents/
+│   │   └── codeguard-reviewer.md
 │   └── rules/
 ├── .github/
+│   ├── agents/
+│   │   └── codeguard-reviewer.agent.md
 │   └── instructions/
 ├── .hermes/
 │   └── skills/
@@ -378,6 +395,8 @@ your-project/
 │   └── skills/
 │       └── codeguard/
 ├── .opencode/
+│   ├── agents/
+│   │   └── codeguard-reviewer.md
 │   └── skills/
 │       └── codeguard/
 ├── .windsurf/

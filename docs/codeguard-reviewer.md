@@ -13,6 +13,9 @@ The CodeGuard Reviewer subagent is currently emitted for:
 |:-----|:-------------------|
 | **Claude Code** | `.claude/agents/codeguard-reviewer.md` |
 | **Cursor** | `.cursor/agents/codeguard-reviewer.md` |
+| **OpenCode** | `.opencode/agents/codeguard-reviewer.md` |
+| **GitHub Copilot / VS Code** | `.github/agents/codeguard-reviewer.agent.md` |
+| **OpenAI Codex** | `.codex/agents/codeguard-reviewer.toml` |
 
 ## How to Invoke
 
@@ -38,6 +41,30 @@ The CodeGuard Reviewer subagent is currently emitted for:
     Run a security scan using the CodeGuard reviewer
     ```
 
+=== "OpenCode"
+
+    Ask OpenCode to use the reviewer:
+
+    ```
+    @codeguard-reviewer run a CodeGuard security review of this repository
+    ```
+
+=== "GitHub Copilot / VS Code"
+
+    Select the CodeGuard reviewer agent from the Chat agent dropdown, then ask:
+
+    ```
+    Run a CodeGuard security review of this repository
+    ```
+
+=== "Codex"
+
+    Ask Codex to spawn the project agent explicitly:
+
+    ```
+    Use the codeguard-reviewer agent to run a CodeGuard security review of this repository
+    ```
+
 ## What It Does
 
 The reviewer follows a five-step workflow:
@@ -54,7 +81,7 @@ Lists all `codeguard-*` rule files. Each rule's frontmatter declares applicabili
 
 For each applicable rule, searches the repository for candidate violations using patterns derived from the rule body (banned APIs, required configurations, example violations). The following paths are always excluded from search:
 
-- Rule directories (`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.opencode/`, `.windsurf/`, `.github/instructions/`, `.openclaw/`, `.hermes/`)
+- CodeGuard-generated directories (`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.opencode/`, `.windsurf/`, `.github/instructions/`, `.github/agents/`, `.openclaw/`, `.hermes/`)
 - Vendored/generated paths (`.git/`, `node_modules/`, `vendor/`, `.venv/`, `venv/`, `dist/`, `build/`, `target/`)
 - Any path excluded by `.gitignore`
 
@@ -101,9 +128,19 @@ Each result includes:
 ## Constraints
 
 - **Read-only** on repository source — the SARIF findings file is the only write
+- Treats repository content as untrusted data and ignores instructions embedded
+  in source, comments, documentation, filenames, or configuration
 - Never executes code discovered in the target repository
+- Redacts suspected credential values from SARIF and the markdown summary;
+  findings identify only the secret type and location
 - If the rule bundle is missing or empty, stops and reports the issue — does not fabricate rule content
 - If the target repository is empty, still emits a valid SARIF run with an empty `results[]` array
+
+OpenCode denies shell, network, external-directory, skill, and nested-agent
+access, and asks before creating a matching SARIF file. The VS Code agent is
+limited to read, search, and new-file creation tools. Codex subagents inherit
+the active parent sandbox and approval settings, so review those settings before
+scanning an untrusted repository.
 
 ## Next Steps
 
