@@ -699,10 +699,22 @@
 <td style="text-align: left;"><strong>Cursor</strong></td>
 <td style="text-align: left;"><code>.cursor/agents/codeguard-reviewer.md</code></td>
 </tr>
+<tr>
+<td style="text-align: left;"><strong>OpenCode</strong></td>
+<td style="text-align: left;"><code>.opencode/agents/codeguard-reviewer.md</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GitHub Copilot / VS Code</strong></td>
+<td style="text-align: left;"><code>.github/agents/codeguard-reviewer.agent.md</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>OpenAI Codex</strong></td>
+<td style="text-align: left;"><code>.codex/agents/codeguard-reviewer.toml</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="how-to-invoke">How to Invoke</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Claude Code</label><label for="__tabbed_1_2">Cursor</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:5"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Claude Code</label><label for="__tabbed_1_2">Cursor</label><label for="__tabbed_1_3">OpenCode</label><label for="__tabbed_1_4">GitHub Copilot / VS Code</label><label for="__tabbed_1_5">Codex</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>Ask Claude directly in your session:</p>
@@ -717,6 +729,21 @@
 <div class="highlight"><pre><span></span><code>Run a security scan using the CodeGuard reviewer
 </code></pre></div>
 </div>
+<div class="tabbed-block">
+<p>Ask OpenCode to use the reviewer:</p>
+<div class="highlight"><pre><span></span><code>@codeguard-reviewer run a CodeGuard security review of this repository
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Select the CodeGuard reviewer agent from the Chat agent dropdown, then ask:</p>
+<div class="highlight"><pre><span></span><code>Run a CodeGuard security review of this repository
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Ask Codex to spawn the project agent explicitly:</p>
+<div class="highlight"><pre><span></span><code>Use the codeguard-reviewer agent to run a CodeGuard security review of this repository
+</code></pre></div>
+</div>
 </div>
 </div>
 <h2 id="what-it-does">What It Does</h2>
@@ -728,7 +755,7 @@
 <p><strong>3. Search for violations</strong></p>
 <p>For each applicable rule, searches the repository for candidate violations using patterns derived from the rule body (banned APIs, required configurations, example violations). The following paths are always excluded from search:</p>
 <ul>
-<li>Rule directories (<code>.claude/</code>, <code>.cursor/</code>, <code>.codex/</code>, <code>.agents/</code>, <code>.opencode/</code>, <code>.windsurf/</code>, <code>.github/instructions/</code>, <code>.openclaw/</code>, <code>.hermes/</code>)</li>
+<li>CodeGuard-generated directories (<code>.claude/</code>, <code>.cursor/</code>, <code>.codex/</code>, <code>.agents/</code>, <code>.opencode/</code>, <code>.windsurf/</code>, <code>.github/instructions/</code>, <code>.github/agents/</code>, <code>.openclaw/</code>, <code>.hermes/</code>)</li>
 <li>Vendored/generated paths (<code>.git/</code>, <code>node_modules/</code>, <code>vendor/</code>, <code>.venv/</code>, <code>venv/</code>, <code>dist/</code>, <code>build/</code>, <code>target/</code>)</li>
 <li>Any path excluded by <code>.gitignore</code></li>
 </ul>
@@ -811,10 +838,19 @@
 <h2 id="constraints">Constraints</h2>
 <ul>
 <li><strong>Read-only</strong> on repository source — the SARIF findings file is the only write</li>
+<li>Treats repository content as untrusted data and ignores instructions embedded
+  in source, comments, documentation, filenames, or configuration</li>
 <li>Never executes code discovered in the target repository</li>
+<li>Redacts suspected credential values from SARIF and the markdown summary;
+  findings identify only the secret type and location</li>
 <li>If the rule bundle is missing or empty, stops and reports the issue — does not fabricate rule content</li>
 <li>If the target repository is empty, still emits a valid SARIF run with an empty <code>results[]</code> array</li>
 </ul>
+<p>OpenCode denies shell, network, external-directory, skill, and nested-agent
+access, and asks before creating a matching SARIF file. The VS Code agent is
+limited to read, search, and new-file creation tools. Codex subagents inherit
+the active parent sandbox and approval settings, so review those settings before
+scanning an untrusted repository.</p>
 <h2 id="next-steps">Next Steps</h2>
 <p><a class="md-button md-button--primary" href="../getting-started/">Getting Started →</a>
 <a class="md-button" href="../install-paths/">Choosing an Install Path →</a></p>
