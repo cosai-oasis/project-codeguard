@@ -386,17 +386,19 @@ cosai-oasis/project-codeguard/
 │   │   └── agents/codeguard-reviewer.md # Subagent preloads the skill above
 │   ├── .cursor/                     # Cursor IDE format (+ subagent)
 │   ├── .windsurf/                   # Windsurf IDE format
-│   ├── .github/                     # Copilot format
+│   ├── .github/                     # Copilot format (+ custom agent)
 │   ├── .agents/                     # Cross-tool dir (Antigravity + Codex)
 │   │   ├── rules/                      # Google Antigravity rules
 │   │   └── skills/codeguard/      # OpenAI Codex skill (SKILL + rules/)
-│   ├── .opencode/                   # OpenCode bundle (skill only)
+│   ├── .codex/                      # Codex custom agents
+│   │   └── agents/codeguard-reviewer.toml
+│   ├── .opencode/                   # OpenCode bundle (skill + subagent)
 │   ├── .openclaw/                   # OpenClaw bundle (skill only)
 │   └── .hermes/                     # Hermes bundle (skill only)
 │
 └── src/
-    ├── artifact_targets.py          # SKILL_COPY_HOSTS + AGENT_HOSTS
-    ├── emit_agents.py               # Emits AGENT.md bundles per host
+    ├── artifact_targets.py          # SKILL_COPY_HOSTS + agent target maps
+    ├── emit_agents.py               # Emits Markdown/TOML agent bundles per host
     └── convert_to_ide_formats.py    # Conversion entrypoint
 ```
 
