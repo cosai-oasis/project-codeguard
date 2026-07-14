@@ -53,6 +53,7 @@ nav:
   - CodeGuard Reviewer: codeguard-reviewer.md
   - Skills: skills.md
   - Custom Rules: custom-rules.md
+  - Project Decisions: decisions/index.md
   - FAQ: faq.md
 markdown_extensions:
   - admonition
@@ -69,4 +70,3 @@ markdown_extensions:
       
 extra:
   generator: false
-
