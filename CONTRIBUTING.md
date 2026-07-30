@@ -1,78 +1,136 @@
-# Contributing 
+# Contributing
 
-## How to contribute?
-
-The [Coalition for Secure AI (CoSAI)](https://www.coalitionforsecureai.org/) is an open-source project that is actively seeking contributions from any willing participants. Here are some guidelines for people that would like to contribute to the project.
+Project CodeGuard is part of the [Coalition for Secure AI (CoSAI)](https://www.coalitionforsecureai.org/), an [OASIS Open Project](https://www.oasis-open.org/open-projects/). This guide explains how to contribute to this repository while preserving the CoSAI and OASIS project requirements that apply to all contributions.
 
 In general, a CoSAI Contributor is expected to:
+
 * be knowledgeable in one or more fields related to the project
-* contribute to the developing and finalizing the workstream deliverables
+* contribute to developing and finalizing workstream deliverables
 * be reliable in completing issues to which they have been assigned
 * show commitment over time with one or more PRs merged
 * follow the project style and testing guidelines
 * follow branch, PR, and code style conventions
 * contribute in ways that substantially improve the quality of the project and the experience of people who use it
 
-When contributing to any CoSAI repository, please first discuss the change you wish to make via a Github Issue, or in an email to the specific Workstream mailing list.
+When contributing to any CoSAI repository, please first discuss the change you wish to make via a GitHub issue, or in an email to the specific Workstream mailing list.
 
 Please note this project follows the [OASIS Participants Code of Conduct](https://www.oasis-open.org/policies-guidelines/oasis-participants-code-of-conduct/); please be respectful of differing opinions when discussing potential contributions.
 
-### First-time contributors
+## Finding or proposing work
 
-If you are new to the CoSAI project and are looking for an entry-point to make your first contribution, look at the open issues. Issues that are tagged with `good first issues` are meant to be small pieces of work that a first-time contributor can pick-up and complete. If you find one that you'd like to work on, please assign yourself or comment on the issue and one of the maintainers can assign it for you.
+Use the current Project CodeGuard repository channels:
 
-## Submitting a new issue
+* Browse [open issues](https://github.com/cosai-oasis/project-codeguard/issues) for existing work.
+* Look for issues labeled [`good first issue`](https://github.com/cosai-oasis/project-codeguard/labels/good%20first%20issue) if you are new to the project.
+* Use the [New Rule Request template](https://github.com/cosai-oasis/project-codeguard/issues/new?template=new-rule.yml) to propose a new CodeGuard rule.
+* Use the [Rule Feedback template](https://github.com/cosai-oasis/project-codeguard/issues/new?template=rule-feedback.yml) to report rule problems, suggest improvements, or share feedback from an AI coding tool.
+* Open a regular [new issue](https://github.com/cosai-oasis/project-codeguard/issues/new/choose) if the available templates do not fit.
 
-If you want to create a new issue that doesn't exist already, just open a new one. See [here how to do that](https://github.com/cosai-oasis/cosai-tsc/blob/main/.github/ISSUE_TEMPLATE/issue.md) and follow the guidelines in one of our [issue templates](https://github.com/cosai-oasis/cosai-tsc/blob/main/.github/ISSUE_TEMPLATE/issue.md).
+If you want to work on an issue, comment on the issue and ask a maintainer to assign it to you. Contributors without repository write access cannot assign themselves. Wait for maintainer confirmation before doing substantial work, especially for larger rule, architecture, or governance-related changes.
 
-## Submitting a new pull request
+## Submitting a pull request
 
 Follow these steps when submitting a pull request:
 
-1. Fork this repo into your GitHub account. Read more about [forking a repo on Github here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
-2. Create a new branch, based on the `main` branch, with a name that concisely describes what you’re working on.
-3. Ensure that your changes do not cause any existing tests to fail.
-4. Submit a pull request against the `main` branch.
+1. Fork this repository into your GitHub account. Read more about [forking a repository on GitHub](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo).
+2. Create a branch in your fork from the latest `main` branch. Use a short descriptive branch name, such as `fix-rule-frontmatter`, `add-logging-rule-guidance`, or `docs-install-paths`.
+3. Make the smallest complete change that addresses the issue or proposal.
+4. Run the applicable validation listed below.
+5. Push your branch to your fork and open a pull request against `cosai-oasis/project-codeguard:main`.
+6. Link the issue your PR addresses, describe what changed, and list the validation you ran.
+
+Commit messages should be concise and descriptive. This repository commonly uses conventional-style subjects for automation and maintenance work, for example `docs: Update contributing guide`, `fix: Validate rule metadata`, or `chore: Update CodeGuard rules to v1.4.0`. A strict commit-message format is not required, but avoid vague messages such as `update` or `fix stuff`.
+
+Keep your branch current with `main` before review or merge. Rebasing is fine for your fork branch, but do not rewrite shared branches owned by other contributors.
+
+## Authored sources and generated artifacts
+
+Most contributions should edit authored sources, not generated bundles.
+
+Authored files include:
+
+* `sources/rules/core/` - core CodeGuard rule sources distributed in standard bundles.
+* `sources/rules/owasp/` - supplementary OWASP-based rule sources used for deeper review and optional conversion.
+* `sources/skills/` - authored skill workflows and their reference material.
+* `sources/agents/` - authored CodeGuard reviewer agent source.
+* `src/` - Python converters, validators, format emitters, and related tooling.
+* `src/codeguard-mcp/` - the CodeGuard MCP server package and tests.
+* `docs/`, `mkdocs.yml`, and top-level Markdown files - documentation.
+* `.github/workflows/` and `.github/ISSUE_TEMPLATE/` - CI and contribution-channel configuration.
+
+Generated or derived files include:
+
+* `skills/codeguard/` - committed generated Agent Skill output for the core rules. Do not edit this directory by hand. If you change core rules, the skill template, converter behavior, or metadata that affects the generated skill, regenerate it with `uv run python src/convert_to_ide_formats.py` and commit the resulting `skills/codeguard/` changes.
+* `dist/` - generated release bundle output for IDE and agent formats. This directory is ignored and should not be committed.
+* `test-output/` - local conversion-validation output. This directory is ignored and should not be committed.
+* Release ZIP archives such as `codeguard-cursor.zip`, `codeguard-claude.zip`, and `codeguard-all.zip` - built by release automation, not by normal PRs.
+
+The conversion script reads `sources/rules/` and emits IDE-specific rule formats for Cursor, Windsurf, GitHub Copilot, Antigravity, OpenCode, Codex, OpenClaw, Hermes, and Claude. The default conversion source is `sources/rules/core/`; use `--source core owasp` when validating core and OWASP conversion together.
+
+## Validation
+
+Run the validation that matches the files you changed. The commands below mirror the current GitHub Actions workflows.
+
+For rule sources, converters, skill generation, or agent emission:
+
+```bash
+uv sync
+uv run python src/validate_unified_rules.py sources/
+uv run python src/convert_to_ide_formats.py
+uv run python src/convert_to_ide_formats.py --output-dir test-output
+uv run python src/convert_to_ide_formats.py --source core owasp --output-dir /tmp/validate-all-output
+```
+
+After running the default conversion, check whether `skills/codeguard/` changed. Commit those changes when they are expected. Do not commit `dist/` or `test-output/`.
+
+For release-version or release-bundle changes:
+
+```bash
+uv run python src/validate_unified_rules.py sources/
+uv run python src/validate_versions.py <release-version>
+uv run python src/convert_to_ide_formats.py
+```
+
+The `Build and Release IDE Bundles` workflow runs those checks when a release is published, then creates and uploads the release ZIP assets.
+
+For documentation changes under `docs/` or `mkdocs.yml`:
+
+```bash
+uv sync
+uv run mkdocs build --strict
+```
+
+The `Deploy Documentation` workflow deploys the site from `main` when documentation paths change.
+
+For CodeGuard MCP server changes under `src/codeguard-mcp/`:
+
+```bash
+uv sync
+uv run pytest
+uv run ruff check .
+```
+
+Run those commands from `src/codeguard-mcp/`. The MCP server has its own `pyproject.toml`, dependency group, tests, and Ruff configuration.
+
+For top-level Python tooling changes under `src/`, also run the rule and conversion validation commands above because the `Validate Rules` workflow is the current CI gate for that tooling.
 
 ## Code review process
-1. PR will be reviewed by the maintainers and approved by workstream leads or their delegates (maintainers)
-    * Grammatical errors, punctuation, white spaces? Need PR? 
-3. Responses are due in 3 business days
-   
-The workstream maintainers are responsible for reviewing pull requests and issues in a timely manner (3 business days).
 
-[Lazy consensus](https://openoffice.apache.org/docs/governance/lazyConsensus.html) is practiced for all projects and documents, including the main project repository and draft documents using other tools than Github.
+Routine pull requests are reviewed by the Project CodeGuard maintainers. Maintainers may request changes for correctness, security impact, generated artifact freshness, documentation clarity, or validation coverage.
 
-Major changes on Github or to a WS document using any other official project platform should be accompanied by a post on the WS mailing list as appropriate. Author(s) of the proposal, Pull Requests, or issues, will give a time period of no less than seven (7) business days for comment and remain cognizant of popular observed world holidays.
+Reviewers and contributors should aim to respond within 3 business days. If a PR is blocked, say what decision or information is needed so maintainers can help move it forward.
 
-## Branch naming and commit messages
+[Lazy consensus](https://openoffice.apache.org/docs/governance/lazyConsensus.html) is practiced for all projects and documents, including the main project repository and draft documents using other tools than GitHub.
 
-### Branch naming
+Major changes on GitHub or to a WS document using any other official project platform should be accompanied by a post on the WS mailing list as appropriate. Author(s) of the proposal, pull requests, or issues, will give a time period of no less than seven (7) business days for comment and remain cognizant of popular observed world holidays.
 
-* `main` – main development branch, feature and release branches branched from it, changes only through the PR process.
-* `feature` – feature/this-is-a-new-feature-branch
-* `codebugfix` – codebugfix/name-of-the-bug
-* `languagefix` - languagefix/fix-details
-* `release` – release/1.0.0 - cut from main when ready
-
-### Rebasing note
-
-After completing work on a feature branch, rebase main before opening a PR. After PR is approved, rebase again to make sure changes from the latest main are picked up before merging the PR.
-
-### Commit messages format:
-
-In the commit message, always continue the sentence "This commit does ...".
-
- Examples of good commit messages:
-"This commit renames examples folder in the root of the repo to reference-implementations"
-"This commit bumps dependency packages versions to fix potential security issues".
+Use routine PR review for ordinary fixes, documentation improvements, rule refinements, tests, and generated-artifact updates. Use the broader lazy-consensus process when a change is major, governance-relevant, affects Workstream deliverables outside this repository, or should be visible to the Workstream mailing list before maintainers merge it.
 
 ## Signing the eCLA/iCLA
 
-Anyone can do a pull request and commit. In order for your work to be merged, you will need to sign the iCLA (individual contributor agreement) if you are just contributing for yourself. If you are contributing on behalf of your company, you will also need to to sign the eCLA (entity contributor agreement). [Learn more about the CLAs here](https://www.oasis-open.org/open-projects/cla/).
+Anyone can do a pull request and commit. In order for your work to be merged, you will need to sign the iCLA (individual contributor agreement) if you are just contributing for yourself. If you are contributing on behalf of your company, you will also need to sign the eCLA (entity contributor agreement). [Learn more about the CLAs here](https://www.oasis-open.org/open-projects/cla/).
 
-The iCLA is administered by a bot which will comment on your PR and direct you to sign the iCLA if you haven’t previously done so. This happens automatically when people submit a pull request.
-
+The iCLA is administered by a bot which will comment on your PR and direct you to sign the iCLA if you haven't previously done so. This happens automatically when people submit a pull request.
 
 ## Feedback
 
