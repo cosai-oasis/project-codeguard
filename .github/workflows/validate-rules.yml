@@ -108,6 +108,16 @@ jobs:
             echo "❌ Windsurf rules not generated"
             exit 1
           fi
+
+          if [ ! -f "test-output/.devin/skills/codeguard/SKILL.md" ]; then
+            echo "❌ Devin SKILL.md not generated at .devin/skills/codeguard/"
+            exit 1
+          fi
+
+          if ! find "test-output/.devin/skills/codeguard/rules" -name 'codeguard-*.md' 2>/dev/null | grep -q .; then
+            echo "❌ Devin rules not generated at .devin/skills/codeguard/rules/"
+            exit 1
+          fi
           
           if [ ! -d "test-output/.github" ]; then
             echo "❌ Copilot instructions not generated"

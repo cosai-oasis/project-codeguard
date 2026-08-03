@@ -80,13 +80,14 @@ class RuleConverter:
     Example:
         # Create converter
         from converter import RuleConverter, ConversionResult, FormatOutput
-        from formats import CursorFormat, WindsurfFormat
+        from formats import CursorFormat, WindsurfFormat, DevinFormat
         from utils import get_version_from_pyproject
 
         version = get_version_from_pyproject()
         converter = RuleConverter(formats=[
             CursorFormat(version),
-            WindsurfFormat(version)
+            WindsurfFormat(version),
+            DevinFormat(version)
         ])
 
         # Convert a file

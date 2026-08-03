@@ -58,7 +58,7 @@ class BaseFormat(ABC):
         Return the unique identifier for this format.
 
         Returns:
-            Format name (e.g., 'cursor', 'windsurf', 'copilot')
+            Format name (e.g., 'cursor', 'windsurf', 'devin', 'copilot')
         """
         pass
 

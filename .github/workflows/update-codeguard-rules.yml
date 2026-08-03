@@ -37,6 +37,7 @@ jobs:
           declare -A FORMATS=(
             [".cursor/rules"]="codeguard-cursor.zip"
             [".windsurf/rules"]="codeguard-windsurf.zip"
+            [".devin/skills/codeguard/rules"]="codeguard-devin.zip"
             [".github/instructions"]="codeguard-copilot.zip"
             [".agents/rules"]="codeguard-antigravity.zip"
             [".opencode/skills/codeguard/rules"]="codeguard-opencode.zip"
@@ -49,12 +50,23 @@ jobs:
           declare -A PATTERNS=(
             [".cursor/rules"]="codeguard-*.mdc"
             [".windsurf/rules"]="codeguard-*.md"
+            [".devin/skills/codeguard/rules"]="codeguard-*.md"
             [".github/instructions"]="codeguard-*.instructions.md"
             [".agents/rules"]="codeguard-*.md"
             [".opencode/skills/codeguard/rules"]="codeguard-*.md"
             [".agents/skills/codeguard/rules"]="codeguard-*.md"
             [".openclaw/skills/codeguard/rules"]="codeguard-*.md"
             [".hermes/skills/codeguard/rules"]="codeguard-*.md"
+          )
+
+          # Agent Skill rule directories -> their parent skill directories.
+          # These bundles must update SKILL.md along with their rule files.
+          declare -A SKILL_ROOTS=(
+            [".devin/skills/codeguard/rules"]=".devin/skills/codeguard"
+            [".opencode/skills/codeguard/rules"]=".opencode/skills/codeguard"
+            [".agents/skills/codeguard/rules"]=".agents/skills/codeguard"
+            [".openclaw/skills/codeguard/rules"]=".openclaw/skills/codeguard"
+            [".hermes/skills/codeguard/rules"]=".hermes/skills/codeguard"
           )
 
           # Legacy paths: warn so users migrate instead of silently going stale.
@@ -91,8 +103,28 @@ jobs:
             exit 0
           fi
 
-          # Get current version from any rule file
-          CURRENT_VERSION=$(grep -rh "^version:" $DETECTED_DIRS 2>/dev/null | head -1 | awk '{print $2}') || true
+          # Agent Skill rule files do not carry a version field, so read their
+          # version from SKILL.md. Only skip the update when every detected
+          # format reports the same version.
+          CURRENT_VERSION=""
+          for dir in $DETECTED_DIRS; do
+            dir_version=""
+            skill_root="${SKILL_ROOTS[$dir]:-}"
+            if [ -n "$skill_root" ] && [ -f "$skill_root/SKILL.md" ]; then
+              dir_version=$(sed -n 's/^codeguard-version: *"\([^"]*\)"/\1/p' "$skill_root/SKILL.md" | head -1)
+            else
+              pattern="${PATTERNS[$dir]}"
+              dir_version=$(grep -h "^version:" "$dir"/$pattern 2>/dev/null | head -1 | awk '{print $2}') || true
+            fi
+            dir_version="${dir_version:-0.0.0}"
+
+            if [ -z "$CURRENT_VERSION" ]; then
+              CURRENT_VERSION="$dir_version"
+            elif [ "$CURRENT_VERSION" != "$dir_version" ]; then
+              CURRENT_VERSION="mixed"
+              break
+            fi
+          done
           CURRENT_VERSION="${CURRENT_VERSION:-0.0.0}"
           echo "Current version: $CURRENT_VERSION"
 
@@ -138,17 +170,39 @@ jobs:
               continue
             }
 
-            # Extract and update
-            rm -f "$dir"/$pattern 2>/dev/null || true
+            # Extract and validate the archive before replacing existing files.
             unzip -q -o "/tmp/codeguard-update/$asset" -d /tmp/codeguard-update/
 
-            # Copy rules from extracted zip
             SOURCE_DIR="/tmp/codeguard-update/$dir"
-            if [ -d "$SOURCE_DIR" ] && cp "$SOURCE_DIR"/$pattern "$dir/" 2>/dev/null; then
+            skill_root="${SKILL_ROOTS[$dir]:-}"
+            source_skill=""
+            if [ -n "$skill_root" ]; then
+              source_skill="/tmp/codeguard-update/$skill_root/SKILL.md"
+            fi
+
+            if [ ! -d "$SOURCE_DIR" ] || ! ls "$SOURCE_DIR"/$pattern 1>/dev/null 2>&1; then
+              echo "Warning: No files found in $SOURCE_DIR"
+              rm -rf /tmp/codeguard-update/*
+              continue
+            fi
+            if [ -n "$source_skill" ] && [ ! -f "$source_skill" ]; then
+              echo "Warning: SKILL.md not found in $asset"
+              rm -rf /tmp/codeguard-update/*
+              continue
+            fi
+
+            rm -f "$dir"/$pattern 2>/dev/null || true
+            cp "$SOURCE_DIR"/$pattern "$dir/"
+            if [ -n "$source_skill" ]; then
+              mkdir -p "$skill_root"
+              cp "$source_skill" "$skill_root/SKILL.md"
+            fi
+
+            if ls "$dir"/$pattern 1>/dev/null 2>&1; then
               UPDATED="$UPDATED $dir"
               echo "Updated: $dir"
             else
-              echo "Warning: No files found in $SOURCE_DIR"
+              echo "Warning: Failed to update $dir"
             fi
 
             rm -rf /tmp/codeguard-update/*

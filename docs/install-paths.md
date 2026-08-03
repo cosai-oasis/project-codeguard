@@ -20,7 +20,12 @@ This page helps you pick the right path for your situation. For step-by-step ins
 | **Already running MCP infrastructure** | MCP server (self-hosted) | Rules served dynamically; integrates with your existing MCP tooling. |
 
 !!! tip "Not sure? Start here"
-    Download the pre-built rule files for your tool from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases) and drop them into your repo. You can switch routes later — the underlying rules are the same.
+    Download the pre-built bundle for your tool from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases) and drop it into your repo. You can switch routes later — the underlying rules are the same.
+
+!!! warning "Windsurf deprecation period"
+    Windsurf bundles remain supported during the transition period. The final
+    supported release and removal date will be announced in advance through
+    the release notes. Devin support is additive and uses a separate bundle.
 
 ## Fast Decision Tree
 
@@ -82,7 +87,7 @@ Before picking a mechanism, decide **who** should end up with CodeGuard active. 
     - Requires write access to the repo and a reviewed PR to land the rule files.
     - Someone on the team owns updates — either manually on each CodeGuard release or via the [optional auto-update GitHub Action](getting-started.md#keeping-vendored-rules-updated-optional), which still needs a reviewer to merge its PRs.
     - Rule changes are visible in diff/PR history, so treat them like any other code change (review, CODEOWNERS, branch protection).
-    - If contributors use different AI tools, you may need to commit multiple format directories (`.cursor/`, `.windsurf/`, `.github/`, …) and keep them in sync.
+    - If contributors use different AI tools, you may need to commit multiple format directories (`.cursor/`, `.windsurf/`, `.devin/`, `.github/`, …) and keep them in sync.
 
     **Choose this when:** you want consistent security guidance for everyone working in a specific codebase. This is the **recommended default** for most teams.
 
@@ -124,7 +129,7 @@ Static markdown files the AI tool reads from a known directory. Each rule declar
 
 A skill is a self-describing capability the model invokes **on demand** when the task is security-relevant. Nothing loads until the model decides it's needed.
 
-- **Supported by:** Cursor (`.cursor/skills/`), Windsurf (`.windsurf/skills/`), OpenCode (`.opencode/skills/`), Codex (`.agents/skills/`), OpenClaw (`.openclaw/skills/`), Hermes (`.hermes/skills/`)
+- **Supported by:** Cursor (`.cursor/skills/`), Windsurf (`.windsurf/skills/`), Devin (`.devin/skills/`), OpenCode (`.opencode/skills/`), Codex (`.agents/skills/`), OpenClaw (`.openclaw/skills/`), Hermes (`.hermes/skills/`)
 - **Best for:** Context-sensitive workflows, polyglot repos, tools that natively support the [Agent Skills standard](https://agentskills.io/).
 - **Tradeoffs:** Activation depends on the model recognizing the task as security-relevant. Slightly less deterministic than always-on rule files.
 - **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers supplying the skill discovery and invocation model.
@@ -254,14 +259,14 @@ An administrator configures the rules once in the vendor's team/org settings; th
     Not every tool offers centrally pushed rules. For these, use **project-scope** install (commit rules to each repo) or a shared template repository as your enforcement mechanism:
 
     - **OpenCode** — open-source CLI with no vendor dashboard; closest equivalent is a shared `opencode.json` committed to repos.
-    - **Codex, Antigravity, Windsurf** — check current vendor documentation; at the time of writing we have not verified an org-level rule-push mechanism for these tools.
+    - **Codex, Antigravity, Windsurf, Devin** — check current vendor documentation; at the time of writing we have not verified an org-level rule-push mechanism for these tools.
     - **OpenClaw, Hermes** — filesystem-based skill discovery only; no central admin layer.
 
 ### MCP server
 
 The AI tool connects to a Model Context Protocol server that exposes CodeGuard rules as a resource or tool. Rules are fetched dynamically per query rather than stored as static files.
 
-- **Supported by:** Cursor, Windsurf, GitHub Copilot, Claude Code (any MCP-capable client)
+- **Supported by:** Cursor, Windsurf, Devin, GitHub Copilot, Claude Code (any MCP-capable client)
 - **Best for:** Teams that already operate MCP infrastructure and want centralized, live rule serving.
 - **Tradeoffs:** Requires a running server process. Adds network latency. You manage the server lifecycle.
 - **Responsible CoSAI personas:** AI Platform Provider (hosts and operates the MCP server), with AI System Governance owning the served policy, Agentic Platform and Framework Providers integrating MCP into IDEs, and Application Developer consuming the MCP-served rules.
@@ -385,6 +390,7 @@ Most tools look for rules/skills in **two** places: inside the current repositor
     |:---|:---|
     | Cursor | `<repo>/.cursor/rules/` |
     | Windsurf | `<repo>/.windsurf/rules/` |
+    | Devin | `<repo>/.devin/skills/` |
     | GitHub Copilot | `<repo>/.github/instructions/` |
     | Antigravity | `<repo>/.agents/rules/` |
     | OpenCode | `<repo>/.opencode/skills/` |
@@ -406,6 +412,7 @@ Most tools look for rules/skills in **two** places: inside the current repositor
     |:---|:---|
     | Cursor | `~/.cursor/rules/` |
     | Windsurf | `~/.windsurf/rules/` |
+    | Devin | Repository-scoped only; use `<repo>/.devin/skills/` |
     | OpenCode | `~/.config/opencode/skills/` |
     | Codex | `~/.agents/skills/` |
     | Claude Code | `~/.claude/skills/` or `/plugin install` (user-global by default) |

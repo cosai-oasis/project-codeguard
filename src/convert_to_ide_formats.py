@@ -1,10 +1,10 @@
 """
 Convert Unified Rules to IDE Formats
 
-Transforms the unified markdown sources into IDE-specific bundles (Cursor,
-Windsurf, Copilot, Agent Skills, Antigravity, OpenCode, Codex). This script is
-the main entry point for producing distributable rule packs from the sources/
-directory.
+Transforms the unified markdown sources into IDE- and agent-specific bundles
+(Cursor, Windsurf, Devin, Copilot, Agent Skills, Antigravity, OpenCode, Codex).
+This script is the main entry point for producing distributable rule packs from
+the sources/ directory.
 """
 
 import re
@@ -18,6 +18,7 @@ from emit_agents import emit_agents
 from formats import (
     CursorFormat,
     WindsurfFormat,
+    DevinFormat,
     CopilotFormat,
     AgentSkillsFormat,
     AntigravityFormat,
@@ -135,6 +136,7 @@ def convert_rules(
     # Only include Agent Skills–based formats (skills with SKILL.md) for core rules
     if include_agentskills:
         all_formats.append(AgentSkillsFormat(version))
+        all_formats.append(DevinFormat(version))
         all_formats.append(OpenCodeFormat(version))
         all_formats.append(CodexFormat(version))
         all_formats.append(OpenClawFormat(version))
@@ -384,7 +386,10 @@ if __name__ == "__main__":
     has_core = _CORE_RULES_REL in source_paths
     if has_core and not _SKILL_TEMPLATE.exists():
         print(f"❌ SKILL.md template not found at {_SKILL_TEMPLATE}")
-        print("This file is required for Agent Skills, OpenCode, and Codex generation.")
+        print(
+            "This file is required for Agent Skills, Devin, OpenCode, and Codex "
+            "generation."
+        )
         sys.exit(1)
 
     # Clean output directories once before processing
@@ -404,7 +409,10 @@ if __name__ == "__main__":
         sources_list = ", ".join(p.name for p in source_paths)
         print(f"\nConverting {len(source_paths)} sources: {sources_list}")
         if has_core:
-            print("(Agent Skills, OpenCode, Codex, OpenClaw, and Hermes will include only core rules)")
+            print(
+                "(Agent Skills, Devin, OpenCode, Codex, OpenClaw, and Hermes "
+                "will include only core rules)"
+            )
         print()
 
     # Convert all sources

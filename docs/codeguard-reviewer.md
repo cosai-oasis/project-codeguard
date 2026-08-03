@@ -81,7 +81,7 @@ Lists all `codeguard-*` rule files. Each rule's frontmatter declares applicabili
 
 For each applicable rule, searches the repository for candidate violations using patterns derived from the rule body (banned APIs, required configurations, example violations). The following paths are always excluded from search:
 
-- CodeGuard-generated directories (`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.opencode/`, `.windsurf/`, `.github/instructions/`, `.github/agents/`, `.openclaw/`, `.hermes/`)
+- CodeGuard-generated directories (`.claude/`, `.cursor/`, `.codex/`, `.agents/`, `.windsurf/`, `.devin/`, `.opencode/`, `.github/instructions/`, `.github/agents/`, `.openclaw/`, `.hermes/`)
 - Vendored/generated paths (`.git/`, `node_modules/`, `vendor/`, `.venv/`, `venv/`, `dist/`, `build/`, `target/`)
 - Any path excluded by `.gitignore`
 

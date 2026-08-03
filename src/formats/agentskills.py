@@ -2,7 +2,8 @@
 Agent Skills Format Implementation
 
 Generates .md files for the Agent Skills standard (agentskills.io).
-This format is used by OpenAI Codex, Claude Code, and other AI coding tools.
+This format is used by OpenAI Codex, Devin, Claude Code, and other AI coding
+tools.
 """
 
 from formats.base import BaseFormat, ProcessedRule
@@ -18,6 +19,7 @@ class AgentSkillsFormat(BaseFormat):
 
     This format is adopted by:
     - OpenAI Codex (skills)
+    - Devin (repository skills)
     - Claude Code (plugins)
     - Other AI coding tools
 

@@ -58,6 +58,7 @@ jobs:
           zip -r ../codeguard-claude.zip .claude/
           zip -r ../codeguard-cursor.zip .cursor/
           zip -r ../codeguard-windsurf.zip .windsurf/
+          zip -r ../codeguard-devin.zip .devin/
           zip -r ../codeguard-copilot.zip .github/
           # Antigravity + Codex share .agents/; scope each zip to its own subpath.
           zip -r ../codeguard-antigravity.zip .agents/rules/

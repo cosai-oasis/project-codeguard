@@ -386,6 +386,7 @@ cosai-oasis/project-codeguard/
 │   │   └── agents/codeguard-reviewer.md # Subagent preloads the skill above
 │   ├── .cursor/                     # Cursor IDE format (+ subagent)
 │   ├── .windsurf/                   # Windsurf IDE format
+│   ├── .devin/                      # Devin Agent Skills format
 │   ├── .github/                     # Copilot format (+ custom agent)
 │   ├── .agents/                     # Cross-tool dir (Antigravity + Codex)
 │   │   ├── rules/                      # Google Antigravity rules

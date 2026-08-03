@@ -28,7 +28,7 @@ The most common persona implementing CodeGuard.
 
 - Installs rule files and Agent Skills into repositories and user profiles.
 - Runs the update workflow or re-downloads release artifacts.
-- Uses the AI tool (Cursor, Windsurf, GitHub Copilot, Claude Code, Codex, OpenCode, etc.) that consumes CodeGuard.
+- Uses the AI tool (Cursor, Windsurf, Devin, GitHub Copilot, Claude Code, Codex, OpenCode, etc.) that consumes CodeGuard.
 - Can operate either at user scope (personal machine) or project scope (committed to a repo).
 
 **Typical install routes owned**
@@ -64,7 +64,7 @@ Providers of the IDEs, agent frameworks, and orchestration tools that actually c
 
 **Examples**
 
-- IDEs and coding agents: Cursor, Windsurf, GitHub Copilot, Claude Code, Codex, OpenCode, Antigravity, OpenClaw, Hermes
+- IDEs and coding agents: Cursor, Windsurf, Devin, GitHub Copilot, Claude Code, Codex, OpenCode, Antigravity, OpenClaw, Hermes
 - Agent frameworks and orchestration: LangChain, Semantic Kernel, and similar
 
 **Typical install routes influenced**
