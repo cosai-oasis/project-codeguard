@@ -1,6 +1,10 @@
 # Contributing
 
-Project CodeGuard is part of the [Coalition for Secure AI (CoSAI)](https://www.coalitionforsecureai.org/), an [OASIS Open Project](https://www.oasis-open.org/open-projects/). This guide explains how to contribute to this repository while preserving the CoSAI and OASIS project requirements that apply to all contributions.
+Project CodeGuard is part of the [Coalition for Secure AI (CoSAI)](https://www.coalitionforsecureai.org/), an [OASIS Open Project](https://www.oasis-open.org/open-projects/). It supports the [WS3 Security of AI-Assisted Code Development SIG](https://github.com/cosai-oasis/ws3-ai-risk-governance/blob/main/SIG-Security-AI-Assisted-Code-Development/Scope-and-Deliverables.md).
+
+The repository-specific instructions below supplement the [CoSAI Governance](https://github.com/cosai-oasis/oasis-open-project/blob/main/GOVERNANCE.md), [TSC and Workstream Governance](https://github.com/cosai-oasis/oasis-open-project/blob/main/TSC-WS-GOVERNANCE.md), [OASIS Participants Code of Conduct](https://www.oasis-open.org/policies-guidelines/oasis-participants-code-of-conduct/), and [CoSAI AI Usage Guidelines](https://github.com/cosai-oasis/oasis-open-project/blob/main/AI-USAGE-GUIDELINES.md).
+
+New to CoSAI? Visit [Get Involved](https://www.coalitionforsecureai.org/get-involved/) and see the [CoSAI onboarding guide](https://github.com/cosai-oasis/oasis-open-project/blob/main/ONBOARDING.md) for information about workstreams, communication channels, meetings, and contributor agreements.
 
 In general, a CoSAI Contributor is expected to:
 
@@ -12,11 +16,11 @@ In general, a CoSAI Contributor is expected to:
 * follow branch, PR, and code style conventions
 * contribute in ways that substantially improve the quality of the project and the experience of people who use it
 
-When contributing to any CoSAI repository, please first discuss the change you wish to make via a GitHub issue, or in an email to the specific Workstream mailing list.
-
 Please note this project follows the [OASIS Participants Code of Conduct](https://www.oasis-open.org/policies-guidelines/oasis-participants-code-of-conduct/); please be respectful of differing opinions when discussing potential contributions.
 
 ## Finding or proposing work
+
+When contributing to Project CodeGuard, please first create or find a GitHub issue and discuss the proposed change there.
 
 Use the current Project CodeGuard repository channels:
 
@@ -69,7 +73,7 @@ The conversion script reads `sources/rules/` and emits IDE-specific rule formats
 
 ## Validation
 
-Run the validation that matches the files you changed. The commands below mirror the current GitHub Actions workflows.
+Run the validation that matches the files you changed. The commands below include current GitHub Actions checks and recommended local checks.
 
 For rule sources, converters, skill generation, or agent emission:
 
@@ -83,15 +87,16 @@ uv run python src/convert_to_ide_formats.py --source core owasp --output-dir /tm
 
 After running the default conversion, check whether `skills/codeguard/` changed. Commit those changes when they are expected. Do not commit `dist/` or `test-output/`.
 
-For release-version or release-bundle changes:
+For release-version or release-bundle changes, run from the repository root:
 
 ```bash
+uv sync
 uv run python src/validate_unified_rules.py sources/
-uv run python src/validate_versions.py <release-version>
 uv run python src/convert_to_ide_formats.py
+uv run python src/validate_versions.py <release-version>
 ```
 
-The `Build and Release IDE Bundles` workflow runs those checks when a release is published, then creates and uploads the release ZIP assets.
+The conversion step synchronizes generated skill and plugin metadata before the final version check. The `Build and Release IDE Bundles` workflow reruns these checks when a release is published, then creates and uploads the release ZIP assets.
 
 For documentation changes under `docs/` or `mkdocs.yml`:
 
@@ -107,31 +112,34 @@ For CodeGuard MCP server changes under `src/codeguard-mcp/`:
 ```bash
 uv sync
 uv run pytest
-uv run ruff check .
 ```
 
-Run those commands from `src/codeguard-mcp/`. The MCP server has its own `pyproject.toml`, dependency group, tests, and Ruff configuration.
+Run those commands from `src/codeguard-mcp/`. The MCP server has its own `pyproject.toml`, dependency group, and tests. These tests are recommended local validation and are not currently a separate CI gate.
 
 For top-level Python tooling changes under `src/`, also run the rule and conversion validation commands above because the `Validate Rules` workflow is the current CI gate for that tooling.
+
+## AI-assisted contributions
+
+AI-assisted contributions must follow the [CoSAI AI Usage Guidelines](https://github.com/cosai-oasis/oasis-open-project/blob/main/AI-USAGE-GUIDELINES.md).
 
 ## Code review process
 
 Routine pull requests are reviewed by the Project CodeGuard maintainers. Maintainers may request changes for correctness, security impact, generated artifact freshness, documentation clarity, or validation coverage.
 
-Reviewers and contributors should aim to respond within 3 business days. If a PR is blocked, say what decision or information is needed so maintainers can help move it forward.
+The project aims to review pull requests in a timely manner, with timing based on the scope and complexity of each change. Reviewers and contributors should keep discussions moving by responding to feedback and clearly identifying any blockers, decisions, or information needed for the pull request to proceed.
 
-[Lazy consensus](https://openoffice.apache.org/docs/governance/lazyConsensus.html) is practiced for all projects and documents, including the main project repository and draft documents using other tools than GitHub.
+CoSAI uses [lazy consensus](https://openoffice.apache.org/docs/governance/lazyConsensus.html) where possible, consistent with the [TSC and Workstream Governance](https://github.com/cosai-oasis/oasis-open-project/blob/main/TSC-WS-GOVERNANCE.md).
 
-Major changes on GitHub or to a WS document using any other official project platform should be accompanied by a post on the WS mailing list as appropriate. Author(s) of the proposal, pull requests, or issues, will give a time period of no less than seven (7) business days for comment and remain cognizant of popular observed world holidays.
+Use routine PR review for ordinary fixes, documentation improvements, rule refinements, tests, and generated-artifact updates.
 
-Use routine PR review for ordinary fixes, documentation improvements, rule refinements, tests, and generated-artifact updates. Use the broader lazy-consensus process when a change is major, governance-relevant, affects Workstream deliverables outside this repository, or should be visible to the Workstream mailing list before maintainers merge it.
+For major changes, follow the notice and review process in the [CoSAI TSC and Workstream Governance](https://github.com/cosai-oasis/oasis-open-project/blob/main/TSC-WS-GOVERNANCE.md#decision-making).
 
 ## Signing the eCLA/iCLA
 
-Anyone can do a pull request and commit. In order for your work to be merged, you will need to sign the iCLA (individual contributor agreement) if you are just contributing for yourself. If you are contributing on behalf of your company, you will also need to sign the eCLA (entity contributor agreement). [Learn more about the CLAs here](https://www.oasis-open.org/open-projects/cla/).
+Anyone can make a pull request and commit. In order for your work to be merged, you will need to sign the iCLA (individual contributor agreement) if you are just contributing for yourself. If you are contributing on behalf of your company, you will also need to sign the eCLA (entity contributor agreement). [Learn more about the CLAs here](https://www.oasis-open.org/open-projects/cla/).
 
-The iCLA is administered by a bot which will comment on your PR and direct you to sign the iCLA if you haven't previously done so. This happens automatically when people submit a pull request.
+You can sign the iCLA through [CoSAI's CLA Assistant](https://cla-assistant.io/cosai-oasis/oasis-open-project). The bot will also comment on your pull request and direct you to sign if you have not previously done so.
 
 ## Feedback
 
-Questions or comments about this project's work may be composed as GitHub issues or comments or may be directed to the project's general email list at cosai-op@lists.oasis-open-projects.org. General questions about OASIS Open Projects may be directed to OASIS staff at [op-admin@lists.oasis-open-projects.org](mailto:op-admin@lists.oasis-open-projects.org).
+Questions or comments about this project's work may be composed as [GitHub issues](https://github.com/cosai-oasis/project-codeguard/issues) or comments. Current mailing-list and Slack information for WS3 discussions is available in the [WS3 support guidance](https://github.com/cosai-oasis/ws3-ai-risk-governance#support).
