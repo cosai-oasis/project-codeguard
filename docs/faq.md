@@ -16,9 +16,15 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
 
 **A:** Detailed installation instructions are available in our [Getting Started guide](getting-started.md). In summary:
 
-1. Download the latest release from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
-2. Extract the archive and copy the appropriate rules directory to your project root (e.g. `.cursor/` for Cursor, `.opencode/` for OpenCode)
-3. Restart your AI coding tool and start coding - the AI assistant will automatically follow the security rules
+**Recommended:** use [APM](apm-install.md) for a single install command that works across Cursor, Copilot, Claude Code, Windsurf, Codex, and other harnesses:
+
+```bash
+apm install cosai-oasis/project-codeguard#v1.4.0
+```
+
+**Alternative:** download the latest release from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases), extract the archive, and copy the appropriate rules directory to your project root (e.g. `.cursor/` for Cursor, `.opencode/` for OpenCode).
+
+Restart your AI coding tool and start coding — the assistant will automatically follow the security rules.
 
 ---
 ## Q: Will these rules consume a lot of the AI agent's **context window**?

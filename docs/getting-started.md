@@ -61,9 +61,37 @@ Not sure which route fits your situation? See **[Choosing an Install Path](insta
 
 ![CodeGuard install routes per tool](images/codeguard-install-flowchart.svg)
 
-### Option 1: Install Pre-built Rules (Recommended)
+### Option 1: Install with APM (Recommended)
 
-Select your AI coding tool and follow the instructions:
+[APM (Agent Package Manager)](https://github.com/microsoft/apm) installs CodeGuard
+to every supported AI coding harness from one command. This is the best choice
+when your team uses more than one IDE or you want lockfile-pinned, reproducible
+installs.
+
+```bash
+# Install APM CLI (once per machine)
+curl -sSL https://aka.ms/apm-unix | sh
+
+# In your project root
+apm init my-project -y
+apm install cosai-oasis/project-codeguard#v1.4.0
+```
+
+On a fresh repository with no harness markers yet, specify targets explicitly:
+
+```bash
+apm install cosai-oasis/project-codeguard#v1.4.0 \
+  --target cursor,copilot,claude,windsurf,codex
+```
+
+Commit `apm.yml`, `apm.lock.yaml`, and the deployed rule directories so every
+contributor gets CodeGuard on clone.
+
+Full details: **[Installing with APM](apm-install.md)**
+
+### Option 2: Install Pre-built Rules
+
+Select your AI coding tool and follow the instructions when APM is not available:
 
 === "Cursor"
 
@@ -289,7 +317,7 @@ Select your AI coding tool and follow the instructions:
     - **macOS Finder**: Press ++cmd+shift+period++ to toggle visibility
     - **Linux**: Use `ls -la` in terminal or enable "Show Hidden Files" in your file manager
 
-### Option 2: Build from Source
+### Option 3: Build from Source
 
 This route is typically driven by the **Application Developer** persona for local customization, or the **AI Platform Provider** persona when a platform team generates and redistributes CodeGuard artifacts internally.
 

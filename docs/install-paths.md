@@ -12,15 +12,19 @@ This page helps you pick the right path for your situation. For step-by-step ins
 
 | Your situation | Use this route | Why |
 |:---|:---|:---|
-| **Solo developer, one repo** | Rule / instruction files | Glob-scoped — only rules matching the file you're editing load. Lowest token cost, simplest setup. |
-| **Team sharing via git** | Rule files or Agent Skills, **project-scoped** | Committed to the repo — every contributor gets CodeGuard automatically on clone. |
+| **Multi-IDE team or want one install command** | [APM install](apm-install.md) | One `apm install` deploys to Cursor, Copilot, Claude, Windsurf, Codex, and more |
+| **Solo developer, one repo, one IDE** | Rule / instruction files | Glob-scoped — only rules matching the file you're editing load. Lowest token cost. |
+| **Team sharing via git** | APM or rule files / Agent Skills, **project-scoped** | Committed to the repo — every contributor gets CodeGuard automatically on clone. |
 | **Want zero local files / auto-updates** | Plugin marketplace (Claude Code) or remote instructions (OpenCode) | One command, no files to maintain, always current. |
 | **Prefer a one-click install from your IDE's extension marketplace** | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Familiar "install extension" UX; auto-updates through the marketplace; one package covers all four VS Code-family IDEs. |
 | **Org admin enforcing policy** | Org-managed dashboard (Cursor Team Rules, Copilot org instructions) | Centrally enforced across every repo without per-project setup. |
 | **Already running MCP infrastructure** | MCP server (self-hosted) | Rules served dynamically; integrates with your existing MCP tooling. |
 
 !!! tip "Not sure? Start here"
-    Download the pre-built rule files for your tool from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases) and drop them into your repo. You can switch routes later — the underlying rules are the same.
+    Use **[APM](apm-install.md)** if your team uses more than one AI coding tool.
+    Otherwise download the pre-built rule files for your tool from the
+    [releases page](https://github.com/cosai-oasis/project-codeguard/releases).
+    You can switch routes later — the underlying rules are the same.
 
 ## Fast Decision Tree
 
@@ -110,6 +114,17 @@ Before picking a mechanism, decide **who** should end up with CodeGuard active. 
 ---
 
 ## How Each Route Works
+
+### APM (Agent Package Manager)
+
+One manifest (`apm.yml`) declares CodeGuard as a dependency; `apm install`
+deploys instructions, skills, and agents to every detected harness.
+
+- **Supported by:** Cursor, GitHub Copilot, Claude Code, Windsurf, Codex, OpenCode, Antigravity, Gemini, Kiro, and others via the [APM targets matrix](https://microsoft.github.io/apm/reference/targets-matrix/)
+- **Best for:** Multi-IDE teams, reproducible lockfile-pinned installs, enterprise governance with `apm-policy.yml`
+- **Tradeoffs:** Requires the APM CLI. Experimental targets (OpenClaw, Hermes) need explicit `--target` flags.
+- **Responsible CoSAI personas:** Application Developer (repo install), AI System Governance (org policy via `apm-policy.yml`)
+- **Guide:** [Installing with APM](apm-install.md)
 
 ### Rule / instruction files
 

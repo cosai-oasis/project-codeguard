@@ -14,6 +14,7 @@ Available Formats:
 - OpenClawFormat: Generates .md files for OpenClaw AI assistant
 - HermesFormat: Generates .md files for Hermes AI coding agent
 - ClaudeFormat: Generates .md files for Claude Code Agent Skills under .claude/
+- ApmInstructionFormat: Generates .instructions.md files for APM package layout
 
 Usage:
     from formats import BaseFormat, ProcessedRule, CursorFormat, WindsurfFormat, CopilotFormat, AgentSkillsFormat, AntigravityFormat, OpenCodeFormat, CodexFormat, OpenClawFormat, HermesFormat, ClaudeFormat
@@ -44,6 +45,7 @@ from formats.codex import CodexFormat
 from formats.openclaw import OpenClawFormat
 from formats.hermes import HermesFormat
 from formats.claude import ClaudeFormat
+from formats.apm import ApmInstructionFormat
 
 __all__ = [
     "BaseFormat",
@@ -58,4 +60,5 @@ __all__ = [
     "OpenClawFormat",
     "HermesFormat",
     "ClaudeFormat",
+    "ApmInstructionFormat",
 ]

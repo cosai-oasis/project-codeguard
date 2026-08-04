@@ -167,5 +167,9 @@ AGENTS.md
 # Generated IDE-specific rule bundles (not committed, built for releases)
 dist/
 
+# APM dependency cache (consumer projects only; not used in this repo)
+apm_modules/
+apm.lock.yaml
+
 # Local CI simulation output from convert_to_ide_formats.py --output-dir
 test-output/
