@@ -38,7 +38,9 @@ existing routes; this plugin does not replace them.
 
 ### Prerequisites
 
-- Codex with plugin support
+- [Codex CLI 0.142.0](https://github.com/openai/codex/releases/tag/rust-v0.142.0)
+  or newer. Version 0.142.0 added support for marketplace plugins whose source
+  is the repository root (`./`), which is the layout this repository uses.
 - Basic familiarity with Codex's plugin and marketplace commands
 
 !!! warning "Trust note"
@@ -53,19 +55,31 @@ existing routes; this plugin does not replace them.
    codex plugin marketplace add cosai-oasis/project-codeguard
    ```
 
-2. **Confirm the marketplace is registered:**
+2. **Install the CodeGuard plugin from that marketplace:**
 
    ```text
-   codex plugin marketplace list
+   codex plugin add codeguard-security@project-codeguard
    ```
 
-The repository's marketplace entry declares the plugin at the repository root,
-which is where `.codex-plugin/plugin.json` lives.
+The repository's legacy-compatible marketplace entry declares the plugin at the
+repository root, which is where `.codex-plugin/plugin.json` lives.
 
-### Verifying the install
+### Verifying the installed plugin
 
-The skill is available once Codex resolves the manifest. To check the manifest
-itself before or after installing:
+Confirm that Codex reports `codeguard-security` as installed and enabled:
+
+```text
+codex plugin list --marketplace project-codeguard
+```
+
+Start a new Codex session after installation so the refreshed skill catalog is
+available to the model.
+
+### Validating repository metadata
+
+The commands below are maintainer checks for a source checkout; they do not
+verify a user's installed plugin. From the repository root, inspect the manifest
+version with:
 
 ```bash
 python -c "import json; print(json.load(open('.codex-plugin/plugin.json'))['version'])"
@@ -84,12 +98,17 @@ Codex manifest left behind.
 ## Updating
 
 ```text
-codex plugin marketplace upgrade
+codex plugin marketplace upgrade project-codeguard
+codex plugin list --marketplace project-codeguard
 ```
 
+The first command refreshes the configured Git marketplace snapshot; it is not
+an initial install command. Restart Codex after refreshing, then use the second
+command to confirm the installed plugin's version and enabled state.
+
 The plugin version tracks the repository version. `sync_plugin_metadata()` in
-the build writes it into this manifest along with the others, so the version you
-install matches the rules you get.
+the build writes it into this manifest along with the others, so published
+plugin metadata stays aligned with the rules it packages.
 
 ## Relationship to the other install routes
 

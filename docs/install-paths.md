@@ -14,7 +14,7 @@ This page helps you pick the right path for your situation. For step-by-step ins
 |:---|:---|:---|
 | **Solo developer, one repo** | Rule / instruction files | Glob-scoped — only rules matching the file you're editing load. Lowest token cost, simplest setup. |
 | **Team sharing via git** | Rule files or Agent Skills, **project-scoped** | Committed to the repo — every contributor gets CodeGuard automatically on clone. |
-| **Want zero local files / auto-updates** | Plugin marketplace (Claude Code) or remote instructions (OpenCode) | One command, no files to maintain, always current. |
+| **Want a host-managed install and updates** | Plugin marketplace (Claude Code or Codex) or remote instructions (OpenCode) | No copied rule files to maintain; the host manages the installed package. |
 | **Prefer a one-click install from your IDE's extension marketplace** | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Familiar "install extension" UX; auto-updates through the marketplace; one package covers all four VS Code-family IDEs. |
 | **Org admin enforcing policy** | Org-managed dashboard (Cursor Team Rules, Copilot org instructions) | Centrally enforced across every repo without per-project setup. |
 | **Already running MCP infrastructure** | MCP server (self-hosted) | Rules served dynamically; integrates with your existing MCP tooling. |
@@ -131,11 +131,12 @@ A skill is a self-describing capability the model invokes **on demand** when the
 
 ### Plugin marketplace
 
-A managed install: one command, the tool fetches and updates the skill for you.
+A managed install: register the marketplace once, then let the host's plugin
+tooling install and refresh the skill for you.
 
-- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`), Codex (`codex plugin marketplace add cosai-oasis/project-codeguard`)
+- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`), Codex (`codex plugin marketplace add cosai-oasis/project-codeguard`, then `codex plugin add codeguard-security@project-codeguard`)
 - **Best for:** Claude Code and Codex users who want the lowest-maintenance setup.
-- **Tradeoffs:** Only these two hosts. The plugin manifests carry the skill, not the reviewer agent or the MCP server, so keep the routes below for those. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) and the [Codex Plugin guide](codex-skill-plugin.md) for details.
+- **Tradeoffs:** Only these two hosts. Codex requires CLI 0.142.0 or newer for this repository-root marketplace layout. The plugin manifests carry the skill, not the reviewer agent or the MCP server, so keep the routes below for those. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) and the [Codex Plugin guide](codex-skill-plugin.md) for details.
 - **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code, Codex) and AI System Governance for managed-settings enforcement.
 
 ### IDE marketplace extension
