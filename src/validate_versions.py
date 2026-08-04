@@ -6,6 +6,7 @@ Validates that all version strings match across:
 - pyproject.toml
 - .claude-plugin/plugin.json
 - .claude-plugin/marketplace.json
+- .codex-plugin/plugin.json
 """
 
 import json
@@ -44,6 +45,25 @@ def get_plugin_version(root: Path) -> str:
 def set_plugin_version(version: str, root: Path) -> None:
     """Set version in plugin.json."""
     plugin_path = root / ".claude-plugin" / "plugin.json"
+    with open(plugin_path, encoding="utf-8") as f:
+        data = json.load(f)
+    data["version"] = version
+    with open(plugin_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+
+
+def get_codex_plugin_version(root: Path) -> str:
+    """Get version from the Codex plugin.json."""
+    plugin_path = root / ".codex-plugin" / "plugin.json"
+    with open(plugin_path, encoding="utf-8") as f:
+        data = json.load(f)
+    return data["version"]
+
+
+def set_codex_plugin_version(version: str, root: Path) -> None:
+    """Set version in the Codex plugin.json."""
+    plugin_path = root / ".codex-plugin" / "plugin.json"
     with open(plugin_path, encoding="utf-8") as f:
         data = json.load(f)
     data["version"] = version
@@ -116,6 +136,12 @@ def validate_versions(expected_version: str, root: Path = None) -> list[VersionC
         VersionCheck("plugin.json", expected_version, get_plugin_version(root), False),
         VersionCheck(
             "marketplace.json", expected_version, get_marketplace_version(root), False
+        ),
+        VersionCheck(
+            ".codex-plugin/plugin.json",
+            expected_version,
+            get_codex_plugin_version(root),
+            False,
         ),
         VersionCheck(
             "SKILL.md",

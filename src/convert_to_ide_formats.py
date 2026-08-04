@@ -28,7 +28,11 @@ from formats import (
     ClaudeFormat,
 )
 from utils import get_version_from_pyproject
-from validate_versions import set_plugin_version, set_marketplace_version
+from validate_versions import (
+    set_codex_plugin_version,
+    set_marketplace_version,
+    set_plugin_version,
+)
 
 # Project root is always one level up from src/
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -46,6 +50,7 @@ def sync_plugin_metadata(version: str) -> None:
     """
     set_plugin_version(version, PROJECT_ROOT)
     set_marketplace_version(version, PROJECT_ROOT)
+    set_codex_plugin_version(version, PROJECT_ROOT)
     print(f"✅ Synced plugin metadata to {version}")
 
 

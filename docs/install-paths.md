@@ -133,10 +133,10 @@ A skill is a self-describing capability the model invokes **on demand** when the
 
 A managed install: one command, the tool fetches and updates the skill for you.
 
-- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`)
-- **Best for:** Claude Code users who want the lowest-maintenance setup.
-- **Tradeoffs:** Claude Code only. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) for details.
-- **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code) and AI System Governance for managed-settings enforcement.
+- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`), Codex (`codex plugin marketplace add cosai-oasis/project-codeguard`)
+- **Best for:** Claude Code and Codex users who want the lowest-maintenance setup.
+- **Tradeoffs:** Only these two hosts. The plugin manifests carry the skill, not the reviewer agent or the MCP server, so keep the routes below for those. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) and the [Codex Plugin guide](codex-skill-plugin.md) for details.
+- **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code, Codex) and AI System Governance for managed-settings enforcement.
 
 ### IDE marketplace extension
 
@@ -278,7 +278,7 @@ Project CodeGuard aligns with the [CoSAI standard personas](personas.md) (see th
 | Rule / instruction files (user scope) | Application Developer, AI System Users | — |
 | Agent Skills (project scope) | Application Developer | AI System Governance, Agentic Platform and Framework Providers |
 | Agent Skills (user scope) | Application Developer, AI System Users | Agentic Platform and Framework Providers |
-| Plugin marketplace (Claude Code) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
+| Plugin marketplace (Claude Code, Codex) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
 | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
 | Remote instructions / installer (OpenCode, Codex) | Application Developer | Agentic Platform and Framework Providers |
 | Org-managed dashboard (Cursor Team Rules, GitHub Copilot org custom instructions, Claude Code managed settings) | AI System Governance | Agentic Platform and Framework Providers, AI Platform Provider (for endpoint management) |
