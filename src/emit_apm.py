@@ -40,8 +40,18 @@ _APM_YML = Path("apm.yml")
 
 def _render_apm_agent_body(body: str) -> str:
     """Adapt the portable agent for APM multi-path rule discovery."""
-    rendered = body.replace("{RULES_DIR}", _APM_AGENT_RULES_DIR)
-    rendered = rendered.replace("{RULE_EXT}", _APM_AGENT_RULE_EXT)
+    list_step = (
+        "2. Resolve the active rules directory by checking, in order: "
+        f"{', '.join(f'`{path}/`' for path in _APM_RULE_SEARCH_PATHS)}. "
+        f"List all rule files matching `codeguard-*{_APM_AGENT_RULE_EXT}` "
+        "in the first directory that exists. The rule\n   ID is the filename "
+        "without the extension."
+    )
+    rendered = body.replace(
+        "2. List all rule files matching `{RULES_DIR}/codeguard-*{RULE_EXT}`. "
+        "The rule\n   ID is the filename without the extension.",
+        list_step,
+    )
 
     references = (
         "The CodeGuard rule files are `codeguard-*.md` under the first "
@@ -51,23 +61,9 @@ def _render_apm_agent_body(body: str) -> str:
         "- `skills/codeguard/rules/` (generated build output)"
     )
     rendered = rendered.replace(
-        f"The CodeGuard rule files live at `{_APM_AGENT_RULES_DIR}/"
-        f"codeguard-*{_APM_AGENT_RULE_EXT}` (one per rule).",
+        "The CodeGuard rule files live at `{RULES_DIR}/codeguard-*{RULE_EXT}` "
+        "(one per rule).",
         references,
-    )
-
-    list_step = (
-        "2. Resolve the active rules directory by checking, in order: "
-        f"{', '.join(f'`{path}/`' for path in _APM_RULE_SEARCH_PATHS)}. "
-        f"List all rule files matching `codeguard-*{_APM_AGENT_RULE_EXT}` "
-        "in the first directory that exists. The rule ID is the filename "
-        "without the extension."
-    )
-    rendered = rendered.replace(
-        f"2. List all rule files matching `{_APM_AGENT_RULES_DIR}/"
-        f"codeguard-*{_APM_AGENT_RULE_EXT}`. The rule ID is the filename "
-        "without the extension.",
-        list_step,
     )
 
     exclude_block = (
@@ -78,13 +74,12 @@ def _render_apm_agent_body(body: str) -> str:
         "findings."
     )
     old_exclude_start = (
-        f"   - Your own rule directory `{_APM_AGENT_RULES_DIR}/` and any "
-        "CodeGuard host\n     directories (`.claude/`, `.cursor/`, "
-        "`.codex/`, `.opencode/`,\n     `.agents/`, `.windsurf/`, "
-        "`.github/instructions/`, `.github/agents/`,\n     `.openclaw/`, "
-        "`.hermes/`). These contain CodeGuard-generated rules or\n     "
-        "agents (with example secrets and banned-API snippets) and must "
-        "never be\n     reported as findings."
+        "   - Your own rule directory `{RULES_DIR}/` and any CodeGuard host\n"
+        "     directories (`.claude/`, `.cursor/`, `.codex/`, `.opencode/`,\n"
+        "     `.agents/`, `.windsurf/`, `.github/instructions/`, "
+        "`.github/agents/`,\n     `.openclaw/`, `.hermes/`). These contain "
+        "CodeGuard-generated rules or\n     agents (with example secrets and "
+        "banned-API snippets) and must never be\n     reported as findings."
     )
     rendered = rendered.replace(old_exclude_start, exclude_block)
 
@@ -94,12 +89,14 @@ def _render_apm_agent_body(body: str) -> str:
         "Do not fabricate rule content."
     )
     rendered = rendered.replace(
-        f"If `{_APM_AGENT_RULES_DIR}/` is missing or empty, stop and report "
-        "that the CodeGuard\n  rule bundle is not installed. Do not "
-        "fabricate rule content.",
+        "If `{RULES_DIR}/` is missing or empty, stop and report that the "
+        "CodeGuard\n  rule bundle is not installed. Do not fabricate rule "
+        "content.",
         missing_rules,
     )
 
+    rendered = rendered.replace("{RULES_DIR}", _APM_AGENT_RULES_DIR)
+    rendered = rendered.replace("{RULE_EXT}", _APM_AGENT_RULE_EXT)
     return rendered
 
 

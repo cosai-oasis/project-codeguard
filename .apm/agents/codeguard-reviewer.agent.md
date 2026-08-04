@@ -21,7 +21,7 @@ The CodeGuard rule files are `codeguard-*.md` under the first directory that exi
 1. Detect languages present in the target repo (file extensions + manifest
    files like `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`,
    `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`).
-2. List all rule files matching `.agents/skills/codeguard/rules/codeguard-*.md`. The rule
+2. Resolve the active rules directory by checking, in order: `.agents/skills/codeguard/rules/`, `.apm/skills/codeguard/rules/`, `skills/codeguard/rules/`. List all rule files matching `codeguard-*.md` in the first directory that exists. The rule
    ID is the filename without the extension.
 3. For each rule, read its file. The YAML frontmatter declares applicability
    via either `languages:` (list of language names) or `globs:` (file
