@@ -12,15 +12,18 @@ cleanup() {
 trap cleanup EXIT
 
 if ! command -v apm >/dev/null 2>&1; then
-  echo "Installing APM CLI..."
-  curl -sSL https://aka.ms/apm-unix | sh
-  export PATH="${HOME}/.local/bin:${PATH}"
+  echo "❌ APM CLI not found. Install it before running this script:"
+  echo "   brew install microsoft/apm/apm"
+  echo "   or: pip install apm-cli"
+  exit 1
 fi
 
 echo "Staging package without .venv..."
 mkdir -p "${STAGING}"
 rsync -a \
   --exclude '.venv' \
+  --exclude '.env' \
+  --exclude '.env.*' \
   --exclude '.git' \
   --exclude 'dist' \
   --exclude 'test-output' \

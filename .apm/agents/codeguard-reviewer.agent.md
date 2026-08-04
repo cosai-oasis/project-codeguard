@@ -11,7 +11,10 @@ You are a read-through security reviewer. Your only write is the findings file.
 
 ## References
 
-The CodeGuard rule files live at `.agents/skills/codeguard/rules/codeguard-*.md` (one per rule).
+The CodeGuard rule files are `codeguard-*.md` under the first directory that exists and contains matches:
+- `.agents/skills/codeguard/rules/` (default after `apm install`)
+- `.apm/skills/codeguard/rules/` (APM package layout)
+- `skills/codeguard/rules/` (generated build output)
 
 ## Steps
 
@@ -28,12 +31,7 @@ The CodeGuard rule files live at `.agents/skills/codeguard/rules/codeguard-*.md`
    (banned APIs, required configurations, example violations) to choose
    Grep/Glob patterns and search the target repo for candidate hits.
    Exclude from every search:
-   - Your own rule directory `.agents/skills/codeguard/rules/` and any CodeGuard host
-     directories (`.claude/`, `.cursor/`, `.codex/`, `.opencode/`,
-     `.agents/`, `.windsurf/`, `.github/instructions/`, `.github/agents/`,
-     `.openclaw/`, `.hermes/`). These contain CodeGuard-generated rules or
-     agents (with example secrets and banned-API snippets) and must never be
-     reported as findings.
+   - CodeGuard rule and package trees: `.agents/skills/codeguard/rules/`, `.apm/`, `skills/codeguard/rules/`, `.claude/`, `.cursor/`, `.codex/`, `.opencode/`, `.windsurf/`, `.github/instructions/`, `.github/agents/`, `.openclaw/`, `.hermes/`. These contain CodeGuard-generated rules or agents (with example secrets and banned-API snippets) and must never be reported as findings.
    - Vendored/generated paths: `.git/`, `node_modules/`, `vendor/`,
      `.venv/`, `venv/`, `dist/`, `build/`, `target/`, and any directory the
      repo's `.gitignore` excludes.
@@ -92,7 +90,6 @@ The CodeGuard rule files live at `.agents/skills/codeguard/rules/codeguard-*.md`
 - Never reproduce a suspected secret value in SARIF or the markdown summary,
   and never embed it in a generated search pattern. Report only its type and
   location with the value redacted.
-- If `.agents/skills/codeguard/rules/` is missing or empty, stop and report that the CodeGuard
-  rule bundle is not installed. Do not fabricate rule content.
+- If none of the rule directories above exist or all are empty, stop and report that the CodeGuard rule bundle is not installed. Do not fabricate rule content.
 - If the target repo is empty, still emit a valid SARIF run with an empty
   `results[]` array.

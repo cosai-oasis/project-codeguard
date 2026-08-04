@@ -14,15 +14,92 @@ from utils import parse_frontmatter_and_content
 
 _APM_AGENT_RULES_DIR = ".agents/skills/codeguard/rules"
 _APM_AGENT_RULE_EXT = ".md"
+_APM_RULE_SEARCH_PATHS = (
+    ".agents/skills/codeguard/rules",
+    ".apm/skills/codeguard/rules",
+    "skills/codeguard/rules",
+)
+_APM_EXCLUDE_PATHS = (
+    ".agents/skills/codeguard/rules/",
+    ".apm/",
+    "skills/codeguard/rules/",
+    ".claude/",
+    ".cursor/",
+    ".codex/",
+    ".opencode/",
+    ".windsurf/",
+    ".github/instructions/",
+    ".github/agents/",
+    ".openclaw/",
+    ".hermes/",
+)
 _APM_SKILL_REL = Path(".apm/skills/codeguard")
 _APM_AGENTS_DIR = Path(".apm/agents")
 _APM_YML = Path("apm.yml")
 
 
 def _render_apm_agent_body(body: str) -> str:
-    """Replace host placeholders with APM cross-harness skill rule paths."""
+    """Adapt the portable agent for APM multi-path rule discovery."""
     rendered = body.replace("{RULES_DIR}", _APM_AGENT_RULES_DIR)
     rendered = rendered.replace("{RULE_EXT}", _APM_AGENT_RULE_EXT)
+
+    references = (
+        "The CodeGuard rule files are `codeguard-*.md` under the first "
+        "directory that exists and contains matches:\n"
+        "- `.agents/skills/codeguard/rules/` (default after `apm install`)\n"
+        "- `.apm/skills/codeguard/rules/` (APM package layout)\n"
+        "- `skills/codeguard/rules/` (generated build output)"
+    )
+    rendered = rendered.replace(
+        f"The CodeGuard rule files live at `{_APM_AGENT_RULES_DIR}/"
+        f"codeguard-*{_APM_AGENT_RULE_EXT}` (one per rule).",
+        references,
+    )
+
+    list_step = (
+        "2. Resolve the active rules directory by checking, in order: "
+        f"{', '.join(f'`{path}/`' for path in _APM_RULE_SEARCH_PATHS)}. "
+        f"List all rule files matching `codeguard-*{_APM_AGENT_RULE_EXT}` "
+        "in the first directory that exists. The rule ID is the filename "
+        "without the extension."
+    )
+    rendered = rendered.replace(
+        f"2. List all rule files matching `{_APM_AGENT_RULES_DIR}/"
+        f"codeguard-*{_APM_AGENT_RULE_EXT}`. The rule ID is the filename "
+        "without the extension.",
+        list_step,
+    )
+
+    exclude_block = (
+        "   - CodeGuard rule and package trees: "
+        f"{', '.join(f'`{path}`' for path in _APM_EXCLUDE_PATHS)}. "
+        "These contain CodeGuard-generated rules or agents (with example "
+        "secrets and banned-API snippets) and must never be reported as "
+        "findings."
+    )
+    old_exclude_start = (
+        f"   - Your own rule directory `{_APM_AGENT_RULES_DIR}/` and any "
+        "CodeGuard host\n     directories (`.claude/`, `.cursor/`, "
+        "`.codex/`, `.opencode/`,\n     `.agents/`, `.windsurf/`, "
+        "`.github/instructions/`, `.github/agents/`,\n     `.openclaw/`, "
+        "`.hermes/`). These contain CodeGuard-generated rules or\n     "
+        "agents (with example secrets and banned-API snippets) and must "
+        "never be\n     reported as findings."
+    )
+    rendered = rendered.replace(old_exclude_start, exclude_block)
+
+    missing_rules = (
+        "If none of the rule directories above exist or all are empty, "
+        "stop and report that the CodeGuard rule bundle is not installed. "
+        "Do not fabricate rule content."
+    )
+    rendered = rendered.replace(
+        f"If `{_APM_AGENT_RULES_DIR}/` is missing or empty, stop and report "
+        "that the CodeGuard\n  rule bundle is not installed. Do not "
+        "fabricate rule content.",
+        missing_rules,
+    )
+
     return rendered
 
 

@@ -207,6 +207,11 @@ jobs:
           echo "Skills directory: ✅"
           echo "APM package: ✅"
 
+      - name: Install APM CLI
+        run: |
+          brew install microsoft/apm/apm
+          apm --version
+
       - name: Validate APM install
         run: |
           chmod +x scripts/validate_apm_install.sh
