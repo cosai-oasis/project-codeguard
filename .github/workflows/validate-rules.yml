@@ -70,28 +70,45 @@ jobs:
             exit 1
           fi
 
-      - name: Check skills/codeguard/ directory is up-to-date
+      - name: Check generated artifacts are up-to-date
         run: |
-          echo "Checking if committed skills/codeguard/ is up-to-date..."
-          
-          # Save the generated skill directory only
+          echo "Checking if committed skills/codeguard/, .apm/, and apm.yml are up-to-date..."
+
           cp -r skills/codeguard skills-committed
-          
-          # Regenerate (core rules only, matching default)
+          cp -r .apm apm-committed
+          cp apm.yml apm-yml-committed
+
           uv run python src/convert_to_ide_formats.py
-          
-          # Compare only the codeguard subtree
+
           if ! diff -r skills/codeguard/ skills-committed/ > /dev/null 2>&1; then
             echo "❌ skills/codeguard/ is out of date!"
-            echo "Please regenerate by running: python src/convert_to_ide_formats.py"
+            echo "Please regenerate by running: uv run python src/convert_to_ide_formats.py"
             echo "Then: git add skills/codeguard/"
             diff -r skills/codeguard/ skills-committed/ || true
-            rm -rf skills-committed
+            rm -rf skills-committed apm-committed apm-yml-committed
             exit 1
           fi
-          
-          rm -rf skills-committed
           echo "✅ skills/codeguard/ is up-to-date"
+
+          if ! diff -r .apm/ apm-committed/ > /dev/null 2>&1; then
+            echo "❌ .apm/ is out of date!"
+            echo "Please regenerate by running: uv run python src/convert_to_ide_formats.py"
+            echo "Then: git add .apm/"
+            diff -r .apm/ apm-committed/ || true
+            rm -rf skills-committed apm-committed apm-yml-committed
+            exit 1
+          fi
+          echo "✅ .apm/ is up-to-date"
+
+          if ! diff apm.yml apm-yml-committed > /dev/null 2>&1; then
+            echo "❌ apm.yml is out of date!"
+            diff apm.yml apm-yml-committed || true
+            rm -rf skills-committed apm-committed apm-yml-committed
+            exit 1
+          fi
+          echo "✅ apm.yml is up-to-date"
+
+          rm -rf skills-committed apm-committed apm-yml-committed
 
       - name: Test conversion to IDE formats
         run: |
@@ -188,3 +205,14 @@ jobs:
           echo "Required files: ✅"
           echo "IDE conversion: ✅"
           echo "Skills directory: ✅"
+          echo "APM package: ✅"
+
+      - name: Install APM CLI
+        run: |
+          brew install microsoft/apm/apm
+          apm --version
+
+      - name: Validate APM install
+        run: |
+          chmod +x scripts/validate_apm_install.sh
+          ./scripts/validate_apm_install.sh

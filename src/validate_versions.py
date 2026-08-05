@@ -6,6 +6,8 @@ Validates that all version strings match across:
 - pyproject.toml
 - .claude-plugin/plugin.json
 - .claude-plugin/marketplace.json
+- apm.yml
+- skills/codeguard/SKILL.md
 """
 
 import json
@@ -14,6 +16,8 @@ import sys
 import tomllib
 from pathlib import Path
 from typing import NamedTuple
+
+import yaml
 
 
 class VersionCheck(NamedTuple):
@@ -89,6 +93,14 @@ def _read_front_matter_value(path: Path, key: str) -> str:
     return value_match.group(1)
 
 
+def get_apm_yml_version(root: Path) -> str:
+    """Get version from apm.yml."""
+    apm_path = root / "apm.yml"
+    with apm_path.open(encoding="utf-8") as handle:
+        data = yaml.safe_load(handle)
+    return data["version"]
+
+
 def get_skill_codeguard_version(root: Path) -> str:
     """Get codeguard-version from skills/codeguard/SKILL.md."""
     skill_path = root / "skills" / "codeguard" / "SKILL.md"
@@ -121,6 +133,12 @@ def validate_versions(expected_version: str, root: Path = None) -> list[VersionC
             "SKILL.md",
             expected_version,
             get_skill_codeguard_version(root),
+            False,
+        ),
+        VersionCheck(
+            "apm.yml",
+            expected_version,
+            get_apm_yml_version(root),
             False,
         ),
     ]
