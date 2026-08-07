@@ -28,7 +28,11 @@ from formats import (
     ClaudeFormat,
 )
 from utils import get_version_from_pyproject
-from validate_versions import set_plugin_version, set_marketplace_version
+from validate_versions import (
+    set_codex_plugin_version,
+    set_marketplace_version,
+    set_plugin_version,
+)
 
 # Project root is always one level up from src/
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -39,13 +43,14 @@ _SKILL_TEMPLATE = PROJECT_ROOT / _CORE_RULES_REL / "codeguard-SKILLS.md.template
 
 def sync_plugin_metadata(version: str) -> None:
     """
-    Sync version from pyproject.toml to Agent Skills metadata files.
+    Sync the project version to the Claude Code and Codex plugin metadata.
 
     Args:
         version: Version string from pyproject.toml
     """
     set_plugin_version(version, PROJECT_ROOT)
     set_marketplace_version(version, PROJECT_ROOT)
+    set_codex_plugin_version(version, PROJECT_ROOT)
     print(f"✅ Synced plugin metadata to {version}")
 
 

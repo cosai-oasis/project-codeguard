@@ -35,7 +35,7 @@ The most common persona implementing CodeGuard.
 
 - Rule / instruction files (project and user scope)
 - Agent Skills (project and user scope)
-- Plugin marketplace (Claude Code)
+- Plugin marketplace (Claude Code, Codex)
 - Remote instructions / installer (OpenCode, Codex)
 - Self-service build from source
 

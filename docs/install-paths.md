@@ -14,7 +14,7 @@ This page helps you pick the right path for your situation. For step-by-step ins
 |:---|:---|:---|
 | **Solo developer, one repo** | Rule / instruction files | Glob-scoped — only rules matching the file you're editing load. Lowest token cost, simplest setup. |
 | **Team sharing via git** | Rule files or Agent Skills, **project-scoped** | Committed to the repo — every contributor gets CodeGuard automatically on clone. |
-| **Want zero local files / auto-updates** | Plugin marketplace (Claude Code) or remote instructions (OpenCode) | One command, no files to maintain, always current. |
+| **Want a host-managed install and updates** | Plugin marketplace (Claude Code or Codex) or remote instructions (OpenCode) | No copied rule files to maintain; the host manages the installed package. |
 | **Prefer a one-click install from your IDE's extension marketplace** | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Familiar "install extension" UX; auto-updates through the marketplace; one package covers all four VS Code-family IDEs. |
 | **Org admin enforcing policy** | Org-managed dashboard (Cursor Team Rules, Copilot org instructions) | Centrally enforced across every repo without per-project setup. |
 | **Already running MCP infrastructure** | MCP server (self-hosted) | Rules served dynamically; integrates with your existing MCP tooling. |
@@ -131,12 +131,13 @@ A skill is a self-describing capability the model invokes **on demand** when the
 
 ### Plugin marketplace
 
-A managed install: one command, the tool fetches and updates the skill for you.
+A managed install: register the marketplace once, then let the host's plugin
+tooling install and refresh the skill for you.
 
-- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`)
-- **Best for:** Claude Code users who want the lowest-maintenance setup.
-- **Tradeoffs:** Claude Code only. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) for details.
-- **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code) and AI System Governance for managed-settings enforcement.
+- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`), Codex (`codex plugin marketplace add cosai-oasis/project-codeguard`, then `codex plugin add codeguard-security@project-codeguard`)
+- **Best for:** Claude Code and Codex users who want the lowest-maintenance setup.
+- **Tradeoffs:** Marketplace installation is available only for Claude Code and Codex. Both plugins include only the CodeGuard skill. Use the ZIP bundle or source files for the reviewer agent. The MCP server remains a separate self-hosted option. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) and the [Codex Plugin guide](codex-skill-plugin.md) for installation details.
+- **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code, Codex) and AI System Governance for managed-settings enforcement.
 
 ### IDE marketplace extension
 
@@ -278,7 +279,7 @@ Project CodeGuard aligns with the [CoSAI standard personas](personas.md) (see th
 | Rule / instruction files (user scope) | Application Developer, AI System Users | — |
 | Agent Skills (project scope) | Application Developer | AI System Governance, Agentic Platform and Framework Providers |
 | Agent Skills (user scope) | Application Developer, AI System Users | Agentic Platform and Framework Providers |
-| Plugin marketplace (Claude Code) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
+| Plugin marketplace (Claude Code, Codex) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
 | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
 | Remote instructions / installer (OpenCode, Codex) | Application Developer | Agentic Platform and Framework Providers |
 | Org-managed dashboard (Cursor Team Rules, GitHub Copilot org custom instructions, Claude Code managed settings) | AI System Governance | Agentic Platform and Framework Providers, AI Platform Provider (for endpoint management) |
