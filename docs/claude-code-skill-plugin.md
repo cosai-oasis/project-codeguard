@@ -81,8 +81,8 @@ When generating or reviewing code, Claude follows this 3-step workflow:
 - `codeguard-1-crypto-algorithms` - Use modern cryptographic algorithms
 - `codeguard-1-digital-certificates` - Validate certificate security
 
-**Context-Specific Rules** (20 rules applied based on technology and features):
-- Input validation, authentication, authorization, APIs, data storage, privacy, logging, cryptography, file handling, serialization, supply chain, DevOps, cloud, Kubernetes, IaC, frameworks, mobile security, and memory safety (C/C++)
+**Context-Specific Rules** (21 rules applied based on technology and features):
+- Input validation, authentication, authorization, APIs, data storage, privacy, logging, detection instrumentation, cryptography, file handling, serialization, supply chain, DevOps, cloud, Kubernetes, IaC, frameworks, mobile security, and memory safety (C/C++)
 
 ## Usage Examples
 
@@ -175,7 +175,7 @@ These critical rules are checked on **every** code operation:
 | `codeguard-1-crypto-algorithms` | Ban weak algorithms (MD5, SHA-1, DES); use modern alternatives |
 | `codeguard-1-digital-certificates` | Validate certificate expiration, key strength, signature algorithms |
 
-### Context-Specific Rules (20 rules)
+### Context-Specific Rules (21 rules)
 
 These rules apply based on the programming language, framework, or feature being implemented. Claude automatically selects relevant rules based on context:
 
@@ -186,7 +186,7 @@ These rules apply based on the programming language, framework, or feature being
 | **Authorization** | `codeguard-0-authorization-access-control` |
 | **Sessions** | `codeguard-0-session-management-and-cookies` |
 | **APIs & Web** | `codeguard-0-api-web-services`, `codeguard-0-client-side-web-security` |
-| **Data & Privacy** | `codeguard-0-data-storage`, `codeguard-0-privacy-data-protection`, `codeguard-0-logging` |
+| **Data & Privacy** | `codeguard-0-data-storage`, `codeguard-0-privacy-data-protection`, `codeguard-0-logging`, `codeguard-0-detection-instrumentation` |
 | **Cryptography** | `codeguard-0-additional-cryptography` |
 | **Files & Serialization** | `codeguard-0-file-handling-and-uploads`, `codeguard-0-xml-and-serialization` |
 | **Infrastructure** | `codeguard-0-supply-chain-security`, `codeguard-0-devops-ci-cd-containers`, `codeguard-0-cloud-orchestration-kubernetes`, `codeguard-0-iac-security` |
@@ -309,7 +309,7 @@ uv run python src/convert_to_ide_formats.py
 
 This command:
 - Converts unified rules from `sources/` to IDE-specific formats
-- Generates `skills/` directory with the 23 core security rules (Claude Code plugin)
+- Generates `skills/` directory with the 24 core security rules (Claude Code plugin)
 - Creates `dist/` with all supported agent-specific formats
 
 **Note:** The Claude Code plugin (`skills/`) uses the curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.

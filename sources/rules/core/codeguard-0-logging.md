@@ -27,6 +27,11 @@ Produce structured, privacy‑aware telemetry that supports detection, response,
 ### Detection & Alerting
 - Build alerts for auth anomalies (credential stuffing patterns, impossible travel), privilege changes, excessive failures, SSRF indicators, and data exfil patterns.
 - Tune thresholds; provide runbooks; ensure on‑call coverage; test alert flows.
+- Detectability is a generation requirement: when writing a security‑relevant decision point, emit the event a detector needs on both success and denial paths. See `codeguard-0-detection-instrumentation.md` and key events to the taxonomy in `codeguard-0-logging-vocabulary.md`.
+
+### Reviewing for Missing Events
+- Alerting only works if the event was emitted. For each security‑relevant sink (authn/authz, input validation, sensitive data access, privilege/session changes), confirm a matching event exists on every exit path.
+- Missing instrumentation has no pattern to scan for, so verify presence explicitly (grep the diff for the sink and its co‑located event) rather than relying on a scanner reporting clean.
 
 ### Storage & Protection
 - Isolate log storage (separate partition/database); strict file/directory permissions; store outside web‑accessible locations.
