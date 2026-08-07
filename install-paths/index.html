@@ -606,6 +606,28 @@
   
   
     <li class="md-nav__item">
+      <a href="../codex-skill-plugin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Codex Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../mcp-server/" class="md-nav__link">
         
   
@@ -999,9 +1021,9 @@
 <td style="text-align: left;">Committed to the repo — every contributor gets CodeGuard automatically on clone.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><strong>Want zero local files / auto-updates</strong></td>
-<td style="text-align: left;">Plugin marketplace (Claude Code) or remote instructions (OpenCode)</td>
-<td style="text-align: left;">One command, no files to maintain, always current.</td>
+<td style="text-align: left;"><strong>Want a host-managed install and updates</strong></td>
+<td style="text-align: left;">Plugin marketplace (Claude Code or Codex) or remote instructions (OpenCode)</td>
+<td style="text-align: left;">No copied rule files to maintain; the host manages the installed package.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>Prefer a one-click install from your IDE's extension marketplace</strong></td>
@@ -1117,12 +1139,13 @@
 <li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers supplying the skill discovery and invocation model.</li>
 </ul>
 <h3 id="plugin-marketplace">Plugin marketplace</h3>
-<p>A managed install: one command, the tool fetches and updates the skill for you.</p>
+<p>A managed install: register the marketplace once, then let the host's plugin
+tooling install and refresh the skill for you.</p>
 <ul>
-<li><strong>Supported by:</strong> Claude Code (<code>/plugin install codeguard-security@project-codeguard</code>)</li>
-<li><strong>Best for:</strong> Claude Code users who want the lowest-maintenance setup.</li>
-<li><strong>Tradeoffs:</strong> Claude Code only. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin guide</a> for details.</li>
-<li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers (Claude Code) and AI System Governance for managed-settings enforcement.</li>
+<li><strong>Supported by:</strong> Claude Code (<code>/plugin install codeguard-security@project-codeguard</code>), Codex (<code>codex plugin marketplace add cosai-oasis/project-codeguard</code>, then <code>codex plugin add codeguard-security@project-codeguard</code>)</li>
+<li><strong>Best for:</strong> Claude Code and Codex users who want the lowest-maintenance setup.</li>
+<li><strong>Tradeoffs:</strong> Marketplace installation is available only for Claude Code and Codex. Both plugins include only the CodeGuard skill. Use the ZIP bundle or source files for the reviewer agent. The MCP server remains a separate self-hosted option. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin guide</a> and the <a href="../codex-skill-plugin/">Codex Plugin guide</a> for installation details.</li>
+<li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers (Claude Code, Codex) and AI System Governance for managed-settings enforcement.</li>
 </ul>
 <h3 id="ide-marketplace-extension">IDE marketplace extension</h3>
 <p>A VS Code-compatible extension (<code>.vsix</code>) published to an IDE marketplace. Installing the extension writes the CodeGuard rule/instruction files into the correct directory for the host IDE (<code>.cursor/rules/</code>, <code>.windsurf/rules/</code>, <code>.agents/rules/</code>, or <code>.github/instructions/</code>) and keeps them up to date through the marketplace's normal extension-update channel.</p>
@@ -1302,7 +1325,7 @@
 <td style="text-align: left;">Agentic Platform and Framework Providers</td>
 </tr>
 <tr>
-<td style="text-align: left;">Plugin marketplace (Claude Code)</td>
+<td style="text-align: left;">Plugin marketplace (Claude Code, Codex)</td>
 <td style="text-align: left;">Application Developer</td>
 <td style="text-align: left;">Agentic Platform and Framework Providers, AI System Governance</td>
 </tr>
