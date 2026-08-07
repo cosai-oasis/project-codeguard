@@ -43,7 +43,7 @@ _SKILL_TEMPLATE = PROJECT_ROOT / _CORE_RULES_REL / "codeguard-SKILLS.md.template
 
 def sync_plugin_metadata(version: str) -> None:
     """
-    Sync version from pyproject.toml to Agent Skills metadata files.
+    Sync the project version to the Claude Code and Codex plugin metadata.
 
     Args:
         version: Version string from pyproject.toml

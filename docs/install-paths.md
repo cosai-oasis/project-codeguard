@@ -136,7 +136,7 @@ tooling install and refresh the skill for you.
 
 - **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`), Codex (`codex plugin marketplace add cosai-oasis/project-codeguard`, then `codex plugin add codeguard-security@project-codeguard`)
 - **Best for:** Claude Code and Codex users who want the lowest-maintenance setup.
-- **Tradeoffs:** Only these two hosts. Codex requires CLI 0.142.0 or newer for this repository-root marketplace layout. The plugin manifests carry the skill, not the reviewer agent or the MCP server, so keep the routes below for those. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) and the [Codex Plugin guide](codex-skill-plugin.md) for details.
+- **Tradeoffs:** Marketplace installation is available only for Claude Code and Codex. Both plugins include only the CodeGuard skill. Use the ZIP bundle or source files for the reviewer agent. The MCP server remains a separate self-hosted option. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) and the [Codex Plugin guide](codex-skill-plugin.md) for installation details.
 - **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code, Codex) and AI System Governance for managed-settings enforcement.
 
 ### IDE marketplace extension
