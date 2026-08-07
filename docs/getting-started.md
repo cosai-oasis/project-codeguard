@@ -154,6 +154,7 @@ Select your AI coding tool and follow the instructions:
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-client-side-web-security.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-cloud-orchestration-kubernetes.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-data-storage.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-detection-instrumentation.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-devops-ci-cd-containers.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-file-handling-and-uploads.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-framework-and-languages.md",
@@ -175,7 +176,7 @@ Select your AI coding tool and follow the instructions:
         ```
 
     !!! info "Tradeoff"
-        The skills approach (Option A) uses glob-scoped rules so only relevant rules are loaded based on the files you're editing. Remote instructions load all 23 rules into every session regardless of language. Remote URLs point to the `main` branch -- pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
+        The skills approach (Option A) uses glob-scoped rules so only relevant rules are loaded based on the files you're editing. Remote instructions load all 24 rules into every session regardless of language. Remote URLs point to the `main` branch -- pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
 
         Remote instructions do not install the reviewer agent. Use Option A if
         you want to invoke `@codeguard-reviewer`.
