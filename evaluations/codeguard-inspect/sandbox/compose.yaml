@@ -1,0 +1,42 @@
+services:
+  default:
+    build:
+      context: ..
+      dockerfile: sandbox/Dockerfile
+      target: default
+    init: true
+    command: ["/usr/bin/tail", "-f", "/dev/null"]
+    # Inspect writes verified tooling with the service's default identity, so
+    # keep it root-owned; Codex and the exporter explicitly run as nonroot.
+    user: "0:0"
+    network_mode: none
+    read_only: true
+    working_dir: /workspace
+    cap_drop:
+      - ALL
+    cap_add:
+      # Inspect's protected server switches to the nonroot agent and terminates
+      # its process tree; setup installs the repository skill as root.
+      - KILL
+      - SETGID
+      - SETUID
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 768m
+    memswap_limit: 768m
+    cpus: 1.0
+    stop_grace_period: 2s
+    ulimits:
+      cpu:
+        soft: 300
+        hard: 310
+      nofile:
+        soft: 256
+        hard: 256
+    tmpfs:
+      - /workspace:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
+      - /workspace/.codex:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
+      - /workspace/.codex/skills:rw,nosuid,nodev,noexec,size=2m,uid=0,gid=0,mode=0755
+      - /tmp:rw,nosuid,nodev,noexec,size=16m,uid=0,gid=0,mode=1777
+      - /var/tmp:rw,nosuid,nodev,exec,size=384m,uid=0,gid=0,mode=1777

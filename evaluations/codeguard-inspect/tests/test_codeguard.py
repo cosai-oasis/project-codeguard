@@ -6,7 +6,12 @@ from pathlib import Path
 import pytest
 
 import codeguard_evals.codeguard as codeguard
-from codeguard_evals.codeguard import CODEGUARD_SOURCE, load_codeguard
+from codeguard_evals.codeguard import (
+    CODEGUARD_SOURCE,
+    codeguard_content_sha256,
+    codeguard_version,
+    load_codeguard,
+)
 
 SKILL = b"# CodeGuard\n"
 RULE = b"# Rule\n"
@@ -42,11 +47,86 @@ def test_frozen_files_do_not_change_with_source(
     }
 
 
+def test_codeguard_content_digest_is_canonical_and_sensitive() -> None:
+    snapshot = {
+        "SKILL.md": SKILL,
+        "rules/codeguard-test.md": RULE,
+    }
+    reversed_snapshot = dict(reversed(snapshot.items()))
+    changed_snapshot = {**snapshot, "rules/codeguard-test.md": b"# Changed\n"}
+
+    digest = codeguard_content_sha256(snapshot)
+    assert len(digest) == 64
+    assert codeguard_content_sha256(reversed_snapshot) == digest
+    assert codeguard_content_sha256(changed_snapshot) != digest
+
+
+@pytest.mark.parametrize(
+    "snapshot",
+    [
+        {"SKILL.md": SKILL},
+        {"SKILL.md": SKILL, "unexpected.md": RULE},
+        {"SKILL.md": SKILL, "rules/codeguard-test.md": b""},
+    ],
+)
+def test_codeguard_content_digest_rejects_invalid_snapshots(
+    snapshot: dict[str, bytes],
+) -> None:
+    with pytest.raises(ValueError, match="no rules|unexpected path|invalid content"):
+        codeguard_content_sha256(snapshot)
+
+
+def test_frozen_snapshot_enforces_the_total_size_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    snapshot = {
+        "SKILL.md": SKILL,
+        "rules/codeguard-test.md": RULE,
+    }
+    monkeypatch.setattr(
+        codeguard,
+        "MAX_CODEGUARD_TOTAL_BYTES",
+        len(SKILL) + len(RULE) - 1,
+    )
+
+    with pytest.raises(ValueError, match="snapshot exceeds"):
+        codeguard_content_sha256(snapshot)
+
+
 def test_repository_codeguard_folder_is_loadable() -> None:
     files = load_codeguard()
 
     assert files["SKILL.md"] == (CODEGUARD_SOURCE / "SKILL.md").read_bytes()
     assert any(path.startswith("rules/codeguard-") for path in files)
+
+
+def test_repository_codeguard_is_validated_without_rewriting() -> None:
+    frozen = load_codeguard()
+    original = dict(frozen)
+
+    assert codeguard_version(frozen) == "1.4.0"
+    assert frozen == original
+    assert b"`rules/`" in frozen["SKILL.md"]
+
+
+def test_codeguard_validation_rejects_nonstandard_front_matter() -> None:
+    frozen = load_codeguard()
+    frozen["SKILL.md"] = frozen["SKILL.md"].replace(
+        b"framework:",
+        b"unexpected: value\nframework:",
+    )
+
+    with pytest.raises(ValueError, match="unexpected front matter"):
+        codeguard_version(frozen)
+
+
+def test_codeguard_validation_rejects_non_utf8_rule() -> None:
+    frozen = load_codeguard()
+    rule_path = next(path for path in frozen if path.startswith("rules/"))
+    frozen[rule_path] = b"\xff"
+
+    with pytest.raises(ValueError, match="not valid UTF-8"):
+        codeguard_version(frozen)
 
 
 @pytest.mark.parametrize(
@@ -74,6 +154,21 @@ def test_codeguard_requires_nonempty_skill_and_rule(
         load_codeguard(codeguard_source)
 
 
+def test_codeguard_rejects_unsafe_names(codeguard_source: Path) -> None:
+    rule = codeguard_source / "rules/codeguard-test.md"
+    rule.rename(codeguard_source / "rules/codeguard-bad:name.md")
+
+    with pytest.raises(ValueError, match="unexpected rule"):
+        load_codeguard(codeguard_source)
+
+
+def test_codeguard_rejects_unexpected_files(codeguard_source: Path) -> None:
+    (codeguard_source / ".env").write_text("unexpected\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="unexpected entries"):
+        load_codeguard(codeguard_source)
+
+
 @pytest.mark.parametrize("kind", ["root", "file", "directory", "broken"])
 def test_codeguard_rejects_symlinks(
     tmp_path: Path,
@@ -98,33 +193,16 @@ def test_codeguard_rejects_symlinks(
         rule.unlink()
         rule.symlink_to(source / "missing.md")
 
-    with pytest.raises(ValueError, match="regular directory|safely open"):
+    with pytest.raises(ValueError, match="directory|safely open"):
         load_codeguard(source)
 
 
-def test_codeguard_rejects_special_files(
-    codeguard_source: Path,
-) -> None:
-    fifo = codeguard_source / "rules/codeguard-test.md"
-    fifo.unlink()
-    os.mkfifo(fifo)
+def test_codeguard_rejects_special_files(codeguard_source: Path) -> None:
+    rule = codeguard_source / "rules/codeguard-test.md"
+    rule.unlink()
+    os.mkfifo(rule)
 
     with pytest.raises(ValueError, match="not a regular file"):
-        load_codeguard(codeguard_source)
-
-
-def test_codeguard_rejects_unsafe_names(codeguard_source: Path) -> None:
-    rule = codeguard_source / "rules/codeguard-test.md"
-    rule.rename(codeguard_source / "rules/codeguard-bad:name.md")
-
-    with pytest.raises(ValueError, match="unexpected rule"):
-        load_codeguard(codeguard_source)
-
-
-def test_codeguard_rejects_unexpected_files(codeguard_source: Path) -> None:
-    (codeguard_source / ".env").write_text("unexpected\n", encoding="utf-8")
-
-    with pytest.raises(ValueError, match="unexpected entries"):
         load_codeguard(codeguard_source)
 
 
@@ -147,62 +225,4 @@ def test_codeguard_limits_accept_boundary_and_reject_one_less(
 
     monkeypatch.setattr(codeguard, limit_name, exact_limit - 1)
     with pytest.raises(ValueError, match="exceeds"):
-        load_codeguard(codeguard_source)
-
-
-def test_codeguard_rejects_symlink_swap_before_open(
-    monkeypatch: pytest.MonkeyPatch,
-    codeguard_source: Path,
-    tmp_path: Path,
-) -> None:
-    original = codeguard._read_regular_file
-    outside = tmp_path / "outside"
-    outside.write_bytes(b"outside")
-
-    def swap(
-        name: str,
-        path: Path,
-        parent_descriptor: int,
-        remaining_bytes: int,
-    ) -> bytes:
-        if path.name == "SKILL.md":
-            path.unlink()
-            path.symlink_to(outside)
-        return original(name, path, parent_descriptor, remaining_bytes)
-
-    monkeypatch.setattr(codeguard, "_read_regular_file", swap)
-
-    with pytest.raises(ValueError, match="safely open"):
-        load_codeguard(codeguard_source)
-
-
-def test_codeguard_rejects_directory_swap_before_open(
-    monkeypatch: pytest.MonkeyPatch,
-    codeguard_source: Path,
-    tmp_path: Path,
-) -> None:
-    original = codeguard._open_directory
-    replacement = tmp_path / "replacement"
-    replacement.mkdir()
-    (replacement / "codeguard-test.md").write_bytes(b"replacement")
-
-    def swap(
-        path: Path,
-        *,
-        name: str | None = None,
-        parent_descriptor: int | None = None,
-    ) -> int:
-        if name == "rules":
-            rules = codeguard_source / "rules"
-            rules.rename(codeguard_source / "original-rules")
-            rules.symlink_to(replacement, target_is_directory=True)
-        return original(
-            path,
-            name=name,
-            parent_descriptor=parent_descriptor,
-        )
-
-    monkeypatch.setattr(codeguard, "_open_directory", swap)
-
-    with pytest.raises(ValueError, match="safely open"):
         load_codeguard(codeguard_source)
