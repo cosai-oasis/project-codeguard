@@ -9,6 +9,8 @@ from typing import Final
 
 SOURCE_FILENAME: Final = "solution.py"
 SANDBOX_NAME: Final = "default"
+SEMGREP_SANDBOX_NAME: Final = "semgrep"
+SEMGREP_SANDBOX_USER: Final = "1000:1000"
 SANDBOX_WORKDIR: Final = "/workspace"
 SANDBOX_USER: Final = "nonroot"
 SANDBOX_ROOT_USER: Final = "0:0"

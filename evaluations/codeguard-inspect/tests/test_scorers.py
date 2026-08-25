@@ -11,7 +11,8 @@ from types import SimpleNamespace
 from typing import Iterator, cast
 
 import pytest
-from inspect_ai import Epochs, Task, eval as inspect_eval, score as inspect_score
+from inspect_ai import Epochs, Task
+from inspect_ai import eval as inspect_eval
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import (
     ChatMessage,
@@ -26,9 +27,9 @@ from inspect_ai.util import OutputLimitExceededError
 import codeguard_evals.sandbox_client as sandbox_client
 import codeguard_evals.scorers as scorer_module
 from codeguard_evals.output_artifact import (
-    GENERATION_LIMIT_KEY,
     SAVED_OUTPUT_KEY,
     SavedOutput,
+    save_semgrep_evidence,
 )
 from codeguard_evals.sandbox_client import (
     BenchmarkInfrastructureError,
@@ -49,26 +50,24 @@ from codeguard_evals.scorers import (
     VALID_OUTPUT_METRIC,
     static_safety_scorer,
 )
-from codeguard_evals.semgrep_runner import (
-    SEMGREP_PACKAGE_VERSION,
-    SemgrepFinding,
-)
 from codeguard_evals.securityeval.protocol import (
     CODEGUARD_SKILL_DIR,
     EVALUATION_VERSION,
     TASK_PROMPT,
 )
-
+from codeguard_evals.semgrep_artifacts import SemgrepFinding, semgrep_provenance
 from tests.conftest import (
     CASE_ID,
-    FakeSandbox,
     ORIGINAL_SOURCE,
     SAFE_SOURCE,
     SAMPLE_CWE,
     SAMPLE_ID,
     STUB_SOURCE,
+    FakeSandbox,
     task_state,
 )
+
+_DEFAULT_FINDINGS = object()
 
 
 def _save_output(state: TaskState, source: str | None) -> None:
@@ -86,6 +85,7 @@ def _state_with_output(
     sample_id: str = SAMPLE_ID,
     input_text: str | list[ChatMessage] = TASK_PROMPT,
     metadata: dict[str, object] | None = None,
+    findings: tuple[SemgrepFinding, ...] | None | object = _DEFAULT_FINDINGS,
 ) -> TaskState:
     """Build a sample whose source has already been captured into Inspect."""
     state = task_state(
@@ -94,6 +94,12 @@ def _state_with_output(
         metadata=metadata,
     )
     _save_output(state, source)
+    evidence_findings = (
+        (() if source == SAFE_SOURCE else None)
+        if findings is _DEFAULT_FINDINGS
+        else cast(tuple[SemgrepFinding, ...] | None, findings)
+    )
+    save_semgrep_evidence(state, evidence_findings)
     return state
 
 
@@ -304,10 +310,30 @@ def test_export_normalizes_sandbox_failures_without_exposing_details(
 
 def _scan_with_findings() -> tuple[SemgrepFinding, ...]:
     return (
-        SemgrepFinding("rule.high", "HIGH", 1),
-        SemgrepFinding("rule.info", "INFO", 2),
-        SemgrepFinding("rule.experiment", "EXPERIMENT", 2),
-        SemgrepFinding("rule.inventory", "INVENTORY", 2),
+        SemgrepFinding(
+            rule_id="rule.high", severity="HIGH", line=1, subcategory="vuln"
+        ),
+        SemgrepFinding(
+            rule_id="rule.secure-default",
+            severity="INFO",
+            line=2,
+            subcategory="secure default",
+        ),
+        SemgrepFinding(
+            rule_id="rule.audit", severity="HIGH", line=2, subcategory="audit"
+        ),
+        SemgrepFinding(
+            rule_id="rule.experiment",
+            severity="EXPERIMENT",
+            line=2,
+            subcategory="vuln",
+        ),
+        SemgrepFinding(
+            rule_id="rule.inventory",
+            severity="INVENTORY",
+            line=2,
+            subcategory="vuln",
+        ),
     )
 
 
@@ -324,21 +350,17 @@ def _score(state: TaskState) -> Score:
         (SAFE_SOURCE, 1, 2, 1),
     ],
 )
-def test_static_safety_scorer_uses_the_intended_metric_denominators(
-    monkeypatch: pytest.MonkeyPatch,
+def test_static_safety_scorer_applies_metric_denominators_and_finding_filters(
     source: str | None,
     expected_valid: int,
     expected_loc: int,
     expected_implemented: int,
 ) -> None:
-    scanned: list[str] = []
-
-    async def scan(candidate: str) -> tuple[SemgrepFinding, ...]:
-        scanned.append(candidate)
-        return _scan_with_findings()
-
-    monkeypatch.setattr(scorer_module, "scan_source", scan)
-    score = _score(_state_with_output(source=source))
+    state = _state_with_output(
+        source=source,
+        findings=_scan_with_findings() if expected_implemented else None,
+    )
+    score = _score(state)
     values = score.as_dict()
 
     assert values[VALID_OUTPUT_METRIC] == expected_valid
@@ -347,36 +369,64 @@ def test_static_safety_scorer_uses_the_intended_metric_denominators(
     assert math.isnan(cast(float, values[SKILL_LOADED_METRIC]))
     if expected_implemented:
         assert values[FINDING_COUNT_METRIC] == 2
-        assert scanned == [SAFE_SOURCE]
         assert score.metadata is not None
         assert score.metadata["findings"] == [
-            {"rule_id": "rule.high", "severity": "HIGH", "line": 1},
-            {"rule_id": "rule.info", "severity": "INFO", "line": 2},
+            {
+                "rule_id": "rule.high",
+                "severity": "HIGH",
+                "line": 1,
+                "subcategory": "vuln",
+            },
+            {
+                "rule_id": "rule.secure-default",
+                "severity": "INFO",
+                "line": 2,
+                "subcategory": "secure default",
+            },
+            {
+                "rule_id": "rule.audit",
+                "severity": "HIGH",
+                "line": 2,
+                "subcategory": "audit",
+            },
             {
                 "rule_id": "rule.experiment",
                 "severity": "EXPERIMENT",
                 "line": 2,
+                "subcategory": "vuln",
             },
             {
                 "rule_id": "rule.inventory",
                 "severity": "INVENTORY",
                 "line": 2,
+                "subcategory": "vuln",
             },
         ]
     else:
         assert isinstance(values[FINDING_COUNT_METRIC], float)
         assert math.isnan(values[FINDING_COUNT_METRIC])
-        assert scanned == []
     assert score.answer == source
 
 
-def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
-    monkeypatch: pytest.MonkeyPatch,
+@pytest.mark.parametrize(
+    ("source", "findings"),
+    [
+        (SAFE_SOURCE, None),
+        (STUB_SOURCE, ()),
+    ],
+)
+def test_static_safety_scorer_rejects_inconsistent_evidence_applicability(
+    source: str | None,
+    findings: tuple[SemgrepFinding, ...] | None,
 ) -> None:
-    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        return ()
+    state = _state_with_output(source=source, findings=findings)
 
-    monkeypatch.setattr(scorer_module, "scan_source", scan)
+    with pytest.raises(BenchmarkInfrastructureError, match="inconsistent"):
+        _score(state)
+
+
+def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
+) -> None:
     codeguard_id = f"static_safety/codeguard/{CASE_ID}"
     metadata = {
         "case_id": CASE_ID,
@@ -449,48 +499,15 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
 
 
 def test_static_safety_scorer_records_replayable_scoring_provenance(
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        return _scan_with_findings()
-
-    monkeypatch.setattr(scorer_module, "scan_source", scan)
-
-    state = _state_with_output()
-    state.store.set(GENERATION_LIMIT_KEY, "turn")
+    state = _state_with_output(findings=_scan_with_findings())
     score = _score(state)
 
     assert score.metadata is not None
-    assert score.metadata["generation_limit"] == "turn"
     assert score.metadata["implementation_status"] == "non_stub"
     assert score.metadata["scoring_python_version"] == SCORING_PYTHON_VERSION
     assert score.metadata["stub_classifier"] == "python-ast-obvious-stub"
-    assert score.metadata["semgrep"] == {
-        "version": SEMGREP_PACKAGE_VERSION,
-        "ruleset": "p/security-audit",
-        "rules_source": "semgrep-registry",
-        "rules_mutable": True,
-        "counted_severities": [
-            "CRITICAL",
-            "ERROR",
-            "HIGH",
-            "INFO",
-            "LOW",
-            "MEDIUM",
-            "WARNING",
-        ],
-    }
-
-
-@pytest.mark.parametrize("invalid_limit", ["working", [], {}])
-def test_static_safety_scorer_rejects_invalid_generation_limit(
-    invalid_limit: object,
-) -> None:
-    state = _state_with_output()
-    state.store.set(GENERATION_LIMIT_KEY, invalid_limit)
-
-    with pytest.raises(BenchmarkInfrastructureError, match="unsupported limit"):
-        _score(state)
+    assert score.metadata["semgrep"] == semgrep_provenance()
 
 
 @pytest.mark.parametrize(
@@ -555,41 +572,31 @@ def test_static_safety_scorer_rejects_case_cwe_mismatch() -> None:
 def test_static_safety_scorer_fails_closed_on_assessment_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    scanned = False
-
     def fail_assessment(source: str, *, original: str) -> object:
         del source, original
         raise ValueError("untrusted source details")
-
-    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        nonlocal scanned
-        scanned = True
-        return _scan_with_findings()
 
     monkeypatch.setattr(
         scorer_module,
         "validate_python_solution",
         fail_assessment,
     )
-    monkeypatch.setattr(scorer_module, "scan_source", scan)
 
     with pytest.raises(RuntimeError, match="could not be assessed") as captured:
         _score(_state_with_output())
 
     assert "untrusted source details" not in str(captured.value)
-    assert scanned is False
 
 
-def test_static_safety_scorer_propagates_scanner_failure(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    async def fail_scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        raise RuntimeError("Semgrep exited with status 2; verify registry access")
+def test_static_safety_scorer_requires_durable_semgrep_evidence() -> None:
+    state = task_state()
+    _save_output(state, SAFE_SOURCE)
 
-    monkeypatch.setattr(scorer_module, "scan_source", fail_scan)
-
-    with pytest.raises(RuntimeError, match="status 2"):
-        _score(_state_with_output())
+    with pytest.raises(
+        BenchmarkInfrastructureError,
+        match="Semgrep evidence is missing",
+    ):
+        _score(state)
 
 
 def test_static_safety_scorer_rejects_missing_artifact() -> None:
@@ -609,86 +616,15 @@ def _captured_outputs(sources: dict[str, str | None]) -> Solver:
                 "agent narration",
             )
             _save_output(state, source)
+            save_semgrep_evidence(
+                state,
+                _scan_with_findings() if source == SAFE_SOURCE else None,
+            )
             return state
 
         return solve
 
     return install()
-
-
-def test_inspect_preserves_captured_output_when_scanning_fails(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
-
-    async def fail_scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        raise RuntimeError("Semgrep exited with status 2; verify registry access")
-
-    monkeypatch.setattr(scorer_module, "scan_source", fail_scan)
-    task = Task(
-        name="static_safety_scanner_failure",
-        dataset=MemoryDataset(
-            [
-                Sample(
-                    id=SAMPLE_ID,
-                    input=TASK_PROMPT,
-                    target=ORIGINAL_SOURCE,
-                    metadata={
-                        "case_id": CASE_ID,
-                        "cwe": SAMPLE_CWE,
-                        "condition": "baseline",
-                    },
-                )
-            ]
-        ),
-        solver=_captured_outputs({SAMPLE_ID: SAFE_SOURCE}),
-        scorer=static_safety_scorer(),
-        fail_on_error=True,
-        continue_on_fail=True,
-        score_on_error=False,
-    )
-
-    log = inspect_eval(
-        task,
-        model="mockllm/model",
-        display="none",
-        log_dir=str(tmp_path),
-        log_realtime=False,
-        ctl_server=False,
-    )[0]
-
-    assert log.status == "error"
-    assert log.samples is not None and len(log.samples) == 1
-    sample = log.samples[0]
-    assert sample.error is not None
-    assert "Semgrep exited with status 2" in sample.error.message
-    assert sample.output.completion == "agent narration"
-    assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == (
-        SAFE_SOURCE
-    )
-    assert sample.scores == {}
-
-    async def healthy_scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        return ()
-
-    monkeypatch.setattr(scorer_module, "scan_source", healthy_scan)
-    rescored = inspect_score(
-        log,
-        static_safety_scorer(),
-        model="mockllm/model",
-        action="overwrite",
-        display="none",
-    )
-
-    assert rescored.status == "error"
-    assert rescored.samples is not None
-    rescored_sample = rescored.samples[0]
-    assert rescored_sample.error is not None
-    assert rescored_sample.scores is not None
-    recovered = rescored_sample.scores["static_safety_scorer"]
-    assert recovered.answer == SAFE_SOURCE
-    assert recovered.value[FINDING_COUNT_METRIC] == 0
 
 
 def test_inspect_aggregates_each_metric_over_its_intended_samples(
@@ -707,10 +643,6 @@ def test_inspect_aggregates_each_metric_over_its_intended_samples(
         implemented_id: SAFE_SOURCE,
     }
 
-    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        return _scan_with_findings()
-
-    monkeypatch.setattr(scorer_module, "scan_source", scan)
     samples = [
         Sample(
             id=sample_id,
@@ -809,22 +741,23 @@ def test_inspect_aggregates_epochs_as_clustered_generations(
             else:
                 raise AssertionError(f"Unexpected sample ID: {sample_id}")
             _save_output(state, source)
+            findings = (
+                tuple(
+                    SemgrepFinding(
+                        rule_id=f"rule.{index}",
+                        severity="HIGH",
+                        line=1,
+                        subcategory="vuln",
+                    )
+                    for index in range(10)
+                )
+                if source == SAFE_SOURCE
+                else (() if source == stable_source else None)
+            )
+            save_semgrep_evidence(state, findings)
             return state
 
         return solve
-
-    async def scan(source: str) -> tuple[SemgrepFinding, ...]:
-        findings = (
-            tuple(
-                SemgrepFinding(f"rule.{index}", "HIGH", 1)
-                for index in range(10)
-            )
-            if source == SAFE_SOURCE
-            else ()
-        )
-        return findings
-
-    monkeypatch.setattr(scorer_module, "scan_source", scan)
     samples = [
         Sample(
             id=sample_id,

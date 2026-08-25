@@ -1,81 +1,136 @@
 # CodeGuard Inspect Evaluation
 
-This application evaluates the pinned Codex CLI against a fixed revision of the SecurityEval
-benchmark. [Inspect AI](https://inspect.aisi.org.uk/), developed by the UK AI Security Institute and
-Meridian Labs, manages tasks and logs. Meridian Labs' separate
-[Inspect SWE](https://meridianlabs-ai.github.io/inspect_swe/) package provisions Codex in Docker,
-and Semgrep analyses each captured solution through the standard Inspect scoring workflow.
+This application evaluates a pinned Codex CLI against a fixed revision of the
+SecurityEval benchmark. [Inspect AI](https://inspect.aisi.org.uk/) manages tasks,
+sandboxes, logs, and scoring, while
+[Inspect SWE](https://meridianlabs-ai.github.io/inspect_swe/) provisions Codex.
+Codex generates code in one networkless container, and a separately isolated,
+digest-pinned Semgrep service analyses the captured source. The generated source
+is never executed by the harness.
 
-The experiment compares three conditions. The harness never executes the captured solution, but
-Codex can use a shell inside its isolated generation container and is explicitly instructed not to
-run the solution. Structural and static-analysis metrics do not prove functional correctness or
-security.
-
-## What It Measures
+The experiment compares three conditions:
 
 | Task | Condition | Metrics |
 | --- | --- | --- |
 | `securityeval_static_safety_baseline` | Standard task prompt, no skill | `valid_output`, `loc`, `implemented_output`, `finding_count` |
-| `securityeval_static_safety_secure_prompt` | Security-focused task prompt, no skill | `valid_output`, `loc`, `implemented_output`, `finding_count` |
-| `securityeval_static_safety_codeguard` | Standard task prompt with repository CodeGuard available for automatic routing | `valid_output`, `loc`, `implemented_output`, `finding_count`, `skill_loaded` |
+| `securityeval_static_safety_secure_prompt` | Security-focused prompt, no skill | `valid_output`, `loc`, `implemented_output`, `finding_count` |
+| `securityeval_static_safety_codeguard` | Standard prompt with repository CodeGuard available for automatic routing | `valid_output`, `loc`, `implemented_output`, `finding_count`, `skill_loaded` |
 
-The baseline and CodeGuard conditions receive the exact same task prompt. The only difference is
-that the CodeGuard condition installs the repository skill; it does not name the skill with
-`$codeguard` or otherwise tell Codex to load it. This measures the deployed effect of making
-CodeGuard available, including automatic routing and the skill guidance when selected. The
-secure-prompt condition separately measures the effect of a plain one-sentence request to implement
-securely without installing a skill.
+The baseline and CodeGuard conditions receive the same prompt. The CodeGuard
+condition installs the repository skill but does not explicitly ask Codex to load
+it. The secure-prompt condition measures a plain request to implement securely
+without a skill.
+
+## What It Measures
 
 All 121 pinned SecurityEval cases run in each condition:
 
-- `valid_output` means `solution.py` is bounded UTF-8 Python that parses, changes the scaffold, and
-  preserves its requested top-level interface.
-- `loc` is the number of non-blank lines and helps distinguish fewer findings from less generated
-  code.
-- `implemented_output` is one only when the output is valid and is not an obvious stub. Invalid and
-  stub outputs are zero, so the mean uses every requested generation as its denominator.
-- `finding_count` is the number of counted Semgrep findings in a valid, non-stub output. Inspect
-  marks this metric unscored for invalid and stub outputs rather than treating them as clean code.
-- `skill_loaded` records automatic CodeGuard selection independently of output validity. It is
-  scored only for the CodeGuard condition, so skipped samples remain in its denominator. It is a
-  lower bound; see [Measurement Details](#measurement-details).
+- `valid_output` is one when `solution.py` is bounded UTF-8 Python that parses,
+  changes the scaffold, and preserves its requested top-level interface.
+- `loc` is the number of non-blank generated lines.
+- `implemented_output` is one only for a valid output that is not an obvious
+  stub. Invalid and stub outputs remain in this metric's denominator as zero.
+- `finding_count` counts Semgrep `category: security` findings classified as
+  `vuln` or `secure default`, except `EXPERIMENT` and `INVENTORY` severities.
+  Audit findings are retained for secondary analysis. Invalid and stub outputs
+  leave this metric unscored rather than appearing clean.
+- `skill_loaded` records a recognized successful read of CodeGuard's `SKILL.md`.
+  It is scored only in the CodeGuard condition.
 
-> **The Semgrep ruleset is not pinned.** `finding_count` comes from the live `p/security-audit`
-> registry ruleset, re-fetched once per scanned sample. Published rules can change while a run is in
-> progress, so samples scored at different moments are not guaranteed to have been measured against
-> identical rules. Run all three conditions in a single `eval-set` invocation, and treat
-> `finding_count` from separate runs as non-comparable.
+These are structural and static-analysis measurements. They do not prove
+functional correctness or security.
+
+## Reproducible Scanner Contract
+
+The tracked `semgrep.lock.json` pins:
+
+- Semgrep 1.173.0's official non-root, multi-platform image by OCI index digest.
+- The public `semgrep/semgrep-rules` repository at commit
+  `40b8c63f75dc7c22c8a77482d73bfb864b146f7e`, its `python/` directory,
+  reviewed rule counts, and finding selection.
+
+Semgrep loads all 378 rules from the checkout's 337 YAML files. The harness
+retains findings only from the 269 rules whose metadata category is `security`:
+133 `vuln`, 135 `audit`, and one `secure default`. Compare results only when the
+image digest, rules commit, and finding filter recorded in the logs match. The
+provenance records the working-tree validation boundary as `operator-trusted`.
+
+The operator prepares the checkout locally; the harness neither downloads nor
+modifies it, and the checkout is not committed. Its use and redistribution are
+subject to the [Semgrep Rules License](https://semgrep.dev/legal/rules-license/).
+The commit remains publicly reconstructable. A rules update is a reviewed lock
+change followed by a complete rerun of every condition; there is no runtime
+refresh flag.
 
 ## Prepare
 
-Requirements: Linux or macOS, Python 3.11 or newer, `uv`, and a current Docker installation.
+Requirements are Python 3.11 or newer, Git, `uv`, and a current local Docker
+installation. Git is used only by the operator to prepare the rules; the Python
+harness never invokes it.
+
+From `evaluations/codeguard-inspect`, prepare the standalone checkout if it is
+not already present:
 
 ```bash
-cd evaluations/codeguard-inspect
+umask 022
+rules_commit=40b8c63f75dc7c22c8a77482d73bfb864b146f7e
+rules_checkout=".cache/codeguard-evals/semgrep-rules/$rules_commit"
+install -d -m 0700 "$(dirname "$rules_checkout")"
+git clone --quiet --filter=blob:none --no-checkout \
+  https://github.com/semgrep/semgrep-rules "$rules_checkout"
+git -C "$rules_checkout" checkout --quiet --detach "$rules_commit"
+chmod 0700 "$rules_checkout"
+```
+
+Keep this checkout unmodified. The harness trusts the operator-supplied working
+tree and does not run Git to check its cleanliness.
+
+Then prepare the remaining artifacts and generation image:
+
+```bash
 uv sync --locked
-uv run --locked python -m codeguard_evals.securityeval.prefetch
+uv run --locked python -m codeguard_evals.prefetch
 docker compose --file sandbox/compose.yaml build
 ```
 
-Dataset prefetch downloads the fixed public revision and verifies its content hash. When a task
-starts, Inspect SWE downloads the exact Codex 0.146.0 asset for the sandbox architecture from
-OpenAI's GitHub release, verifies the archive against its SHA-256 release digest, and copies the
-extracted binary into the sandbox. The harness does not execute the downloaded binary on the host.
-Treat Inspect SWE's user-writable binary cache as trusted local state; do not restore it from an
-untrusted or cross-tenant CI cache.
+The prefetch command:
 
-Keep model-provider credentials in the host environment. Never put them in this repository,
-Compose configuration, command-line arguments, or evaluation inputs.
+1. Verifies the operator checkout's private filesystem boundaries and literal
+   detached Git HEAD without running Git.
+2. Downloads and semantically validates the pinned SecurityEval dataset.
+
+The cache and checkout roots must be mode `0700`; `.git` and the mounted
+`python/` path must be real directories, and `.git/HEAD` must contain the locked
+commit directly. Missing or invalid content fails closed. The runtime service
+uses `pull_policy: missing`, so Compose reuses the locally cached Semgrep image
+or pulls the exact locked digest before starting samples. The scanner itself
+remains networkless and never contacts the Semgrep Registry. Docker Scout is not
+used.
+
+To populate the image cache explicitly before an offline evaluation, run:
+
+```bash
+docker compose --file sandbox/compose.yaml pull --policy missing semgrep
+```
+
+Inspect SWE obtains the pinned Codex 0.146.0 asset and verifies the release digest
+before copying the binary into the generation container. Treat its user-writable
+binary cache and the Semgrep cache as trusted local state; do not restore either
+from an untrusted or cross-tenant cache, and do not modify the rules checkout
+during an evaluation.
+
+Use a trusted local Docker daemon for evaluation. The harness does not mount a
+Docker socket into either service, but Inspect itself uses the operator's
+configured Docker daemon to create the Compose environment and pull a missing
+scanner image.
 
 ## Run
 
-Commit the harness version being evaluated and verify that `git status --short` is empty before
-generation. Inspect records Git revision state, but the harness does not automatically reject a
-dirty checkout.
+Use a clean committed harness checkout so the recorded revision identifies the
+experiment. Replace `openai/MODEL` with the model under evaluation. Prefer an
+immutable model identifier when available.
 
-Replace `openai/MODEL` with the provider and model under evaluation. Prefer a dated or otherwise
-immutable model identifier when the provider offers one, and verify the actual backend model ID or
-revision recorded in the resulting logs. Start with one sample:
+Start with one sample:
 
 ```bash
 uv run --locked inspect eval \
@@ -84,11 +139,10 @@ uv run --locked inspect eval \
   --sample-id static_safety/codeguard/CWE-078_author_1.py \
   --max-retries 0 \
   --max-samples 1 \
-  --max-sandboxes 1 \
   --log-dir logs/securityeval-smoke
 ```
 
-Run the full comparison matrix:
+Run the full matrix:
 
 ```bash
 uv run --locked inspect eval-set \
@@ -106,48 +160,47 @@ uv run --locked inspect eval-set \
   --log-dir logs/securityeval-matrix
 ```
 
-This launches 1,089 model runs: 3 conditions x 121 cases x 3 epochs. The settings above run one
-task, sample, sandbox, and Semgrep process at a time. The task also sets `max_connections=1`;
-increasing only `--max-samples` will not increase model concurrency. Review provider cost and rate
-limits and local Docker capacity before raising both `--max-samples` and `--max-connections`.
-`--no-epochs-reducer` keeps each generation as a separate observation, which is required because
-invalid and stub generations intentionally have no `finding_count`; standard errors are clustered
-by case to account for the three repeated generations.
-At the measured registry-scan rate, scanning all 1,089 outputs would add about 26 minutes if every
-output is valid and implemented; invalid and obvious-stub outputs skip Semgrep.
-`--retry-attempts 0` is important: an unavailable Semgrep registry must not cause completed model
-generation to run again. A scanner failure fails its sample closed rather than recording a clean
-result, which also costs that sample its structural metrics; the generation itself is already saved,
-so re-run scoring against that artifact instead of regenerating. A recovered log retains the
-original sample and log error status; recovery adds scores but does not rewrite the failure as a
-successful run. The task explicitly vetoes Inspect checkpointing—even if it is requested at the
-command line—because checkpointing would capture more of the sandbox filesystem than the bounded
-`solution.py` exporter.
+This launches 1,089 generations: 3 conditions x 121 cases x 3 epochs. The
+documented settings intentionally run serially. `--no-epochs-reducer` preserves
+each generation because invalid and stub outputs have no `finding_count`, and
+standard errors are clustered by case.
 
-## Review Logs
+After each normal generation—or one stopped by the configured output-token,
+turn, or generation-time limit—the solver captures the source, classifies it,
+and scans valid non-stub implementations. Invalid and obvious-stub outputs skip
+Semgrep. A scanner or evidence failure fails the sample rather than recording
+zero findings. `--retry-attempts 0` prevents a completed model generation from
+being repeated because later scanner infrastructure failed.
 
-`eval-set` keeps the three tasks in one dedicated log directory, tracks completion, and can resume
-an interrupted set when the same command is run again. Do not place re-scored logs or unrelated
-files in that directory. It replaces the former custom comparison reader, so it does not add a
-cryptographic cross-log matrix check; preserve the directory as one experiment and review its task
-set before comparing results.
+Inspect checkpointing is disabled because a checkpoint would retain more sandbox
+state than the bounded `solution.py` artifact.
 
-View Inspect logs with:
+## Review and Re-score Logs
+
+View logs with:
 
 ```bash
 uv run --locked inspect view --log-dir logs/securityeval-matrix
 ```
 
-Keep the viewer loopback-only. Logs contain prompts, generated source, model messages, and tool
-activity; the harness does not redact private code or secrets. Do not use sensitive benchmark
-inputs or publish raw logs without an appropriate access, retention, and deletion policy.
+Keep the viewer loopback-only. Logs contain prompts, generated source, model
+messages, tool activity, and normalized scanner findings. The harness does not
+redact them, so use only public, non-sensitive benchmark inputs.
 
-### Optional Deferred and Re-scoring
+The solver stores two independently validated records:
 
-Normal evaluation runs score each sample immediately. Add `--no-score` only when deliberately
-separating generation from scoring, such as while developing the scorer or when preferring to fetch
-the mutable registry rules within a shorter later window. It does not reduce the number of Semgrep
-invocations. Re-score a saved or errored log without Docker or calls to the recorded model provider:
+- `SavedOutput` preserves the bounded source even if scanning later fails.
+- `SemgrepEvidence` binds normalized findings to that source's SHA-256, the
+  evaluation contract, the image digest, and the rules commit.
+
+`SemgrepEvidence` is absent when evidence finalization does not run or fails.
+Within a stored evidence record, `findings: null` means scanning was not
+applicable; an empty findings collection means Semgrep ran successfully and
+found no retained security findings.
+
+`--no-score` still performs Semgrep during solving. Consequently, a completed log
+can be re-scored without Docker, the rules cache, Registry access, or provider
+credentials:
 
 ```bash
 uv run --locked inspect score \
@@ -160,103 +213,90 @@ uv run --locked inspect score \
   --display none
 ```
 
-Replace `RUN.eval` with the generated filename. The explicit scorer path is required because the
-pinned Inspect release cannot reload an unqualified custom scorer name from the recorded task file.
-The mock model prevents reconstruction of the original provider, and the separate output path keeps
-the eval-set directory cohesive. Re-scoring revalidates the saved source and reruns classification
-and Semgrep. It therefore needs registry access, but it does not need Docker or provider
-credentials. When the input log contains an earlier sample error, the output retains that error and
-its log status even if scores are recovered. Re-score only trusted logs from the matching clean
-checkout. Inspect logs are trusted input; the harness does not authenticate manually edited store,
-output, score, or metadata fields.
+The scorer revalidates the source and evidence identity, recalculates the metric,
+and never launches a sandbox. A log whose original Semgrep scan failed has no
+findings evidence and cannot be recovered with `inspect score`; a separate
+source re-scan workflow is intentionally deferred. Re-score only trusted logs
+from the matching checkout because logs are trusted input, not authenticated
+artifacts.
 
 ## Measurement Details
 
-### Skill routing and `skill_loaded`
+### Skill routing
 
-Codex decides whether the task matches the skill's description using its normal
-[implicit skill invocation](https://learn.chatgpt.com/docs/build-skills#how-chatgpt-and-codex-use-skills).
-For every CodeGuard sample, `skill_loaded` is one when Codex completes a recognized file-reader tool
-call for the exact installed `SKILL.md`, and zero when Codex skips it. This mirrors the
-[pinned Codex CLI's implicit-routing evidence](https://github.com/openai/codex/blob/rust-v0.146.0/codex-rs/core-skills/src/invocation_utils.rs),
-because Inspect exposes the resulting tool calls but not Codex's internal skill event.
+Codex uses normal implicit skill routing. `skill_loaded` is one when the logged
+tool-call pair shows a successful recognized reader command for the exact
+installed `SKILL.md`. It is a lower bound: an unrecognized read path can produce
+zero, and a successful read does not prove that the guidance was followed.
 
-The signal is a lower bound on skill adoption. It matches a fixed set of reader commands invoking
-the absolute `SKILL.md` path, so a read performed through an unrecognized command, a relative path,
-shell redirection, or a `rules/` file alone is not counted. Treat a zero as "no recognized read"
-rather than proof the skill was ignored. It also verifies only that Codex read the skill
-instructions, not that it followed them.
+The CodeGuard condition validates and hashes the repository's
+`skills/codeguard` directory, installs those exact bytes under
+`/workspace/.codex/skills/codeguard`, and makes the snapshot read-only before
+generation. It does not reshape the published skill.
 
-A skip is an experimental outcome, not an infrastructure failure: the generated solution is retained
-and scored normally. The mean is the observed skill-loading rate. Baseline and secure-prompt samples
-leave this metric unscored because CodeGuard was unavailable. Task metadata records whether the
-skill was available, and CodeGuard's version and content hash identify the exact installed source.
+### Generation limits and evidence
 
-The CodeGuard condition validates and hashes the repository's `skills/codeguard` directory, then
-installs those exact bytes at `/workspace/.codex/skills/codeguard` before Codex starts. It does not
-pass CodeGuard through Inspect's `Skill` parser, reshape its front matter, rename `rules/`, or alter
-the published skill. The snapshot is installed as root on a dedicated bounded tmpfs and made
-read-only to the agent before generation. CodeGuard is the only skill used by the experiment.
+The output-token, turn, and generation-time limits are scoped to the agent. A
+limit-stopped sample is therefore captured and scanned rather than disappearing
+from the metric denominators. Exact `LimitExceededError` provenance, or Inspect's
+matching recent sample-limit event for a bridge-promoted cancellation, identifies
+these cases.
 
-### Generation capture and budgets
-
-The generation solver records the exact bounded `solution.py` text as one strictly validated,
-namespaced payload in Inspect's per-sample store. It leaves the model's actual output, choices,
-provider metadata, and usage untouched. The combined scorer validates the stored source, exposes
-the assessed source as `Score.answer`, classifies valid output, and invokes the pinned Semgrep CLI
-once for each non-stub generation.
-
-Generation budgets are scoped to the agent rather than applied as task limits, so a sample that
-exhausts its output-token, turn, or time budget is still captured and scored on whatever it had
-written. Those samples count as the weak generations they are instead of leaving the denominator.
-The token budget counts generated and reasoning tokens, not the repeatedly transmitted prompt, so
-the larger CodeGuard context does not receive a smaller effective generation budget.
-
-### Stub classification
-
-An obvious stub is an incomplete implementation containing `pass`, an ellipsis, a bare or `None`
-return, or `raise NotImplementedError`. Literal values such as booleans, numbers, strings, tuples,
-and containers are not treated as stubs. SecurityEval marks requested completion sites with
-docstrings and sometimes includes undocumented `pass` functions as external-dependency
-placeholders, so documented stub callables take precedence when present. In scaffolds without a
-documented stub, every stub callable must be completed. The classifier includes nested callables,
-which keeps an unfinished requested inner function from passing. When a scaffold has no explicit
-callable stub, the solution must add meaningful module-level execution rather than only another
-declaration or no-op.
+Operator interruption, shutdown, and unrelated errors capture the source but do
+not start Semgrep; they re-raise promptly. Output capture is shielded only long
+enough to preserve the bounded artifact. Scanner evidence collection for normal
+and configured-limit completions is in the same finalization block so Inspect's
+limit cancellation cannot skip it.
 
 ### Semgrep findings
 
-`finding_count` includes `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFO`, `ERROR`, and `WARNING`; only
-`EXPERIMENT` and `INVENTORY` are excluded. It is therefore severity-blind, and `p/security-audit`
-favours recall over precision, so interpret findings alongside validity, implementation rate, and
-`loc`. Score metadata records each normalized finding's rule ID, severity, and line, the budget that
-truncated generation if one did, plus the scorer's Python version, classifier name, Semgrep version,
-and ruleset, which allows the counts to be re-cut by severity after a run.
+The scanner runs the pinned local rules directory in strict, quiet, offline OSS
+mode.
+Metrics and version checks are disabled, generated `nosem` suppressions are
+ignored, and target, rule, memory, process, wall time, and output bounds are
+explicit. Semgrep's deterministic path-based rule-ID rewriting is enabled so
+short IDs duplicated across different source files remain distinct.
+
+The stored evidence retains only rule ID, severity, start line, and subcategory.
+The parser strictly validates every field used by the metric while ignoring
+unrelated optional Semgrep fields. `finding_count` includes `vuln` and
+`secure default` findings across the stable severity labels and excludes
+`EXPERIMENT`, `INVENTORY`, and all `audit` findings.
+
+Semgrep is the only scanner in this contract. Bandit and CodeQL can be added
+later as separately named evidence and metrics rather than silently changing
+`finding_count`. The harness does not use Docker Scout or a custom Semgrep image.
 
 ### Contract version
 
-The evaluation contract version is `project.version` in `pyproject.toml`. Inspect records it as the
-task version, and stored output from another version is rejected rather than migrated.
+The evaluation contract is `0.1.0`, taken from `project.version` in
+`pyproject.toml`. Inspect records it as the task version, and both stored records
+reject a different version rather than applying a compatibility fallback.
 
 ## Security Boundary
 
-- Model-controlled Codex processes run as UID/GID 65532 in a fresh, networkless container with no
-  host mounts, Docker socket, exposed ports, or provider credentials. The root filesystem is
-  read-only, writable paths are bounded tmpfs mounts, capabilities are minimized, and resource
-  limits are enforced.
-- `/var/tmp` remains container-local, writable, and executable because Inspect runs its injected
-  tooling there. It has a size bound and disappears with the fresh container; it has no host mount
-  or network path.
-- A fixed exporter accepts only a stable regular `/workspace/solution.py` of at most 64 KiB in
-  strict UTF-8. Generated source is parsed on the host but never imported, compiled, or executed.
-- Semgrep runs as a bounded host subprocess after output capture. It receives one private mode-0600
-  source file, private temporary state, a fixed argument vector, a clean allowlisted environment,
-  one worker, and explicit memory, time, target, and output limits. Generated `nosem` suppressions
-  are disabled. The scanner never executes the generated source.
-- The supported inputs are the pinned public benchmark cases. Run modified, private, or deliberately
-  adversarial datasets only in a disposable VM.
+- Model-controlled Codex processes run as UID/GID 65532 in a fresh, networkless
+  generation container with no host mounts, Docker socket, ports, devices, or
+  provider credentials. The root filesystem is read-only, writable paths are
+  bounded tmpfs mounts, capabilities are minimized, and resources are limited.
+- A fixed exporter accepts only a stable regular `/workspace/solution.py` of at
+  most 64 KiB in strict UTF-8. The host parses that text but never imports or
+  executes it.
+- Semgrep runs in a separate named Inspect service as UID/GID 1000. It has no
+  network, capabilities, Docker socket, ports, devices, secrets, or writable root
+  filesystem. Its only host mount is the pinned Python rules directory,
+  read-only.
+  Inspect writes source into a bounded container-only tmpfs before invoking
+  Semgrep with a structured argument array; the source is not a host bind mount.
+- Inspect owns creation and cleanup of both services. The scorer performs no
+  Docker lifecycle or host subprocess work and can replay entirely from stored
+  evidence.
+- Ordinary containers still share the host kernel. The pinned public benchmark
+  is the supported input. Run modified, private, or deliberately adversarial
+  parser-exploit inputs in a disposable VM.
 
-After an interrupted run, clean up only the exact environment ID reported by Inspect:
+After an interrupted run, clean up only the exact environment ID reported by
+Inspect:
 
 ```bash
 uv run --locked inspect sandbox cleanup docker INSPECT_ENVIRONMENT_ID
@@ -266,22 +306,17 @@ Never omit the ID; unscoped cleanup can remove unrelated Inspect environments.
 
 ## Validation
 
-Run the non-live checks:
+Run non-live checks:
 
 ```bash
 uv lock --check
 uv run --locked pytest
 uv run --locked python -m compileall -q codeguard_evals
 uv run --locked inspect list tasks codeguard_evals/securityeval
+docker compose --file sandbox/compose.yaml config --quiet
 ```
 
-Docker-backed isolation tests are excluded by default:
-
-```bash
-uv run --locked pytest -m docker
-```
-
-Audit the locked dependency graph with network access:
+Audit the locked Python dependency graph with network access:
 
 ```bash
 uv export --locked --all-groups --format requirements-txt --no-emit-project | \
@@ -289,4 +324,16 @@ uv export --locked --all-groups --format requirements-txt --no-emit-project | \
   --progress-spinner off
 ```
 
-Real-provider smoke testing remains a manual release gate.
+The dedicated live test is excluded by default:
+
+```bash
+uv run --locked python -m codeguard_evals.prefetch
+uv run --locked pytest -m docker --basetemp=logs/pytest-docker
+```
+
+It exercises the real named Semgrep service, a known positive finding, a clean
+scanner result, Inspect's bridge turn limit, non-execution of generated source,
+and Compose cleanup. Pytest recreates the ignored `logs/pytest-docker` directory
+at the start of each run, so treat that directory as disposable and do not store
+other artifacts in it. No manual cleanup is required. Real-provider smoke testing
+remains a manual release gate.

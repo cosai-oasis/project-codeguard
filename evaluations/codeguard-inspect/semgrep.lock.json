@@ -1,0 +1,25 @@
+{
+  "schema_version": 3,
+  "image": {
+    "repository": "docker.io/semgrep/semgrep",
+    "tag": "1.173.0-nonroot",
+    "version": "1.173.0",
+    "index_digest": "sha256:ae85c429145ef6b29c7a47b4cdec78304f9b325f75ce0ee4a797e841206e3e68"
+  },
+  "rules": {
+    "repository": "https://github.com/semgrep/semgrep-rules",
+    "commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
+    "subdirectory": "python",
+    "selection": "load=python/**/*.yaml;retain=metadata.category:security",
+    "finding_category": "security",
+    "source_yaml_file_count": 337,
+    "loaded_rule_count": 378,
+    "retained_rule_count": 269,
+    "subcategory_counts": {
+      "audit": 135,
+      "secure_default": 1,
+      "vuln": 133
+    },
+    "license_url": "https://semgrep.dev/legal/rules-license/"
+  }
+}

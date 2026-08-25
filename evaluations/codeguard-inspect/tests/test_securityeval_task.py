@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import importlib
-from collections.abc import Callable
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
@@ -12,22 +11,24 @@ from inspect_ai import Task
 from inspect_ai import eval as inspect_eval
 from inspect_ai.agent import Agent, AgentState, agent
 from inspect_ai.dataset import MemoryDataset, Sample
+from inspect_ai.event import SampleLimitEvent
 from inspect_ai.model import get_model
-from inspect_ai.solver import Generate, TaskState, generate
+from inspect_ai.solver import Generate, TaskState
+from inspect_ai.util import LimitExceededError
 
 import codeguard_evals.output_artifact as artifact_module
 from codeguard_evals.codeguard import codeguard_content_sha256
 from codeguard_evals.output_artifact import (
-    GENERATION_LIMIT_KEY,
     SAVED_OUTPUT_KEY,
+    SEMGREP_EVIDENCE_KEY,
     SavedOutput,
-    validated_generation_limit,
+    SemgrepEvidence,
+    load_semgrep_evidence,
 )
 from codeguard_evals.sandbox_client import (
     BenchmarkInfrastructureError,
     ExportedSolution,
 )
-from codeguard_evals.scorers import static_safety_scorer
 from codeguard_evals.sandbox_protocol import (
     CODEX_HOME_DIR,
     CODEX_SKILLS_DIR,
@@ -37,6 +38,7 @@ from codeguard_evals.sandbox_protocol import (
     SANDBOX_WORKDIR,
     SOURCE_FILENAME,
 )
+from codeguard_evals.scorers import static_safety_scorer
 from codeguard_evals.securityeval.dataset import (
     SECURITYEVAL_FILENAME,
     SECURITYEVAL_REPO_ID,
@@ -53,16 +55,17 @@ from codeguard_evals.securityeval.protocol import (
 )
 from codeguard_evals.securityeval.securityeval import (
     AGENT_TIME_LIMIT,
-    CODEX_VERSION,
     CODEGUARD_DIRECTORY_MODE,
     CODEGUARD_FILE_MODE,
     CODEGUARD_RULES_DIR,
     CODEGUARD_SKILL_DIR,
+    CODEX_VERSION,
     MAX_GENERATION_TOKENS,
     SAMPLE_TIME_LIMIT,
     bounded_generation,
 )
-from tests.conftest import FakeSandbox, ORIGINAL_SOURCE, task_state
+from codeguard_evals.semgrep_artifacts import SemgrepFinding
+from tests.conftest import ORIGINAL_SOURCE, SAFE_SOURCE, FakeSandbox, task_state
 
 task_module = importlib.import_module("codeguard_evals.securityeval.securityeval")
 
@@ -122,23 +125,12 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
 ) -> None:
     _stub_loaders(monkeypatch)
     observed: dict[str, object] = {}
-    capture_calls = 0
 
     def fake_codex_cli(**kwargs: object) -> Agent:
         observed.update(kwargs)
         return _fake_codex_agent()
 
-    def fake_capture_generated_output() -> Callable[..., object]:
-        nonlocal capture_calls
-        capture_calls += 1
-        return generate()
-
     monkeypatch.setattr(task_module, "codex_cli", fake_codex_cli)
-    monkeypatch.setattr(
-        task_module,
-        "capture_generated_output",
-        fake_capture_generated_output,
-    )
 
     task = getattr(task_module, factory)()
 
@@ -164,7 +156,6 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     assert task.score_on_error is False
     assert task.checkpoint == Task(checkpoint=False).checkpoint
     assert task.version == EVALUATION_VERSION
-    assert capture_calls == 1
     assert task.scorer is not None and len(task.scorer) == 1
     assert len(task.dataset) == 1
     sample = task.dataset[0]
@@ -353,6 +344,139 @@ def test_codeguard_setup_fails_closed_when_installation_fails(
         )
 
 
+def test_bounded_generation_captures_success_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    export_calls = 0
+
+    async def export() -> ExportedSolution:
+        nonlocal export_calls
+        export_calls += 1
+        return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
+
+    monkeypatch.setattr(artifact_module, "export_solution", export)
+    state = _setup_state()
+
+    result = asyncio.run(
+        bounded_generation(_fake_codex_agent())(
+            state,
+            cast(Generate, None),
+        )
+    )
+
+    assert result is state
+    assert export_calls == 1
+    assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
+        ORIGINAL_SOURCE
+    )
+    assert load_semgrep_evidence(state).findings is None
+
+
+def test_bounded_generation_scans_only_a_valid_non_stub_implementation(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def export() -> ExportedSolution:
+        return ExportedSolution(SAFE_SOURCE.encode(), None)
+
+    finding = SemgrepFinding(
+        rule_id="python.security.rule",
+        severity="ERROR",
+        line=2,
+        subcategory="vuln",
+    )
+    scanned: list[str] = []
+
+    async def scan(source: str) -> tuple[SemgrepFinding, ...]:
+        scanned.append(source)
+        return (finding,)
+
+    monkeypatch.setattr(artifact_module, "export_solution", export)
+    monkeypatch.setattr(task_module, "scan_source", scan)
+    state = _setup_state()
+
+    asyncio.run(
+        bounded_generation(_fake_codex_agent())(
+            state,
+            cast(Generate, None),
+        )
+    )
+
+    assert scanned == [SAFE_SOURCE]
+    assert load_semgrep_evidence(state).findings == (finding,)
+
+
+def test_bounded_generation_keeps_source_when_scanning_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def export() -> ExportedSolution:
+        return ExportedSolution(SAFE_SOURCE.encode(), None)
+
+    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
+        raise RuntimeError("Semgrep exited with status 2")
+
+    monkeypatch.setattr(artifact_module, "export_solution", export)
+    monkeypatch.setattr(task_module, "scan_source", scan)
+    state = _setup_state()
+
+    with pytest.raises(RuntimeError, match="status 2"):
+        asyncio.run(
+            bounded_generation(_fake_codex_agent())(
+                state,
+                cast(Generate, None),
+            )
+        )
+
+    assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
+        SAFE_SOURCE
+    )
+    assert SEMGREP_EVIDENCE_KEY not in state.store
+
+
+def test_direct_generation_limit_preserves_context_when_scanning_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    applied_limit = task_module.turn_limit(1)
+
+    async def export() -> ExportedSolution:
+        return ExportedSolution(SAFE_SOURCE.encode(), None)
+
+    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
+        raise RuntimeError("Semgrep exited with status 2")
+
+    @agent
+    def limited_agent() -> Agent:
+        async def execute(state: AgentState) -> AgentState:
+            del state
+            raise LimitExceededError(
+                "turn",
+                value=2,
+                limit=1,
+                source=applied_limit,
+            )
+
+        return execute
+
+    monkeypatch.setattr(task_module, "turn_limit", lambda _limit: applied_limit)
+    monkeypatch.setattr(artifact_module, "export_solution", export)
+    monkeypatch.setattr(task_module, "scan_source", scan)
+    state = _setup_state()
+
+    with pytest.raises(RuntimeError, match="status 2") as error:
+        asyncio.run(
+            bounded_generation(limited_agent())(
+                state,
+                cast(Generate, None),
+            )
+        )
+
+    assert isinstance(error.value.__context__, LimitExceededError)
+    assert error.value.__context__.source is applied_limit
+    assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
+        SAFE_SOURCE
+    )
+    assert SEMGREP_EVIDENCE_KEY not in state.store
+
+
 @pytest.mark.parametrize(
     ("budget", "budget_value", "expected"),
     [
@@ -361,7 +485,7 @@ def test_codeguard_setup_fails_closed_when_installation_fails(
         ("AGENT_TIME_LIMIT", 0.01, "time"),
     ],
 )
-def test_bounded_generation_records_the_budget_that_truncated_the_agent(
+def test_bounded_generation_captures_and_uses_inspect_native_limit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     budget: str,
@@ -433,13 +557,16 @@ def test_bounded_generation_records_the_budget_that_truncated_the_agent(
     assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == (
         ORIGINAL_SOURCE
     )
-    assert sample.store[GENERATION_LIMIT_KEY] == expected
+    assert SemgrepEvidence.model_validate(
+        sample.store[SEMGREP_EVIDENCE_KEY]
+    ).findings is None
+    assert sample.limit is not None
+    assert sample.limit.type == expected
+    assert sample.limit.limit == budget_value
 
     assert sample.scores is not None
     score = sample.scores["static_safety_scorer"]
     assert score.answer == ORIGINAL_SOURCE
-    assert score.metadata is not None
-    assert score.metadata["generation_limit"] == expected
     score_values = cast(dict[str, object], score.value)
     assert score_values["valid_output"] == 0
     assert score_values["implemented_output"] == 0
@@ -450,7 +577,86 @@ def test_bounded_generation_records_the_budget_that_truncated_the_agent(
     assert results["implemented_output"].scored_samples == 1
 
 
-def test_bounded_generation_propagates_unrelated_cancellation(
+def test_bridge_limit_event_survives_fail_closed_scanner_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
+    monkeypatch.setattr(task_module, "TURN_LIMIT", 2)
+
+    async def export() -> ExportedSolution:
+        return ExportedSolution(SAFE_SOURCE.encode(), None)
+
+    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
+        raise RuntimeError("Semgrep exited with status 2")
+
+    monkeypatch.setattr(artifact_module, "export_solution", export)
+    monkeypatch.setattr(task_module, "scan_source", scan)
+
+    @agent
+    def overruns_turn_limit() -> Agent:
+        async def execute(state: AgentState) -> AgentState:
+            for _ in range(8):
+                state.output = await get_model().generate(state.messages)
+                state.messages.append(state.output.message)
+            return state
+
+        return execute
+
+    case_id = "CWE-078_scan_failure_1.py"
+    task = Task(
+        name="static_safety_limit_then_scanner_failure",
+        dataset=MemoryDataset(
+            [
+                Sample(
+                    id=f"static_safety/baseline/{case_id}",
+                    input=securityeval_prompt("baseline"),
+                    target=ORIGINAL_SOURCE,
+                    metadata={
+                        "case_id": case_id,
+                        "cwe": "CWE-78",
+                        "condition": "baseline",
+                    },
+                )
+            ]
+        ),
+        solver=bounded_generation(overruns_turn_limit()),
+        scorer=static_safety_scorer(),
+        time_limit=SAMPLE_TIME_LIMIT,
+        score_on_error=False,
+    )
+
+    log = inspect_eval(
+        task,
+        model="mockllm/model",
+        display="none",
+        log_dir=str(tmp_path),
+        log_realtime=False,
+        ctl_server=False,
+    )[0]
+
+    assert log.status == "error"
+    assert log.samples is not None and len(log.samples) == 1
+    sample = log.samples[0]
+    assert sample.error is not None
+    assert "Semgrep exited with status 2" in sample.error.message
+    # The scanner error deliberately becomes the terminal sample error. Inspect
+    # therefore omits its derived ``sample.limit``, but the original framework
+    # event still records why generation stopped.
+    assert sample.limit is None
+    assert any(
+        isinstance(event, SampleLimitEvent)
+        and event.type == "turn"
+        and event.limit == 2
+        for event in sample.events
+    )
+    assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == (
+        SAFE_SOURCE
+    )
+    assert SEMGREP_EVIDENCE_KEY not in sample.store
+
+
+def test_bounded_generation_captures_then_propagates_unrelated_cancellation(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     exported = False
@@ -470,22 +676,51 @@ def test_bounded_generation_propagates_unrelated_cancellation(
 
         return execute
 
+    state = _setup_state()
     with pytest.raises(asyncio.CancelledError):
         asyncio.run(
             bounded_generation(cancelled_agent())(
-                _setup_state(),
+                state,
                 cast(Generate, None),
             )
         )
 
-    assert exported is False
+    assert exported is True
+    assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
+        ORIGINAL_SOURCE
+    )
+    assert SEMGREP_EVIDENCE_KEY not in state.store
 
 
-def test_bounded_generation_rejects_a_budget_it_did_not_apply() -> None:
-    for unsupported in ("message", "working", "cost", "operator", ""):
-        with pytest.raises(ValueError, match="unsupported generation limit"):
-            validated_generation_limit(unsupported)
-    assert validated_generation_limit(None) is None
+def test_bounded_generation_captures_then_propagates_unrelated_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def export() -> ExportedSolution:
+        return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
+
+    monkeypatch.setattr(artifact_module, "export_solution", export)
+
+    @agent
+    def failing_agent() -> Agent:
+        async def execute(state: AgentState) -> AgentState:
+            del state
+            raise ValueError("agent failed")
+
+        return execute
+
+    state = _setup_state()
+    with pytest.raises(ValueError, match="agent failed"):
+        asyncio.run(
+            bounded_generation(failing_agent())(
+                state,
+                cast(Generate, None),
+            )
+        )
+
+    assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
+        ORIGINAL_SOURCE
+    )
+    assert SEMGREP_EVIDENCE_KEY not in state.store
 
 
 def test_task_records_pinned_provenance(
@@ -510,6 +745,7 @@ def test_task_records_pinned_provenance(
             "content_sha256": codeguard_content_sha256(_codeguard_snapshot()),
         },
         "sandbox": "docker-compose",
+        "semgrep": task_module.semgrep_provenance(),
         "dataset": {
             "repository": SECURITYEVAL_REPO_ID,
             "filename": SECURITYEVAL_FILENAME,

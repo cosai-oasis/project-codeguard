@@ -19,9 +19,9 @@ from codeguard_evals.securityeval.dataset import (
     securityeval_samples,
 )
 from codeguard_evals.securityeval.protocol import (
-    Condition,
     SECURE_TASK_PROMPT,
     TASK_PROMPT,
+    Condition,
     condition_skill_name,
     securityeval_sample_id,
     securityeval_task_name,
@@ -140,8 +140,9 @@ def test_evaluation_fails_closed_when_cache_is_missing(
 
     monkeypatch.setattr(securityeval, "hf_hub_download", missing)
 
-    with pytest.raises(FileNotFoundError, match="prefetch"):
+    with pytest.raises(FileNotFoundError, match="prefetch") as error:
         load_securityeval_cases()
+    assert "uv run --locked python -m codeguard_evals.prefetch" in str(error.value)
 
 
 def test_prefetch_downloads_only_the_pinned_source_and_verifies_it(

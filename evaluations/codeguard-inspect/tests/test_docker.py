@@ -9,16 +9,19 @@ from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
-from inspect_ai import eval
+from inspect_ai import Task, eval
+from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import ModelOutput, get_model
+from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util._sandbox._cli import SANDBOX_TOOLS_DIR
 
-import codeguard_evals.scorers as scorer_module
 from codeguard_evals.codeguard import load_codeguard
 from codeguard_evals.output_artifact import (
-    GENERATION_LIMIT_KEY,
     SAVED_OUTPUT_KEY,
+    SEMGREP_EVIDENCE_KEY,
     SavedOutput,
+    SemgrepEvidence,
+    save_semgrep_evidence,
 )
 from codeguard_evals.sandbox_client import EXPORT_COMMAND
 from codeguard_evals.sandbox_protocol import (
@@ -31,13 +34,14 @@ from codeguard_evals.sandbox_protocol import (
     SANDBOX_WORKDIR,
     SOURCE_FILENAME,
 )
-from codeguard_evals.semgrep_runner import SemgrepFinding
+from codeguard_evals.scorers import static_safety_scorer
 from codeguard_evals.securityeval.dataset import SecurityEvalCase
-from codeguard_evals.securityeval.protocol import TASK_PROMPT
+from codeguard_evals.securityeval.protocol import EVALUATION_VERSION, TASK_PROMPT
 from codeguard_evals.securityeval.securityeval import (
     CODEGUARD_SKILL_DIR,
     SANDBOX_CONFIG,
 )
+from codeguard_evals.semgrep_runner import scan_source
 from tests.conftest import ORIGINAL_SOURCE, assert_tmpfs_policy
 
 task_module = importlib.import_module("codeguard_evals.securityeval.securityeval")
@@ -484,16 +488,97 @@ def test_malicious_outputs_are_bounded_and_never_executed(
     assert _export(container)["status"] == "invalid"
 
 
+def test_named_semgrep_service_detects_vulnerability_without_executing_source(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
+    source = (
+        "import subprocess\n"
+        'raise RuntimeError("GENERATED_SOURCE_EXECUTED")\n'
+        "def generated(command):\n"
+        "    return subprocess.run(command, shell=True)\n"
+    )
+
+    @solver
+    def collect_locked_scan() -> Solver:
+        async def solve(state: TaskState, generate: Generate) -> TaskState:
+            del generate
+            state.output = ModelOutput.from_content("mockllm/model", "captured")
+            saved = SavedOutput(
+                evaluation_version=EVALUATION_VERSION,
+                source=source,
+                capture_error=None,
+            )
+            state.store.set(SAVED_OUTPUT_KEY, saved.model_dump(mode="json"))
+            save_semgrep_evidence(state, await scan_source(source))
+            return state
+
+        return solve
+
+    case_id = "CWE-078_semgrep_1.py"
+    task = Task(
+        name="static_safety_named_semgrep_service",
+        dataset=MemoryDataset(
+            [
+                Sample(
+                    id=f"static_safety/baseline/{case_id}",
+                    input=TASK_PROMPT,
+                    target=ORIGINAL_SOURCE,
+                    metadata={
+                        "case_id": case_id,
+                        "cwe": "CWE-78",
+                        "condition": "baseline",
+                    },
+                )
+            ]
+        ),
+        solver=collect_locked_scan(),
+        scorer=static_safety_scorer(),
+        sandbox=("docker", str(SANDBOX_CONFIG)),
+        version=EVALUATION_VERSION,
+    )
+    containers_before = set(
+        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
+    )
+
+    log = eval(
+        task,
+        model="mockllm/model",
+        display="none",
+        log_dir=str(tmp_path / "logs"),
+        max_samples=1,
+        max_sandboxes=1,
+        max_subprocesses=1,
+        sandbox_cleanup=True,
+    )[0]
+    containers_after = set(
+        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
+    )
+
+    assert log.status == "success", log.error
+    assert containers_after == containers_before
+    assert log.samples is not None and len(log.samples) == 1
+    sample = log.samples[0]
+    evidence = SemgrepEvidence.model_validate(
+        sample.store[SEMGREP_EVIDENCE_KEY]
+    )
+    assert evidence.findings is not None
+    assert any(
+        finding.rule_id.endswith("subprocess-shell-true")
+        for finding in evidence.findings
+    )
+    assert sample.scores is not None
+    score = sample.scores["static_safety_scorer"]
+    assert score.answer == source
+    assert score.value["finding_count"] >= 1
+
+
 def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
-
-    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        return ()
-
-    monkeypatch.setattr(scorer_module, "scan_source", scan)
     snapshot = load_codeguard()
     case_id = "CWE-078_integration_1.py"
     monkeypatch.setattr(task_module, "load_codeguard", lambda: snapshot)
@@ -512,7 +597,8 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
             "exec_command",
             {
                 "cmd": (
-                    "/usr/local/bin/python -I -c \"import os; from pathlib import Path; "
+                    "/usr/local/bin/python -I -c \"import os; "
+                    "from pathlib import Path; "
                     "status=Path('/proc/self/status').read_text(); "
                     "caps={line.split(':',1)[0]:int(line.split()[1],16) "
                     "for line in status.splitlines() if line.startswith('Cap')}; "
@@ -609,6 +695,9 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     last_completed_output = outputs[-2].completion
     model = get_model("mockllm/model", custom_outputs=outputs)
     task = task_module.securityeval_static_safety_codeguard()
+    containers_before = set(
+        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
+    )
 
     log = eval(
         task,
@@ -620,8 +709,12 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
         max_subprocesses=1,
         sandbox_cleanup=True,
     )[0]
+    containers_after = set(
+        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
+    )
 
     assert log.status == "success", log.error
+    assert containers_after == containers_before
     assert log.samples is not None and len(log.samples) == 1
     sample = log.samples[0]
     assert sample.input == TASK_PROMPT
@@ -635,13 +728,18 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     saved = SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY])
     assert saved.source == "def generated(command):\n    return str(command)\n"
     assert "HOSTILE_EXPORTER" not in saved.source
-    assert sample.store[GENERATION_LIMIT_KEY] == "turn"
+    evidence = SemgrepEvidence.model_validate(
+        sample.store[SEMGREP_EVIDENCE_KEY]
+    )
+    assert evidence.findings == ()
+    assert sample.limit is not None
+    assert sample.limit.type == "turn"
+    assert sample.limit.limit == 6
     scores = sample.scores
     assert scores is not None and len(scores) == 1
     score = next(iter(scores.values()))
     assert score.answer == saved.source
     assert score.metadata is not None
-    assert score.metadata["generation_limit"] == "turn"
     assert score.value == {
         "valid_output": 1,
         "loc": 2,

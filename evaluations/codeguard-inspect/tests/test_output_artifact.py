@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import hashlib
 import math
 import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import cast
 
 import pytest
-from inspect_ai import Task, eval as inspect_eval
+from inspect_ai import Task
+from inspect_ai import eval as inspect_eval
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.log import read_eval_log
 from inspect_ai.model import (
@@ -27,11 +28,14 @@ from inspect_ai.solver import Generate, Solver, TaskState, solver
 
 import codeguard_evals.output_artifact as artifact_module
 from codeguard_evals.output_artifact import (
-    GENERATION_LIMIT_KEY,
     SAVED_OUTPUT_KEY,
+    SEMGREP_EVIDENCE_KEY,
     SavedOutput,
+    SemgrepEvidence,
     capture_generated_output,
     load_saved_output,
+    load_semgrep_evidence,
+    save_semgrep_evidence,
 )
 from codeguard_evals.sandbox_client import (
     BenchmarkInfrastructureError,
@@ -44,6 +48,7 @@ from codeguard_evals.securityeval.protocol import (
     TASK_PROMPT,
     securityeval_task_name,
 )
+from codeguard_evals.semgrep_artifacts import SEMGREP_LOCK, SemgrepFinding
 from tests.conftest import (
     CASE_ID,
     ORIGINAL_SOURCE,
@@ -116,18 +121,43 @@ def _capture(
         return exported
 
     monkeypatch.setattr(artifact_module, "export_solution", capture)
-    return asyncio.run(
-        capture_generated_output()(
-            _state() if state is None else state,
-            cast(Generate, None),
-        )
-    )
+    captured_state = _state() if state is None else state
+    asyncio.run(capture_generated_output(captured_state))
+    return captured_state
 
 
 def _stored_payload(state: TaskState) -> dict[str, object]:
     value = state.store.get(SAVED_OUTPUT_KEY)
     assert isinstance(value, dict)
     return value
+
+
+def _evidence_payload(state: TaskState) -> dict[str, object]:
+    value = state.store.get(SEMGREP_EVIDENCE_KEY)
+    assert isinstance(value, dict)
+    return value
+
+
+def test_scoring_imports_do_not_load_the_sandbox_runner() -> None:
+    project_root = Path(__file__).parents[1]
+    script = (
+        "import sys\n"
+        "import codeguard_evals.output_artifact\n"
+        "import codeguard_evals.scorers\n"
+        "raise SystemExit(int('codeguard_evals.semgrep_runner' in sys.modules))\n"
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        cwd=project_root,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_capture_preserves_model_output_and_stores_validated_source(
@@ -152,12 +182,7 @@ def test_capture_preserves_model_output_and_stores_validated_source(
     )
 
     with pytest.raises(BenchmarkInfrastructureError, match="already exists"):
-        asyncio.run(
-            capture_generated_output()(
-                result,
-                cast(Generate, None),
-            )
-        )
+        asyncio.run(capture_generated_output(result))
 
 
 @pytest.mark.parametrize(
@@ -176,6 +201,7 @@ def test_missing_and_empty_sources_remain_distinguishable(
     explanation: str,
 ) -> None:
     state = _capture(monkeypatch, _export(source, reason=reason))
+    save_semgrep_evidence(state, None)
     saved = load_saved_output(state)
     score = asyncio.run(
         static_safety_scorer()(
@@ -268,6 +294,109 @@ def test_replay_rejects_unbounded_or_non_utf8_source(
 
 
 @pytest.mark.parametrize(
+    "findings",
+    [
+        None,
+        (),
+        (
+            SemgrepFinding(
+                rule_id="python.security.rule",
+                severity="ERROR",
+                line=2,
+                subcategory="vuln",
+            ),
+        ),
+    ],
+)
+def test_semgrep_evidence_preserves_null_empty_and_populated_findings(
+    findings: tuple[SemgrepFinding, ...] | None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _capture(monkeypatch, _export())
+
+    save_semgrep_evidence(state, findings)
+    evidence = load_semgrep_evidence(state)
+
+    assert evidence.findings == findings
+    assert evidence.source_sha256 == hashlib.sha256(
+        SAFE_SOURCE.encode("utf-8")
+    ).hexdigest()
+    assert evidence.image_digest == SEMGREP_LOCK.image.index_digest
+    assert evidence.rules_commit == SEMGREP_LOCK.rules.commit
+    with pytest.raises(BenchmarkInfrastructureError, match="already exists"):
+        save_semgrep_evidence(state, findings)
+
+
+def test_source_free_evidence_requires_null_findings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _capture(monkeypatch, _export(None))
+
+    save_semgrep_evidence(state, None)
+    assert load_semgrep_evidence(state).source_sha256 is None
+
+    payload = _evidence_payload(state)
+    payload["findings"] = []
+    with pytest.raises(BenchmarkInfrastructureError, match="evidence is invalid"):
+        load_semgrep_evidence(state)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("evaluation_version", "0.0.0"),
+        ("source_sha256", "0" * 64),
+        ("image_digest", "sha256:" + "0" * 64),
+        ("rules_commit", "0" * 40),
+    ],
+)
+def test_semgrep_evidence_rejects_version_or_identity_tampering(
+    field: str,
+    value: object,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _capture(monkeypatch, _export())
+    save_semgrep_evidence(state, ())
+    _evidence_payload(state)[field] = value
+
+    message = "evidence is invalid" if field == "evaluation_version" else "identity"
+    with pytest.raises(BenchmarkInfrastructureError, match=message):
+        load_semgrep_evidence(state)
+
+
+def test_semgrep_evidence_is_bound_to_saved_source(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _capture(monkeypatch, _export())
+    save_semgrep_evidence(state, ())
+    _stored_payload(state)["source"] = SAFE_SOURCE + "# changed\n"
+
+    with pytest.raises(BenchmarkInfrastructureError, match="identity"):
+        load_semgrep_evidence(state)
+
+
+@pytest.mark.parametrize(
+    "findings",
+    [
+        [{"rule_id": "", "severity": "HIGH", "line": 1, "subcategory": "vuln"}],
+        [{"rule_id": "rule", "severity": "UNKNOWN", "line": 1, "subcategory": "vuln"}],
+        [{"rule_id": "rule", "severity": "HIGH", "line": 0, "subcategory": "vuln"}],
+        [{"rule_id": "rule", "severity": "HIGH", "line": 1, "subcategory": "other"}],
+    ],
+)
+def test_semgrep_evidence_strictly_validates_normalized_findings(
+    findings: object,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _capture(monkeypatch, _export())
+    save_semgrep_evidence(state, ())
+    _evidence_payload(state)["findings"] = findings
+
+    with pytest.raises(BenchmarkInfrastructureError, match="evidence is invalid"):
+        load_semgrep_evidence(state)
+
+
+@pytest.mark.parametrize(
     "exported",
     [
         ExportedSolution(None, None),
@@ -283,28 +412,39 @@ def test_capture_rejects_inconsistent_exporter_result(
         _capture(monkeypatch, exported)
 
 
-def test_public_deferred_scoring_works_without_generation_services(
+@pytest.mark.parametrize(
+    ("captured_source", "findings", "implemented"),
+    [
+        (STUB_SOURCE, None, 0),
+        (SAFE_SOURCE, (), 1),
+    ],
+)
+def test_public_deferred_scoring_uses_stored_findings_without_any_services(
+    captured_source: str,
+    findings: tuple[SemgrepFinding, ...] | None,
+    implemented: int,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
 
     async def capture() -> ExportedSolution:
-        return _export(STUB_SOURCE.encode())
+        return _export(captured_source.encode())
 
     monkeypatch.setattr(artifact_module, "export_solution", capture)
-    capture_output = capture_generated_output()
 
     @solver
-    def capture_with_limit() -> Solver:
+    def capture_for_deferred_scoring() -> Solver:
         async def solve(state: TaskState, generate: Generate) -> TaskState:
+            del generate
             state.output = ModelOutput.from_content(
                 "mockllm/model",
                 "agent narration",
             )
             state.output.metadata = {"provider.request_id": "request-1"}
-            state.store.set(GENERATION_LIMIT_KEY, "turn")
-            return await capture_output(state, generate)
+            await capture_generated_output(state)
+            save_semgrep_evidence(state, findings)
+            return state
 
         return solve
 
@@ -324,7 +464,7 @@ def test_public_deferred_scoring_works_without_generation_services(
                 )
             ]
         ),
-        solver=capture_with_limit(),
+        solver=capture_for_deferred_scoring(),
         scorer=static_safety_scorer(),
         version=EVALUATION_VERSION,
     )
@@ -345,9 +485,11 @@ def test_public_deferred_scoring_works_without_generation_services(
     assert sample.output.completion == "agent narration"
     assert sample.output.metadata == {"provider.request_id": "request-1"}
     assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == (
-        STUB_SOURCE
+        captured_source
     )
-    assert sample.store[GENERATION_LIMIT_KEY] == "turn"
+    assert SemgrepEvidence.model_validate(
+        sample.store[SEMGREP_EVIDENCE_KEY]
+    ).findings == findings
 
     inspect_executable = Path(sys.executable).with_name("inspect")
     assert inspect_executable.is_file()
@@ -391,18 +533,19 @@ def test_public_deferred_scoring_works_without_generation_services(
     assert rescored_sample.output.completion == "agent narration"
     assert SavedOutput.model_validate(
         rescored_sample.store[SAVED_OUTPUT_KEY]
-    ).source == STUB_SOURCE
+    ).source == captured_source
     scores = rescored_sample.scores
     assert scores is not None
     replayed = scores["static_safety_scorer"]
-    assert replayed.answer == STUB_SOURCE
+    assert replayed.answer == captured_source
     assert replayed.value["valid_output"] == 1
     assert replayed.value["loc"] == 2
-    assert replayed.value["implemented_output"] == 0
-    assert isinstance(replayed.value["finding_count"], float)
-    assert math.isnan(replayed.value["finding_count"])
-    assert replayed.metadata is not None
-    assert replayed.metadata["generation_limit"] == "turn"
+    assert replayed.value["implemented_output"] == implemented
+    if implemented:
+        assert replayed.value["finding_count"] == 0
+    else:
+        assert isinstance(replayed.value["finding_count"], float)
+        assert math.isnan(replayed.value["finding_count"])
 
 
 def test_loading_does_not_mutate_saved_output(

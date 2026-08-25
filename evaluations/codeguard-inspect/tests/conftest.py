@@ -134,12 +134,15 @@ def task_state(
     )
 
 
-def assert_tmpfs_policy(tmpfs: Mapping[str, str]) -> None:
+def assert_tmpfs_policy(
+    tmpfs: Mapping[str, str],
+    expected: Mapping[str, frozenset[str]] = TMPFS_REQUIRED_OPTIONS,
+) -> None:
     """Assert the writable mounts shared by static and live container tests."""
-    assert set(tmpfs) == set(TMPFS_REQUIRED_OPTIONS)
-    for path, expected in TMPFS_REQUIRED_OPTIONS.items():
+    assert set(tmpfs) == set(expected)
+    for path, expected_options in expected.items():
         observed = set(tmpfs[path].split(","))
-        assert observed == expected, path
+        assert observed == expected_options, path
 
 
 class FakeSandbox:

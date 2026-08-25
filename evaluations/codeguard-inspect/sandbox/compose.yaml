@@ -35,8 +35,47 @@ services:
         soft: 256
         hard: 256
     tmpfs:
+      # DAC_OVERRIDE is dropped, so these bits bind root as well: group 0 may
+      # write and traverse the agent's home without reading what it produced.
       - /workspace:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
       - /workspace/.codex:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
       - /workspace/.codex/skills:rw,nosuid,nodev,noexec,size=2m,uid=0,gid=0,mode=0755
       - /tmp:rw,nosuid,nodev,noexec,size=16m,uid=0,gid=0,mode=1777
+      # Inspect executes its injected tooling here; keep this sole writable
+      # executable mount bounded, container-local, and unavailable to the host.
       - /var/tmp:rw,nosuid,nodev,exec,size=384m,uid=0,gid=0,mode=1777
+  semgrep:
+    image: docker.io/semgrep/semgrep:1.173.0-nonroot@sha256:ae85c429145ef6b29c7a47b4cdec78304f9b325f75ce0ee4a797e841206e3e68
+    pull_policy: missing
+    init: true
+    command: ["/usr/bin/tail", "-f", "/dev/null"]
+    user: "1000:1000"
+    network_mode: none
+    read_only: true
+    working_dir: /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 2g
+    memswap_limit: 2g
+    cpus: 1.0
+    stop_grace_period: 2s
+    ulimits:
+      core:
+        soft: 0
+        hard: 0
+      nofile:
+        soft: 256
+        hard: 256
+    volumes:
+      - type: bind
+        source: ../.cache/codeguard-evals/semgrep-rules/40b8c63f75dc7c22c8a77482d73bfb864b146f7e/python
+        target: /rules/python
+        read_only: true
+        bind:
+          create_host_path: false
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,noexec,size=64m,uid=1000,gid=1000,mode=1777
+      - /home/semgrep:rw,nosuid,nodev,noexec,size=16m,uid=1000,gid=1000,mode=0700

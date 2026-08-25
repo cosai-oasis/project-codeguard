@@ -1,191 +1,141 @@
-"""Run one bounded Semgrep scan over a captured generation."""
+"""Run one bounded Semgrep scan in its Inspect-managed sandbox."""
 
 from __future__ import annotations
 
-import os
-import stat
-import sys
-import tempfile
-from dataclasses import dataclass
-from importlib.metadata import version as distribution_version
-from pathlib import Path
-from typing import Annotated, Final, Literal, cast, get_args
+from pathlib import PurePosixPath
+from typing import Annotated, Final, cast
 
-from inspect_ai.util import subprocess
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from inspect_ai.util import (
+    OutputLimitExceededError,
+    override_sandbox_output_limit,
+    sandbox,
+)
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from codeguard_evals.safe_io import load_strict_json
 from codeguard_evals.sandbox_protocol import (
     MAX_PYTHON_SOURCE_BYTES,
+    SEMGREP_SANDBOX_NAME,
+    SEMGREP_SANDBOX_USER,
     SOURCE_FILENAME,
 )
+from codeguard_evals.semgrep_artifacts import (
+    ALL_SEMGREP_SUBCATEGORIES,
+    ALL_SEVERITIES,
+    SEMGREP_ENGINE,
+    SEMGREP_LOCK,
+    SemgrepFinding,
+    SemgrepFindingSubcategory,
+    SemgrepSeverity,
+    load_default_locked_rules_directory,
+)
 
-SEMGREP_INSTALL_COMMAND: Final = "uv sync --locked"
-SEMGREP_RULESET: Final = "p/security-audit"
-SEMGREP_RULES_MUTABLE: Final = True
-SEMGREP_TIMEOUT_SECONDS: Final = 60
-SEMGREP_MAX_MEMORY_MIB: Final = 512
+SEMGREP_PACKAGE_VERSION: Final = SEMGREP_LOCK.image.version
+SEMGREP_TIMEOUT_SECONDS: Final = 120
+SEMGREP_MAX_MEMORY_MIB: Final = 1536
 SEMGREP_JOBS: Final = 1
+SEMGREP_RULE_TIMEOUT_SECONDS: Final = 5
+SEMGREP_RULE_TIMEOUT_THRESHOLD: Final = 1
 MAX_SEMGREP_REPORT_BYTES: Final = 8 * 1024 * 1024
 SEMGREP_REPORT_CAPTURE_BYTES: Final = MAX_SEMGREP_REPORT_BYTES + 1
-SEMGREP_PACKAGE_VERSION: Final = distribution_version("semgrep")
-ENV_EXECUTABLE: Final = Path("/usr/bin/env")
-
-SemgrepSeverity = Literal[
-    "ERROR",
-    "WARNING",
-    "EXPERIMENT",
-    "INVENTORY",
-    "CRITICAL",
-    "HIGH",
-    "MEDIUM",
-    "LOW",
-    "INFO",
-]
-ALL_SEVERITIES: Final[frozenset[str]] = frozenset(get_args(SemgrepSeverity))
-EXCLUDED_SEVERITIES: Final[frozenset[str]] = frozenset(
-    {"EXPERIMENT", "INVENTORY"}
-)
-COUNTED_SEVERITIES: Final[frozenset[str]] = (
-    ALL_SEVERITIES - EXCLUDED_SEVERITIES
-)
+CONTAINER_SOURCE_PATH: Final = PurePosixPath("/tmp") / SOURCE_FILENAME
+CONTAINER_RULES_PATH: Final = PurePosixPath("/rules/python")
+SEMGREP_ENVIRONMENT: Final = {
+    "HOME": "/home/semgrep",
+    "TMPDIR": "/tmp",
+    "PYTHONUTF8": "1",
+    "SEMGREP_SEND_METRICS": "off",
+}
 
 
-@dataclass(frozen=True)
-class SemgrepFinding:
-    rule_id: str
-    severity: SemgrepSeverity
-    line: int
-
-    def record(self) -> dict[str, object]:
-        return {
-            "rule_id": self.rule_id,
-            "severity": self.severity,
-            "line": self.line,
-        }
+class _ReportModel(BaseModel):
+    model_config = ConfigDict(extra="ignore", frozen=True, strict=True)
 
 
-class _StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
-
-
-class _Position(_StrictModel):
+class _Position(_ReportModel):
     line: Annotated[int, Field(ge=1)]
-    col: Annotated[int, Field(ge=1)]
-    offset: Annotated[int, Field(ge=0)]
 
 
-class _Extra(_StrictModel):
-    message: str
-    metadata: object
+class _Extra(_ReportModel):
+    metadata: dict[str, object]
     severity: Annotated[str, Field(min_length=1)]
-    fingerprint: str
-    lines: str
-    metavars: object | None = None
-    fix: str | None = None
-    fixed_lines: list[str] | None = None
-    is_ignored: bool | None = None
-    sca_info: object | None = None
-    validation_state: object | None = None
-    historical_info: object | None = None
-    dataflow_trace: object | None = None
-    engine_kind: object | None = None
-    extra_extra: object | None = None
+    engine_kind: Annotated[str, Field(min_length=1)]
 
 
-class _Finding(_StrictModel):
+class _Finding(_ReportModel):
     check_id: Annotated[str, Field(min_length=1)]
     path: Annotated[str, Field(min_length=1)]
     start: _Position
     end: _Position
     extra: _Extra
 
-    @model_validator(mode="after")
-    def validate_range(self) -> _Finding:
-        if (self.end.line, self.end.col, self.end.offset) < (
-            self.start.line,
-            self.start.col,
-            self.start.offset,
-        ):
-            raise ValueError("finding end precedes its start")
-        return self
 
-
-class _Paths(_StrictModel):
+class _Paths(_ReportModel):
     scanned: list[str]
-    skipped: list[object] | None = None
+    skipped: list[object] = Field(default_factory=list)
 
 
-class _Report(_StrictModel):
+class _Report(_ReportModel):
     results: list[_Finding]
     errors: list[object]
     paths: _Paths
     version: Annotated[str, Field(min_length=1)]
-    time: object | None = None
-    explanations: list[object] | None = None
-    rules_by_engine: list[object] | None = None
-    engine_requested: str | None = None
-    interfile_languages_used: list[str] | None = None
+    engine_requested: Annotated[str, Field(min_length=1)]
     skipped_rules: list[object] = Field(default_factory=list)
-    subprojects: list[object] | None = None
-    mcp_scan_results: object | None = None
-    profiling_results: list[object] = Field(default_factory=list)
 
 
 async def scan_source(source: str) -> tuple[SemgrepFinding, ...]:
-    """Scan one source string without exposing the host environment."""
-    raw = _validated_source(source)
-    executable = _semgrep_executable()
-    with tempfile.TemporaryDirectory(prefix="codeguard-semgrep-") as temporary:
-        root = Path(temporary)
-        source_path = root / SOURCE_FILENAME
-        state_dir = root / "state"
-        home_dir = state_dir / "home"
-        tmp_dir = state_dir / "tmp"
-        state_dir.mkdir(mode=0o700)
-        home_dir.mkdir(mode=0o700)
-        tmp_dir.mkdir(mode=0o700)
-        _write_private_source(source_path, raw)
-
-        command = _semgrep_command(
-            executable,
-            home_dir=home_dir,
-            tmp_dir=tmp_dir,
-        )
-        try:
-            result = await subprocess(
-                list(command),
-                text=False,
-                cwd=root,
-                capture_output=True,
-                output_limit=SEMGREP_REPORT_CAPTURE_BYTES,
+    """Scan one source string without running Semgrep on the host."""
+    source_raw = _validated_source(source)
+    load_default_locked_rules_directory()
+    try:
+        environment = sandbox(SEMGREP_SANDBOX_NAME)
+        await environment.write_file(str(CONTAINER_SOURCE_PATH), source_raw)
+        with override_sandbox_output_limit(SEMGREP_REPORT_CAPTURE_BYTES, "exec"):
+            result = await environment.exec(
+                _semgrep_command(),
+                input=b"",
+                cwd="/rules",
+                env=dict(SEMGREP_ENVIRONMENT),
+                user=SEMGREP_SANDBOX_USER,
                 timeout=SEMGREP_TIMEOUT_SECONDS,
+                timeout_retry=False,
             )
-        except TimeoutError:
-            raise RuntimeError(
-                f"Semgrep exceeded {SEMGREP_TIMEOUT_SECONDS} seconds"
-            ) from None
-        except OSError:
-            raise RuntimeError("Semgrep could not be started") from None
+    except TimeoutError:
+        raise RuntimeError(
+            f"Semgrep exceeded {SEMGREP_TIMEOUT_SECONDS} seconds"
+        ) from None
+    except OutputLimitExceededError:
+        raise RuntimeError("Semgrep output exceeded its size limit") from None
+    except (OSError, RuntimeError, UnicodeDecodeError):
+        raise RuntimeError("Semgrep sandbox execution failed") from None
 
-        if (
-            len(result.stdout) > MAX_SEMGREP_REPORT_BYTES
-            or len(result.stderr) > MAX_SEMGREP_REPORT_BYTES
-        ):
-            raise RuntimeError("Semgrep output exceeded its size limit")
-        if result.returncode != 0:
-            raise RuntimeError(
-                f"Semgrep exited with status {result.returncode}; verify registry access"
-            )
-        if result.stderr:
-            raise RuntimeError("Semgrep wrote unexpected diagnostic output")
+    _validate_scan_process(result)
+    report = _parse_report(result.stdout)
+    return _validated_scan(report, source_line_count=len(source.splitlines()))
 
-        report = _parse_report(result.stdout)
-        return _validated_scan(
-            report,
-            source_path=source_path,
-            source_line_count=len(source.splitlines()),
-        )
+
+def _semgrep_command() -> list[str]:
+    return [
+        "semgrep",
+        "scan",
+        f"--config={CONTAINER_RULES_PATH}",
+        "--json",
+        "--quiet",
+        "--strict",
+        "--oss-only",
+        "--metrics=off",
+        "--disable-version-check",
+        "--no-git-ignore",
+        "--disable-nosem",
+        "--rewrite-rule-ids",
+        f"--jobs={SEMGREP_JOBS}",
+        f"--max-memory={SEMGREP_MAX_MEMORY_MIB}",
+        f"--max-target-bytes={MAX_PYTHON_SOURCE_BYTES}",
+        f"--timeout={SEMGREP_RULE_TIMEOUT_SECONDS}",
+        f"--timeout-threshold={SEMGREP_RULE_TIMEOUT_THRESHOLD}",
+        str(CONTAINER_SOURCE_PATH),
+    ]
 
 
 def _validated_source(source: object) -> bytes:
@@ -204,73 +154,31 @@ def _validated_source(source: object) -> bytes:
     return raw
 
 
-def _write_private_source(path: Path, raw: bytes) -> None:
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC
+def _validate_scan_process(result: object) -> None:
     try:
-        descriptor = os.open(path, flags, 0o600)
-        try:
-            with os.fdopen(descriptor, "wb", closefd=False) as target:
-                target.write(raw)
-        finally:
-            os.close(descriptor)
-    except OSError:
-        raise RuntimeError("Could not prepare source for Semgrep") from None
-    if stat.S_IMODE(path.stat().st_mode) != 0o600:
-        raise RuntimeError("Semgrep source permissions are invalid")
+        stdout = result.stdout
+        stderr = result.stderr
+        returncode = result.returncode
+        stdout_size = len(stdout.encode("utf-8"))
+        stderr_size = len(stderr.encode("utf-8"))
+    except (AttributeError, UnicodeEncodeError):
+        raise RuntimeError("Semgrep returned an invalid process result") from None
+    if (
+        stdout_size > MAX_SEMGREP_REPORT_BYTES
+        or stderr_size > MAX_SEMGREP_REPORT_BYTES
+    ):
+        raise RuntimeError("Semgrep output exceeded its size limit")
+    if type(returncode) is not int:
+        raise RuntimeError("Semgrep returned an invalid process result")
+    if returncode != 0:
+        raise RuntimeError(f"Semgrep exited with status {returncode}")
+    if stderr:
+        raise RuntimeError("Semgrep wrote unexpected diagnostic output")
 
 
-def _semgrep_executable() -> Path:
-    candidate = Path(sys.executable).with_name("semgrep")
+def _parse_report(raw: str) -> _Report:
     try:
-        executable = candidate.resolve(strict=True)
-    except OSError:
-        raise RuntimeError(
-            "Semgrep is not installed in the project environment; run: "
-            f"{SEMGREP_INSTALL_COMMAND}"
-        ) from None
-    if not executable.is_file() or not os.access(executable, os.X_OK):
-        raise RuntimeError("The Semgrep executable is invalid")
-    return executable
-
-
-def _semgrep_command(
-    executable: Path,
-    *,
-    home_dir: Path,
-    tmp_dir: Path,
-) -> tuple[str, ...]:
-    environment = (
-        f"HOME={home_dir}",
-        "LANG=C.UTF-8",
-        "LC_ALL=C.UTF-8",
-        f"PATH={executable.parent}{os.pathsep}{os.defpath}",
-        "PYTHONUTF8=1",
-        f"TMPDIR={tmp_dir}",
-    )
-    return (
-        str(ENV_EXECUTABLE),
-        "-i",
-        *environment,
-        str(executable),
-        "scan",
-        f"--config={SEMGREP_RULESET}",
-        "--json",
-        "--metrics=off",
-        "--disable-version-check",
-        "--no-git-ignore",
-        "--disable-nosem",
-        "--quiet",
-        f"--jobs={SEMGREP_JOBS}",
-        f"--max-memory={SEMGREP_MAX_MEMORY_MIB}",
-        f"--max-target-bytes={MAX_PYTHON_SOURCE_BYTES}",
-        SOURCE_FILENAME,
-    )
-
-
-def _parse_report(raw: bytes) -> _Report:
-    try:
-        parsed = load_strict_json(raw)
-        return _Report.model_validate(parsed)
+        return _Report.model_validate(load_strict_json(raw))
     except (UnicodeDecodeError, ValueError, ValidationError):
         raise RuntimeError("Semgrep returned malformed JSON") from None
 
@@ -278,37 +186,53 @@ def _parse_report(raw: bytes) -> _Report:
 def _validated_scan(
     report: _Report,
     *,
-    source_path: Path,
     source_line_count: int,
 ) -> tuple[SemgrepFinding, ...]:
     if report.version != SEMGREP_PACKAGE_VERSION:
         raise RuntimeError("Semgrep reported an unexpected version")
+    if report.engine_requested != SEMGREP_ENGINE:
+        raise RuntimeError("Semgrep reported an unexpected engine")
     if report.errors:
         raise RuntimeError("Semgrep could not analyse the source")
     if report.paths.skipped:
         raise RuntimeError("Semgrep skipped the source")
-    if len(report.paths.scanned) != 1 or not _same_path(
-        report.paths.scanned[0],
-        source_path,
-    ):
+    if report.skipped_rules:
+        raise RuntimeError("Semgrep skipped locked rules")
+    if report.paths.scanned != [str(CONTAINER_SOURCE_PATH)]:
         raise RuntimeError("Semgrep reported an unexpected scanned file")
 
     findings: list[SemgrepFinding] = []
     for result in report.results:
-        if not _same_path(result.path, source_path):
+        if result.path != str(CONTAINER_SOURCE_PATH):
             raise RuntimeError("Semgrep reported an unexpected finding file")
         if (
             result.start.line > source_line_count
             or result.end.line > source_line_count
+            or result.end.line < result.start.line
         ):
             raise RuntimeError("Semgrep reported an invalid source line")
+        if result.extra.engine_kind != SEMGREP_ENGINE:
+            raise RuntimeError("Semgrep reported an unexpected finding engine")
         if result.extra.severity not in ALL_SEVERITIES:
             raise RuntimeError("Semgrep reported an unknown severity")
+        category = result.extra.metadata.get("category")
+        if not isinstance(category, str):
+            raise RuntimeError("Semgrep finding category is invalid")
+        if category != SEMGREP_LOCK.rules.finding_category:
+            continue
+        subcategory = result.extra.metadata.get("subcategory")
+        if (
+            not isinstance(subcategory, list)
+            or len(subcategory) != 1
+            or subcategory[0] not in ALL_SEMGREP_SUBCATEGORIES
+        ):
+            raise RuntimeError("Semgrep finding subcategory is invalid")
         findings.append(
             SemgrepFinding(
                 rule_id=result.check_id,
                 severity=cast(SemgrepSeverity, result.extra.severity),
                 line=result.start.line,
+                subcategory=cast(SemgrepFindingSubcategory, subcategory[0]),
             )
         )
     return tuple(
@@ -321,13 +245,3 @@ def _validated_scan(
             ),
         )
     )
-
-
-def _same_path(reported: str, expected: Path) -> bool:
-    candidate = Path(reported)
-    if not candidate.is_absolute():
-        candidate = expected.parent / candidate
-    try:
-        return candidate.resolve(strict=True) == expected.resolve(strict=True)
-    except OSError:
-        return False

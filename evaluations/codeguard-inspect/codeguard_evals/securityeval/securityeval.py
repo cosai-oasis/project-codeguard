@@ -12,6 +12,8 @@ import anyio
 from inspect_ai import Task, task
 from inspect_ai.agent import Agent, as_solver
 from inspect_ai.dataset import MemoryDataset
+from inspect_ai.event import SampleLimitEvent
+from inspect_ai.log import transcript
 from inspect_ai.model import GenerateConfig
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util import (
@@ -30,13 +32,15 @@ from codeguard_evals.codeguard import (
     load_codeguard,
 )
 from codeguard_evals.output_artifact import (
-    GENERATION_LIMIT_KEY,
-    GenerationLimit,
     capture_generated_output,
+    load_saved_output,
+    save_semgrep_evidence,
 )
-from codeguard_evals.python_output import validated_original_bytes
+from codeguard_evals.python_output import (
+    validate_python_solution,
+    validated_original_bytes,
+)
 from codeguard_evals.sandbox_client import BenchmarkInfrastructureError
-from codeguard_evals.scorers import static_safety_scorer
 from codeguard_evals.sandbox_protocol import (
     CODEX_HOME_DIR,
     CODEX_SKILLS_DIR,
@@ -46,6 +50,7 @@ from codeguard_evals.sandbox_protocol import (
     SANDBOX_WORKDIR,
     SOURCE_FILENAME,
 )
+from codeguard_evals.scorers import static_safety_scorer
 from codeguard_evals.securityeval.dataset import (
     SECURITYEVAL_FILENAME,
     SECURITYEVAL_REPO_ID,
@@ -62,6 +67,8 @@ from codeguard_evals.securityeval.protocol import (
     condition_skill_name,
     securityeval_task_name,
 )
+from codeguard_evals.semgrep_artifacts import semgrep_provenance
+from codeguard_evals.semgrep_runner import scan_source
 
 MAX_GENERATION_TOKENS: Final = 4_096
 OUTPUT_TOKEN_LIMIT: Final = 32_768
@@ -191,47 +198,65 @@ def bounded_generation(agent: Agent) -> Solver:
     from every metric instead of counting as the weak generation it is.
     """
 
-    capture = capture_generated_output()
-
     async def solve(state: TaskState, generate: Generate) -> TaskState:
-        limits: dict[GenerationLimit, Limit] = {
+        limits: dict[str, Limit] = {
             "token": token_limit(OUTPUT_TOKEN_LIMIT, type="output"),
             "turn": turn_limit(TURN_LIMIT),
             "time": time_limit(AGENT_TIME_LIMIT),
         }
+        collect_evidence = False
         agent_solver = as_solver(agent, limits=list(limits.values()))
         try:
             state = await agent_solver(state, generate)
-        except (LimitExceededError, anyio.get_cancelled_exc_class()):
-            generation_limit = _crossed_generation_limit(limits)
-            if generation_limit is None:
-                raise
-
-            # The sandbox bridge promotes a model limit to sample cancellation.
-            # Shield only bounded finalization, then preserve Inspect's exception.
-            with anyio.CancelScope(shield=True):
-                state.store.set(GENERATION_LIMIT_KEY, generation_limit)
-                await capture(state, generate)
+            collect_evidence = True
+            return state
+        except LimitExceededError as error:
+            collect_evidence = _is_applied_generation_limit(limits, error)
             raise
-        return await capture(state, generate)
+        except anyio.get_cancelled_exc_class():
+            collect_evidence = _has_applied_generation_limit_event(limits)
+            raise
+        finally:
+            with anyio.CancelScope(shield=True):
+                await capture_generated_output(state)
+                if collect_evidence:
+                    await _capture_semgrep_evidence(state)
 
     return solve
 
 
-def _crossed_generation_limit(
-    limits: Mapping[GenerationLimit, Limit],
-) -> GenerationLimit | None:
-    for name, limit in limits.items():
-        ceiling = limit.limit
-        if ceiling is None:
-            continue
-        if name == "time":
-            crossed = limit.usage >= ceiling
-        else:
-            crossed = limit.usage > ceiling
-        if crossed:
-            return name
-    return None
+async def _capture_semgrep_evidence(state: TaskState) -> None:
+    saved = load_saved_output(state)
+    findings = None
+    if saved.source is not None:
+        try:
+            validation = validate_python_solution(
+                saved.source,
+                original=state.target.text,
+            )
+        except ValueError:
+            raise BenchmarkInfrastructureError(
+                "Saved output could not be prepared for scanning"
+            ) from None
+        if validation.implementation_status == "non_stub":
+            findings = await scan_source(saved.source)
+    save_semgrep_evidence(state, findings)
+
+
+def _is_applied_generation_limit(
+    limits: dict[str, Limit],
+    error: LimitExceededError,
+) -> bool:
+    limit = limits.get(error.type)
+    return limit is not None and error.source is limit
+
+
+def _has_applied_generation_limit_event(limits: dict[str, Limit]) -> bool:
+    for event in reversed(transcript().history.recent_events(20)):
+        if isinstance(event, SampleLimitEvent):
+            limit = limits.get(event.type)
+            return limit is not None and event.limit == limit.limit
+    return False
 
 
 @task
@@ -311,6 +336,7 @@ def _securityeval_task(condition: Condition) -> Task:
             "skill_available": skill_name is not None,
             "codeguard": codeguard_metadata,
             "sandbox": "docker-compose",
+            "semgrep": semgrep_provenance(),
             "dataset": {
                 "repository": SECURITYEVAL_REPO_ID,
                 "filename": SECURITYEVAL_FILENAME,

@@ -2,56 +2,64 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-import stat
+from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
-from typing import cast
+from typing import Iterator, cast
 
 import pytest
+from inspect_ai.util import OutputLimitExceededError
 
 import codeguard_evals.semgrep_runner as semgrep_runner
 from codeguard_evals.sandbox_protocol import (
     MAX_PYTHON_SOURCE_BYTES,
-    SOURCE_FILENAME,
+    SEMGREP_SANDBOX_NAME,
+    SEMGREP_SANDBOX_USER,
 )
 from codeguard_evals.semgrep_runner import (
+    CONTAINER_RULES_PATH,
+    CONTAINER_SOURCE_PATH,
     MAX_SEMGREP_REPORT_BYTES,
-    SEMGREP_INSTALL_COMMAND,
+    SEMGREP_ENVIRONMENT,
     SEMGREP_JOBS,
     SEMGREP_MAX_MEMORY_MIB,
     SEMGREP_PACKAGE_VERSION,
     SEMGREP_REPORT_CAPTURE_BYTES,
-    SEMGREP_RULESET,
+    SEMGREP_RULE_TIMEOUT_SECONDS,
+    SEMGREP_RULE_TIMEOUT_THRESHOLD,
     SEMGREP_TIMEOUT_SECONDS,
     scan_source,
 )
 from tests.conftest import SAFE_SOURCE
 
 
-def _position(line: int, *, col: int = 1, offset: int = 0) -> dict[str, int]:
-    return {"line": line, "col": col, "offset": offset}
+def _position(line: int) -> dict[str, int]:
+    return {"line": line, "col": 1, "offset": 0}
 
 
 def _finding(
     *,
-    path: str = SOURCE_FILENAME,
-    severity: str = "HIGH",
+    path: str = str(CONTAINER_SOURCE_PATH),
+    severity: object = "HIGH",
     line: int = 1,
     end_line: int | None = None,
-    rule_id: str = "python.security.test-rule",
+    rule_id: object = "python.security.test-rule",
+    engine_kind: object = "OSS",
+    category: object = "security",
+    subcategory: object = ("vuln",),
 ) -> dict[str, object]:
     return {
         "check_id": rule_id,
         "path": path,
         "start": _position(line),
-        "end": _position(line if end_line is None else end_line, col=2, offset=1),
+        "end": _position(line if end_line is None else end_line),
         "extra": {
-            "message": "untrusted scanner message",
-            "metadata": {},
+            "metadata": {
+                "category": category,
+                "subcategory": list(cast(tuple[object, ...], subcategory)),
+            },
             "severity": severity,
-            "fingerprint": "opaque-fingerprint",
-            "lines": "untrusted source line",
+            "engine_kind": engine_kind,
         },
     }
 
@@ -62,141 +70,173 @@ def _report(
     errors: list[object] | None = None,
     scanned: list[str] | None = None,
     skipped: list[object] | None = None,
-    version: str = SEMGREP_PACKAGE_VERSION,
-) -> bytes:
-    return json.dumps(
-        {
-            "results": [] if results is None else results,
-            "errors": [] if errors is None else errors,
-            "paths": {
-                "scanned": [SOURCE_FILENAME] if scanned is None else scanned,
-                "skipped": skipped,
-            },
-            "version": version,
-            "skipped_rules": [],
-            "profiling_results": [],
-        }
-    ).encode("utf-8")
+    skipped_rules: list[object] | None = None,
+    version: object = SEMGREP_PACKAGE_VERSION,
+    engine_requested: object = "OSS",
+    extras: dict[str, object] | None = None,
+) -> str:
+    value: dict[str, object] = {
+        "results": [] if results is None else results,
+        "errors": [] if errors is None else errors,
+        "paths": {
+            "scanned": (
+                [str(CONTAINER_SOURCE_PATH)] if scanned is None else scanned
+            ),
+            "skipped": [] if skipped is None else skipped,
+        },
+        "version": version,
+        "engine_requested": engine_requested,
+        "skipped_rules": [] if skipped_rules is None else skipped_rules,
+    }
+    if extras:
+        value.update(extras)
+    return json.dumps(value)
 
 
-def _install_semgrep_cli(
-    tmp_path: Path,
+class _Sandbox:
+    def __init__(
+        self,
+        *,
+        result: SimpleNamespace | None = None,
+        write_error: BaseException | None = None,
+        exec_error: BaseException | None = None,
+    ) -> None:
+        self.result = result or SimpleNamespace(
+            returncode=0,
+            stdout=_report(),
+            stderr="",
+        )
+        self.write_error = write_error
+        self.exec_error = exec_error
+        self.requested: list[str] = []
+        self.writes: list[tuple[str, bytes]] = []
+        self.execs: list[tuple[list[str], dict[str, object]]] = []
+
+    async def write_file(self, path: str, content: bytes) -> None:
+        if self.write_error is not None:
+            raise self.write_error
+        self.writes.append((path, content))
+
+    async def exec(
+        self,
+        command: list[str],
+        **kwargs: object,
+    ) -> SimpleNamespace:
+        if self.exec_error is not None:
+            raise self.exec_error
+        self.execs.append((command, kwargs))
+        return self.result
+
+
+def _install_sandbox(
     monkeypatch: pytest.MonkeyPatch,
-) -> Path:
-    executable = tmp_path / "semgrep"
-    executable.write_text("#!/bin/sh\n", encoding="utf-8")
-    executable.chmod(0o700)
-    monkeypatch.setattr(semgrep_runner.sys, "executable", str(tmp_path / "python"))
-    return executable.resolve()
+    environment: _Sandbox | None = None,
+) -> tuple[_Sandbox, list[tuple[int, tuple[str, ...]]]]:
+    installed = _Sandbox() if environment is None else environment
+    output_limits: list[tuple[int, tuple[str, ...]]] = []
+
+    def select(name: str) -> _Sandbox:
+        installed.requested.append(name)
+        return installed
+
+    @contextmanager
+    def limit(value: int, *targets: str) -> Iterator[None]:
+        output_limits.append((value, targets))
+        yield
+
+    monkeypatch.setattr(semgrep_runner, "sandbox", select)
+    monkeypatch.setattr(semgrep_runner, "override_sandbox_output_limit", limit)
+    monkeypatch.setattr(
+        semgrep_runner,
+        "load_default_locked_rules_directory",
+        lambda: Path("/trusted/python"),
+    )
+    return installed, output_limits
 
 
-def test_scan_uses_a_fixed_bounded_command_and_private_source(
-    tmp_path: Path,
+def test_scan_uses_exact_named_sandbox_contract_and_normalizes_findings(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    executable = _install_semgrep_cli(tmp_path, monkeypatch)
-    observed: dict[str, object] = {}
-
-    async def run(command: list[str], **arguments: object) -> SimpleNamespace:
-        observed["command"] = command
-        observed.update(arguments)
-        cwd = cast(Path, arguments["cwd"])
-        source_path = cwd / SOURCE_FILENAME
-        observed["source"] = source_path.read_text(encoding="utf-8")
-        observed["source_mode"] = stat.S_IMODE(source_path.stat().st_mode)
-        return SimpleNamespace(
-            returncode=0,
-            stdout=_report(
-                results=[
-                    _finding(line=2, rule_id="rule.z"),
-                    _finding(severity="INFO", line=1, rule_id="rule.a"),
-                ]
+    report = _report(
+        results=[
+            _finding(line=2, rule_id="rule.z"),
+            _finding(severity="INFO", line=1, rule_id="rule.a"),
+            _finding(line=2, rule_id="rule.audit", subcategory=("audit",)),
+            _finding(
+                category="correctness",
+                rule_id="rule.ignored",
+                subcategory=(),
             ),
-            stderr=b"",
-        )
-
-    monkeypatch.setattr(semgrep_runner, "subprocess", run)
+        ],
+        extras={"profiling_results": [], "future_top_level_field": {}},
+    )
+    environment, limits = _install_sandbox(
+        monkeypatch,
+        _Sandbox(
+            result=SimpleNamespace(returncode=0, stdout=report, stderr="")
+        ),
+    )
 
     findings = asyncio.run(scan_source(SAFE_SOURCE))
 
-    assert observed["source"] == SAFE_SOURCE
-    assert observed["source_mode"] == 0o600
-    assert observed["text"] is False
-    assert observed["capture_output"] is True
-    assert observed["output_limit"] == SEMGREP_REPORT_CAPTURE_BYTES
-    assert observed["timeout"] == SEMGREP_TIMEOUT_SECONDS
-    assert "env" not in observed
-
-    command = cast(list[str], observed["command"])
-    assert command[:2] == [str(semgrep_runner.ENV_EXECUTABLE), "-i"]
-    executable_index = command.index(str(executable))
-    assignments = dict(
-        assignment.split("=", 1) for assignment in command[2:executable_index]
-    )
-    cwd = cast(Path, observed["cwd"])
-    assert assignments == {
-        "HOME": str(cwd / "state" / "home"),
-        "LANG": "C.UTF-8",
-        "LC_ALL": "C.UTF-8",
-        "PATH": f"{executable.parent}{os.pathsep}{os.defpath}",
-        "PYTHONUTF8": "1",
-        "TMPDIR": str(cwd / "state" / "tmp"),
-    }
-    assert command[executable_index:] == [
-        str(executable),
-        "scan",
-        f"--config={SEMGREP_RULESET}",
-        "--json",
-        "--metrics=off",
-        "--disable-version-check",
-        "--no-git-ignore",
-        "--disable-nosem",
-        "--quiet",
-        f"--jobs={SEMGREP_JOBS}",
-        f"--max-memory={SEMGREP_MAX_MEMORY_MIB}",
-        f"--max-target-bytes={MAX_PYTHON_SOURCE_BYTES}",
-        SOURCE_FILENAME,
+    assert environment.requested == [SEMGREP_SANDBOX_NAME]
+    assert environment.writes == [
+        (str(CONTAINER_SOURCE_PATH), SAFE_SOURCE.encode("utf-8"))
+    ]
+    assert limits == [(SEMGREP_REPORT_CAPTURE_BYTES, ("exec",))]
+    assert environment.execs == [
+        (
+            [
+                "semgrep",
+                "scan",
+                f"--config={CONTAINER_RULES_PATH}",
+                "--json",
+                "--quiet",
+                "--strict",
+                "--oss-only",
+                "--metrics=off",
+                "--disable-version-check",
+                "--no-git-ignore",
+                "--disable-nosem",
+                "--rewrite-rule-ids",
+                f"--jobs={SEMGREP_JOBS}",
+                f"--max-memory={SEMGREP_MAX_MEMORY_MIB}",
+                f"--max-target-bytes={MAX_PYTHON_SOURCE_BYTES}",
+                f"--timeout={SEMGREP_RULE_TIMEOUT_SECONDS}",
+                f"--timeout-threshold={SEMGREP_RULE_TIMEOUT_THRESHOLD}",
+                str(CONTAINER_SOURCE_PATH),
+            ],
+            {
+                "input": b"",
+                "cwd": "/rules",
+                "env": dict(SEMGREP_ENVIRONMENT),
+                "user": SEMGREP_SANDBOX_USER,
+                "timeout": SEMGREP_TIMEOUT_SECONDS,
+                "timeout_retry": False,
+            },
+        )
     ]
     assert [finding.record() for finding in findings] == [
-        {"rule_id": "rule.a", "severity": "INFO", "line": 1},
-        {"rule_id": "rule.z", "severity": "HIGH", "line": 2},
+        {
+            "rule_id": "rule.a",
+            "severity": "INFO",
+            "line": 1,
+            "subcategory": "vuln",
+        },
+        {
+            "rule_id": "rule.audit",
+            "severity": "HIGH",
+            "line": 2,
+            "subcategory": "audit",
+        },
+        {
+            "rule_id": "rule.z",
+            "severity": "HIGH",
+            "line": 2,
+            "subcategory": "vuln",
+        },
     ]
-
-
-def test_scan_closes_source_descriptor_when_stream_creation_fails(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _install_semgrep_cli(tmp_path, monkeypatch)
-    wrapped_descriptor: int | None = None
-    descriptor_closed = False
-    real_close = os.close
-
-    def fail_fdopen(
-        descriptor: int,
-        *args: object,
-        **kwargs: object,
-    ) -> None:
-        nonlocal wrapped_descriptor
-        del args, kwargs
-        wrapped_descriptor = descriptor
-        raise OSError("sensitive stream failure")
-
-    def record_close(descriptor: int) -> None:
-        nonlocal descriptor_closed
-        if descriptor == wrapped_descriptor and not descriptor_closed:
-            descriptor_closed = True
-        real_close(descriptor)
-
-    monkeypatch.setattr(semgrep_runner.os, "fdopen", fail_fdopen)
-    monkeypatch.setattr(semgrep_runner.os, "close", record_close)
-
-    with pytest.raises(RuntimeError, match="Could not prepare source") as captured:
-        asyncio.run(scan_source(SAFE_SOURCE))
-
-    assert wrapped_descriptor is not None
-    assert descriptor_closed
-    assert "sensitive stream failure" not in str(captured.value)
+    assert SAFE_SOURCE not in " ".join(environment.execs[0][0])
 
 
 @pytest.mark.parametrize(
@@ -209,217 +249,221 @@ def test_scan_closes_source_descriptor_when_stream_creation_fails(
         ("x" * (MAX_PYTHON_SOURCE_BYTES + 1), "exceeds"),
     ],
 )
-def test_scan_rejects_invalid_sources_before_starting_semgrep(
+def test_scan_rejects_invalid_source_before_selecting_sandbox(
     source: str,
     message: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    started = False
-
-    async def run(*args: object, **kwargs: object) -> SimpleNamespace:
-        nonlocal started
-        started = True
-        raise AssertionError((args, kwargs))
-
-    monkeypatch.setattr(semgrep_runner, "subprocess", run)
+    monkeypatch.setattr(
+        semgrep_runner,
+        "sandbox",
+        lambda _name: pytest.fail("invalid source must not reach the sandbox"),
+    )
 
     with pytest.raises(RuntimeError, match=message):
         asyncio.run(scan_source(source))
 
-    assert started is False
 
-
-def test_scan_accepts_the_exact_source_size_limit(
-    tmp_path: Path,
+def test_scan_accepts_exact_source_size_limit(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _install_semgrep_cli(tmp_path, monkeypatch)
-
-    async def run(*args: object, **arguments: object) -> SimpleNamespace:
-        del args, arguments
-        return SimpleNamespace(returncode=0, stdout=_report(), stderr=b"")
-
-    monkeypatch.setattr(semgrep_runner, "subprocess", run)
+    environment, _ = _install_sandbox(monkeypatch)
     source = "#" * MAX_PYTHON_SOURCE_BYTES
 
     assert asyncio.run(scan_source(source)) == ()
+    assert environment.writes[0][1] == source.encode()
 
 
-def test_scan_timeout_and_start_failures_are_concise(
-    tmp_path: Path,
+def test_scan_requires_the_verified_rules_cache_before_sandbox_use(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _install_semgrep_cli(tmp_path, monkeypatch)
+    selected = False
 
-    async def time_out(*args: object, **kwargs: object) -> SimpleNamespace:
-        del args, kwargs
-        raise TimeoutError
+    def select(_name: str) -> object:
+        nonlocal selected
+        selected = True
+        raise AssertionError
 
-    monkeypatch.setattr(semgrep_runner, "subprocess", time_out)
-    with pytest.raises(RuntimeError, match=f"exceeded {SEMGREP_TIMEOUT_SECONDS}"):
+    def missing() -> Path:
+        raise FileNotFoundError("run prefetch")
+
+    monkeypatch.setattr(semgrep_runner, "sandbox", select)
+    monkeypatch.setattr(
+        semgrep_runner,
+        "load_default_locked_rules_directory",
+        missing,
+    )
+
+    with pytest.raises(FileNotFoundError, match="prefetch"):
         asyncio.run(scan_source(SAFE_SOURCE))
-
-    async def cannot_start(*args: object, **kwargs: object) -> SimpleNamespace:
-        del args, kwargs
-        raise OSError("sensitive host path")
-
-    monkeypatch.setattr(semgrep_runner, "subprocess", cannot_start)
-    with pytest.raises(RuntimeError, match="could not be started") as captured:
-        asyncio.run(scan_source(SAFE_SOURCE))
-    assert "sensitive host path" not in str(captured.value)
+    assert selected is False
 
 
-def test_scan_does_not_mask_resource_failures(
-    tmp_path: Path,
+def test_scan_ignores_unconsumed_finding_fields(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _install_semgrep_cli(tmp_path, monkeypatch)
-
-    async def exhaust_memory(*args: object, **kwargs: object) -> SimpleNamespace:
-        del args, kwargs
-        raise MemoryError("resource exhausted")
-
-    monkeypatch.setattr(semgrep_runner, "subprocess", exhaust_memory)
-
-    with pytest.raises(MemoryError, match="resource exhausted"):
-        asyncio.run(scan_source(SAFE_SOURCE))
-
-
-def test_missing_semgrep_reports_only_the_install_command(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(semgrep_runner.sys, "executable", str(tmp_path / "python"))
-
-    with pytest.raises(RuntimeError, match="Semgrep is not installed") as captured:
-        asyncio.run(scan_source(SAFE_SOURCE))
-
-    assert SEMGREP_INSTALL_COMMAND in str(captured.value)
-    assert str(tmp_path) not in str(captured.value)
-
-
-@pytest.mark.parametrize("stream", ["stdout", "stderr"])
-def test_scan_rejects_output_beyond_the_capture_sentinel(
-    stream: str,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _install_semgrep_cli(tmp_path, monkeypatch)
-    output = b"x" * (MAX_SEMGREP_REPORT_BYTES + 1)
-
-    async def run(*args: object, **kwargs: object) -> SimpleNamespace:
-        del args, kwargs
-        return SimpleNamespace(
+    finding = _finding()
+    finding["future_finding_field"] = {"shape": "irrelevant"}
+    extra = cast(dict[str, object], finding["extra"])
+    extra["message"] = "not part of the metric"
+    environment = _Sandbox(
+        result=SimpleNamespace(
             returncode=0,
-            stdout=output if stream == "stdout" else _report(),
-            stderr=output if stream == "stderr" else b"",
+            stdout=_report(results=[finding]),
+            stderr="",
         )
+    )
+    _install_sandbox(monkeypatch, environment)
 
-    monkeypatch.setattr(semgrep_runner, "subprocess", run)
+    assert [item.record() for item in asyncio.run(scan_source(SAFE_SOURCE))] == [
+        {
+            "rule_id": "python.security.test-rule",
+            "severity": "HIGH",
+            "line": 1,
+            "subcategory": "vuln",
+        }
+    ]
 
-    with pytest.raises(RuntimeError, match="size limit"):
+
+@pytest.mark.parametrize("field", ["metadata", "severity", "engine_kind"])
+def test_scan_requires_every_consumed_finding_field(
+    field: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    finding = _finding()
+    cast(dict[str, object], finding["extra"]).pop(field)
+    environment = _Sandbox(
+        result=SimpleNamespace(
+            returncode=0,
+            stdout=_report(results=[finding]),
+            stderr="",
+        )
+    )
+    _install_sandbox(monkeypatch, environment)
+
+    with pytest.raises(RuntimeError, match="malformed JSON"):
+        asyncio.run(scan_source(SAFE_SOURCE))
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ({"version": "0.0.0"}, "unexpected version"),
+        ({"engine_requested": "PRO"}, "unexpected engine"),
+        ({"errors": [{"message": "parse"}]}, "could not analyse"),
+        ({"skipped": [{"path": "/tmp/solution.py"}]}, "skipped the source"),
+        ({"skipped_rules": [{"id": "rule"}]}, "skipped locked rules"),
+        ({"scanned": []}, "unexpected scanned file"),
+    ],
+)
+def test_scan_fails_closed_on_report_contract_changes(
+    change: dict[str, object],
+    message: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _Sandbox(
+        result=SimpleNamespace(
+            returncode=0,
+            stdout=_report(**change),  # type: ignore[arg-type]
+            stderr="",
+        )
+    )
+    _install_sandbox(monkeypatch, environment)
+
+    with pytest.raises(RuntimeError, match=message):
+        asyncio.run(scan_source(SAFE_SOURCE))
+
+
+@pytest.mark.parametrize(
+    ("finding", "message"),
+    [
+        (_finding(path="/tmp/other.py"), "unexpected finding file"),
+        (_finding(line=3), "invalid source line"),
+        (_finding(line=2, end_line=1), "invalid source line"),
+        (_finding(engine_kind="PRO"), "unexpected finding engine"),
+        (_finding(severity="UNKNOWN"), "unknown severity"),
+        (_finding(category=1), "category is invalid"),
+        (_finding(subcategory=()), "subcategory is invalid"),
+        (_finding(subcategory=("vuln", "audit")), "subcategory is invalid"),
+        (_finding(subcategory=("unknown",)), "subcategory is invalid"),
+    ],
+)
+def test_scan_fails_closed_on_invalid_consumed_finding_data(
+    finding: dict[str, object],
+    message: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _Sandbox(
+        result=SimpleNamespace(
+            returncode=0,
+            stdout=_report(results=[finding]),
+            stderr="",
+        )
+    )
+    _install_sandbox(monkeypatch, environment)
+
+    with pytest.raises(RuntimeError, match=message):
         asyncio.run(scan_source(SAFE_SOURCE))
 
 
 @pytest.mark.parametrize(
     ("result", "message"),
     [
-        (SimpleNamespace(returncode=2, stdout=b"secret", stderr=b"secret"), "status 2"),
-        (
-            SimpleNamespace(returncode=0, stdout=_report(), stderr=b"secret"),
-            "diagnostic output",
-        ),
-        (
-            SimpleNamespace(returncode=0, stdout=b"secret", stderr=b""),
-            "malformed JSON",
-        ),
+        (SimpleNamespace(returncode=2, stdout="{}", stderr=""), "status 2"),
+        (SimpleNamespace(returncode=0, stdout="{}", stderr="warning"), "diagnostic"),
+        (SimpleNamespace(returncode="0", stdout="{}", stderr=""), "invalid process"),
+        (SimpleNamespace(returncode=0, stdout=b"{}", stderr=""), "invalid process"),
         (
             SimpleNamespace(
                 returncode=0,
-                stdout=_report(errors=[{"message": "secret"}]),
-                stderr=b"",
+                stdout="x" * (MAX_SEMGREP_REPORT_BYTES + 1),
+                stderr="",
             ),
-            "could not analyse",
+            "exceeded its size limit",
         ),
+        (SimpleNamespace(returncode=0, stdout="not json", stderr=""), "malformed JSON"),
     ],
 )
-def test_scan_errors_do_not_echo_untrusted_process_output(
+def test_scan_rejects_process_and_output_failures(
     result: SimpleNamespace,
     message: str,
-    tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    _install_semgrep_cli(tmp_path, monkeypatch)
-
-    async def run(*args: object, **kwargs: object) -> SimpleNamespace:
-        del args, kwargs
-        return result
-
-    monkeypatch.setattr(semgrep_runner, "subprocess", run)
-
-    with pytest.raises(RuntimeError, match=message) as captured:
-        asyncio.run(scan_source(SAFE_SOURCE))
-    assert "secret" not in str(captured.value)
-
-
-@pytest.mark.parametrize(
-    ("stdout", "message"),
-    [
-        (
-            b'{"results":[],"results":[],"errors":[],"paths":'
-            b'{"scanned":["solution.py"]},"version":"ignored"}',
-            "malformed JSON",
-        ),
-        (
-            json.dumps(
-                {
-                    "results": [],
-                    "errors": [],
-                    "paths": {"scanned": [SOURCE_FILENAME]},
-                    "version": SEMGREP_PACKAGE_VERSION,
-                    "unexpected": True,
-                }
-            ).encode(),
-            "malformed JSON",
-        ),
-        (_report(version="0.0.0"), "unexpected version"),
-        (_report(scanned=["other.py"]), "unexpected scanned file"),
-        (
-            _report(scanned=[SOURCE_FILENAME, SOURCE_FILENAME]),
-            "unexpected scanned file",
-        ),
-        (_report(skipped=[{"path": SOURCE_FILENAME}]), "skipped the source"),
-        (
-            _report(results=[_finding(path="other.py")]),
-            "unexpected finding file",
-        ),
-        (
-            _report(results=[_finding(line=3)]),
-            "invalid source line",
-        ),
-        (
-            _report(results=[_finding(line=2, end_line=1)]),
-            "malformed JSON",
-        ),
-        (
-            _report(results=[_finding(severity="UNKNOWN")]),
-            "unknown severity",
-        ),
-    ],
-)
-def test_scan_rejects_inconsistent_reports(
-    stdout: bytes,
-    message: str,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    _install_semgrep_cli(tmp_path, monkeypatch)
-
-    async def run(*args: object, **kwargs: object) -> SimpleNamespace:
-        del args, kwargs
-        return SimpleNamespace(returncode=0, stdout=stdout, stderr=b"")
-
-    monkeypatch.setattr(semgrep_runner, "subprocess", run)
+    _install_sandbox(monkeypatch, _Sandbox(result=result))
 
     with pytest.raises(RuntimeError, match=message):
         asyncio.run(scan_source(SAFE_SOURCE))
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        (TimeoutError(), "exceeded 120 seconds"),
+        (OutputLimitExceededError("too much", "truncated"), "output exceeded"),
+        (PermissionError("private path"), "sandbox execution failed"),
+        (RuntimeError("private provider detail"), "sandbox execution failed"),
+    ],
+)
+def test_scan_translates_sandbox_failures(
+    error: BaseException,
+    message: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_sandbox(monkeypatch, _Sandbox(exec_error=error))
+
+    with pytest.raises(RuntimeError, match=message) as raised:
+        asyncio.run(scan_source(SAFE_SOURCE))
+    assert "private" not in str(raised.value)
+
+
+def test_scan_translates_source_write_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_sandbox(
+        monkeypatch,
+        _Sandbox(write_error=PermissionError("private path")),
+    )
+
+    with pytest.raises(RuntimeError, match="sandbox execution failed") as error:
+        asyncio.run(scan_source(SAFE_SOURCE))
+    assert "private path" not in str(error.value)

@@ -112,7 +112,8 @@ def _download_dataset(*, local_files_only: bool) -> Path:
             raise
         raise FileNotFoundError(
             "The verified SecurityEval dataset is not cached. Run "
-            "`python -m codeguard_evals.securityeval.prefetch` before evaluation."
+            "`uv run --locked python -m codeguard_evals.prefetch` before "
+            "evaluation."
         ) from exc
     if not path.exists():
         raise FileNotFoundError(f"SecurityEval source file is missing: {path}")
