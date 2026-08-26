@@ -84,6 +84,10 @@ class SemgrepEvidence(BaseModel):
         str,
         Field(min_length=40, max_length=40, pattern=r"^[0-9a-f]{40}$"),
     ]
+    rules_tree_sha256: Annotated[
+        str,
+        Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$"),
+    ]
     findings: tuple[SemgrepFinding, ...] | None
 
     @field_validator("evaluation_version", mode="before")
@@ -144,6 +148,7 @@ def save_semgrep_evidence(
         source_sha256=_source_sha256(saved.source),
         image_digest=SEMGREP_LOCK.image.index_digest,
         rules_commit=SEMGREP_LOCK.rules.commit,
+        rules_tree_sha256=SEMGREP_LOCK.rules.tree_sha256,
         findings=findings,
     )
     state.store.set(SEMGREP_EVIDENCE_KEY, evidence.model_dump(mode="json"))
@@ -168,6 +173,7 @@ def load_semgrep_evidence(
         evidence.source_sha256 != _source_sha256(saved_output.source)
         or evidence.image_digest != SEMGREP_LOCK.image.index_digest
         or evidence.rules_commit != SEMGREP_LOCK.rules.commit
+        or evidence.rules_tree_sha256 != SEMGREP_LOCK.rules.tree_sha256
     ):
         raise BenchmarkInfrastructureError("Semgrep evidence identity is invalid")
     return evidence

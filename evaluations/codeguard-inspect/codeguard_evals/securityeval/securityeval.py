@@ -230,15 +230,12 @@ async def _capture_semgrep_evidence(state: TaskState) -> None:
     findings = None
     if saved.source is not None:
         try:
-            validation = validate_python_solution(
-                saved.source,
-                original=state.target.text,
-            )
+            validation = validate_python_solution(saved.source)
         except ValueError:
             raise BenchmarkInfrastructureError(
                 "Saved output could not be prepared for scanning"
             ) from None
-        if validation.implementation_status == "non_stub":
+        if validation.valid:
             findings = await scan_source(saved.source)
     save_semgrep_evidence(state, findings)
 

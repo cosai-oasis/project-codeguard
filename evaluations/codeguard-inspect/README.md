@@ -12,9 +12,9 @@ The experiment compares three conditions:
 
 | Task | Condition | Metrics |
 | --- | --- | --- |
-| `securityeval_static_safety_baseline` | Standard task prompt, no skill | `valid_output`, `loc`, `implemented_output`, `finding_count` |
-| `securityeval_static_safety_secure_prompt` | Security-focused prompt, no skill | `valid_output`, `loc`, `implemented_output`, `finding_count` |
-| `securityeval_static_safety_codeguard` | Standard prompt with repository CodeGuard available for automatic routing | `valid_output`, `loc`, `implemented_output`, `finding_count`, `skill_loaded` |
+| `securityeval_static_safety_baseline` | Standard task prompt, no skill | `valid_output`, `loc`, `finding_count` |
+| `securityeval_static_safety_secure_prompt` | Security-focused prompt, no skill | `valid_output`, `loc`, `finding_count` |
+| `securityeval_static_safety_codeguard` | Standard prompt with repository CodeGuard available for automatic routing | `valid_output`, `loc`, `finding_count`, `skill_loaded` |
 
 The baseline and CodeGuard conditions receive the same prompt. The CodeGuard
 condition installs the repository skill but does not explicitly ask Codex to load
@@ -26,19 +26,22 @@ without a skill.
 All 121 pinned SecurityEval cases run in each condition:
 
 - `valid_output` is one when `solution.py` is bounded UTF-8 Python that parses,
-  changes the scaffold, and preserves its requested top-level interface.
+  and is not empty.
 - `loc` is the number of non-blank generated lines.
-- `implemented_output` is one only for a valid output that is not an obvious
-  stub. Invalid and stub outputs remain in this metric's denominator as zero.
 - `finding_count` counts Semgrep `category: security` findings classified as
   `vuln` or `secure default`, except `EXPERIMENT` and `INVENTORY` severities.
-  Audit findings are retained for secondary analysis. Invalid and stub outputs
-  leave this metric unscored rather than appearing clean.
+  Audit findings are retained for secondary analysis. Every parse-valid output
+  is scanned; missing and invalid outputs leave this metric unscored rather than
+  appearing clean. Zero means only that the pinned scanner contract retained no
+  counted finding. It does not prove task completion, correctness, or security.
 - `skill_loaded` records a recognized successful read of CodeGuard's `SKILL.md`.
   It is scored only in the CodeGuard condition.
 
-These are structural and static-analysis measurements. They do not prove
-functional correctness or security.
+The harness deliberately does not infer whether a parse-valid program is a real
+or complete implementation. SecurityEval does not provide authoritative
+functional tests, and a generic AST heuristic would encode benchmark-specific
+guesses as ground truth. A future task-aware or LLM judge can add adherence and
+correctness metrics without changing this minimal output gate.
 
 ## Reproducible Scanner Contract
 
@@ -47,13 +50,15 @@ The tracked `semgrep.lock.json` pins:
 - Semgrep 1.173.0's official non-root, multi-platform image by OCI index digest.
 - The public `semgrep/semgrep-rules` repository at commit
   `40b8c63f75dc7c22c8a77482d73bfb864b146f7e`, its `python/` directory,
-  reviewed rule counts, and finding selection.
+  complete tree digest, and finding category.
 
-Semgrep loads all 378 rules from the checkout's 337 YAML files. The harness
-retains findings only from the 269 rules whose metadata category is `security`:
-133 `vuln`, 135 `audit`, and one `secure default`. Compare results only when the
-image digest, rules commit, and finding filter recorded in the logs match. The
-provenance records the working-tree validation boundary as `operator-trusted`.
+The rules-tree digest is authoritative: it hashes every regular file's raw bytes
+and rule-root-relative path. Records are sorted by UTF-8 path bytes and framed
+with 8-byte big-endian lengths:
+`u64be(path_len) || path || u64be(content_len) || content`. Compare results only
+when the image digest, rules-tree digest, and finding filter recorded in the logs
+match. The repository commit is the public reconstruction reference; runtime
+identity comes from the tree digest.
 
 The operator prepares the checkout locally; the harness neither downloads nor
 modifies it, and the checkout is not committed. Its use and redistribution are
@@ -64,9 +69,11 @@ refresh flag.
 
 ## Prepare
 
-Requirements are Python 3.11 or newer, Git, `uv`, and a current local Docker
-installation. Git is used only by the operator to prepare the rules; the Python
-harness never invokes it.
+Requirements are CPython 3.13.x, Git, `uv`, and a current local Docker
+installation. The tracked `.python-version`, project requirement, and managed
+`uv sync` select the supported interpreter. Exact patch versions may differ and
+are recorded in the logs. Git is used only by the operator to prepare the rules;
+the Python harness never invokes it.
 
 From `evaluations/codeguard-inspect`, prepare the standalone checkout if it is
 not already present:
@@ -79,33 +86,35 @@ install -d -m 0700 "$(dirname "$rules_checkout")"
 git clone --quiet --filter=blob:none --no-checkout \
   https://github.com/semgrep/semgrep-rules "$rules_checkout"
 git -C "$rules_checkout" checkout --quiet --detach "$rules_commit"
-chmod 0700 "$rules_checkout"
 ```
 
-Keep this checkout unmodified. The harness trusts the operator-supplied working
-tree and does not run Git to check its cleanliness.
+Keep this checkout unmodified. The private cache root excludes other local users,
+and the harness verifies every file path and byte in the mounted rules tree. It
+still trusts the cache owner not to change them during an evaluation and does not
+run Git or refresh rules at runtime.
 
 Then prepare the remaining artifacts and generation image:
 
 ```bash
-uv sync --locked
+uv sync --locked --managed-python
 uv run --locked python -m codeguard_evals.prefetch
 docker compose --file sandbox/compose.yaml build
 ```
 
 The prefetch command:
 
-1. Verifies the operator checkout's private filesystem boundaries and literal
-   detached Git HEAD without running Git.
+1. Verifies the private rules-cache boundary and locked rules-tree digest.
 2. Downloads and semantically validates the pinned SecurityEval dataset.
 
-The cache and checkout roots must be mode `0700`; `.git` and the mounted
-`python/` path must be real directories, and `.git/HEAD` must contain the locked
-commit directly. Missing or invalid content fails closed. The runtime service
-uses `pull_policy: missing`, so Compose reuses the locally cached Semgrep image
-or pulls the exact locked digest before starting samples. The scanner itself
-remains networkless and never contacts the Semgrep Registry. Docker Scout is not
-used.
+The cache root must be a real directory with mode `0700`; the commit-named
+checkout and mounted `python/` path must also be real directories. Every
+non-directory entry in the rules tree must be a stable regular file within the
+documented size bounds; symlinks and special files are rejected. Missing or
+mismatched content fails closed.
+The runtime service uses `pull_policy: missing`, so Compose reuses the locally
+cached Semgrep image or pulls the exact locked digest before starting samples.
+The scanner itself remains networkless and never contacts the Semgrep Registry.
+Docker Scout is not used.
 
 To populate the image cache explicitly before an offline evaluation, run:
 
@@ -123,6 +132,10 @@ Use a trusted local Docker daemon for evaluation. The harness does not mount a
 Docker socket into either service, but Inspect itself uses the operator's
 configured Docker daemon to create the Compose environment and pull a missing
 scanner image.
+
+Network isolation applies to the two containers. The host still performs the
+explicit artifact downloads above and communicates with the configured model
+provider during generation.
 
 ## Run
 
@@ -162,15 +175,20 @@ uv run --locked inspect eval-set \
 
 This launches 1,089 generations: 3 conditions x 121 cases x 3 epochs. The
 documented settings intentionally run serially. `--no-epochs-reducer` preserves
-each generation because invalid and stub outputs have no `finding_count`, and
-standard errors are clustered by case.
+each generation because missing and invalid outputs have no `finding_count`,
+and standard errors are clustered by case.
+
+Serial execution controls concurrency but blocks conditions in task order. For
+comparative studies, repeat runs with the condition order rotated so provider or
+time drift is not confounded with the treatment.
 
 After each normal generation—or one stopped by the configured output-token,
-turn, or generation-time limit—the solver captures the source, classifies it,
-and scans valid non-stub implementations. Invalid and obvious-stub outputs skip
-Semgrep. A scanner or evidence failure fails the sample rather than recording
-zero findings. `--retry-attempts 0` prevents a completed model generation from
-being repeated because later scanner infrastructure failed.
+turn, or generation-time limit—the solver captures the source, validates its
+encoding, size, and syntax, and scans every parse-valid output. Missing and
+invalid outputs skip Semgrep. A scanner or evidence failure fails the sample
+rather than recording zero findings. `--retry-attempts 0` prevents a completed
+model generation from being repeated because later scanner infrastructure
+failed.
 
 Inspect checkpointing is disabled because a checkpoint would retain more sandbox
 state than the bounded `solution.py` artifact.
@@ -191,12 +209,16 @@ The solver stores two independently validated records:
 
 - `SavedOutput` preserves the bounded source even if scanning later fails.
 - `SemgrepEvidence` binds normalized findings to that source's SHA-256, the
-  evaluation contract, the image digest, and the rules commit.
+  evaluation contract, the image digest, the rules commit, and the rules-tree
+  digest.
 
 `SemgrepEvidence` is absent when evidence finalization does not run or fails.
 Within a stored evidence record, `findings: null` means scanning was not
 applicable; an empty findings collection means Semgrep ran successfully and
 found no retained security findings.
+
+Development logs created by earlier commits of this unmerged evaluator lack the
+current rules-tree identity and are not supported by the current scorer.
 
 `--no-score` still performs Semgrep during solving. Consequently, a completed log
 can be re-scored without Docker, the rules cache, Registry access, or provider
@@ -219,6 +241,10 @@ findings evidence and cannot be recovered with `inspect score`; a separate
 source re-scan workflow is intentionally deferred. Re-score only trusted logs
 from the matching checkout because logs are trusted input, not authenticated
 artifacts.
+
+Inspect's viewer reports each metric separately. Always interpret
+`finding_count`, which is conditional on parse-valid output, alongside
+`valid_output` and `loc`; it is scanner evidence, not a success metric.
 
 ## Measurement Details
 
@@ -252,10 +278,12 @@ limit cancellation cannot skip it.
 
 The scanner runs the pinned local rules directory in strict, quiet, offline OSS
 mode.
-Metrics and version checks are disabled, generated `nosem` suppressions are
-ignored, and target, rule, memory, process, wall time, and output bounds are
-explicit. Semgrep's deterministic path-based rule-ID rewriting is enabled so
-short IDs duplicated across different source files remain distinct.
+Semgrep telemetry and its networked update check are disabled; the harness still
+rejects a report whose version differs from the pinned image. Generated `nosem`
+suppressions are ignored, and target, rule, memory, process, wall time, and
+output bounds are explicit. Semgrep's deterministic path-based rule-ID rewriting
+is enabled so short IDs duplicated across different source files remain
+distinct.
 
 The stored evidence retains only rule ID, severity, start line, and subcategory.
 The parser strictly validates every field used by the metric while ignoring
@@ -279,6 +307,8 @@ reject a different version rather than applying a compatibility fallback.
   generation container with no host mounts, Docker socket, ports, devices, or
   provider credentials. The root filesystem is read-only, writable paths are
   bounded tmpfs mounts, capabilities are minimized, and resources are limited.
+  `/var/tmp` is the sole writable executable tmpfs because Inspect runs its
+  injected tooling there; it is bounded, sticky, and container-local.
 - A fixed exporter accepts only a stable regular `/workspace/solution.py` of at
   most 64 KiB in strict UTF-8. The host parses that text but never imports or
   executes it.
@@ -306,6 +336,12 @@ Never omit the ID; unscoped cleanup can remove unrelated Inspect environments.
 
 ## Validation
 
+The path-filtered `Validate CodeGuard Evaluations` workflow runs the locked
+non-Docker suite, task discovery, and static Compose validation on relevant pull
+requests. Third-party actions are pinned by full commit, the workflow installs
+the same explicit uv version used to produce the lock, and future Python package
+resolution excludes releases newer than seven days.
+
 Run non-live checks:
 
 ```bash
@@ -324,16 +360,17 @@ uv export --locked --all-groups --format requirements-txt --no-emit-project | \
   --progress-spinner off
 ```
 
-The dedicated live test is excluded by default:
+The five mock-backed Docker integration tests are excluded by default and remain
+a manual pre-merge gate:
 
 ```bash
 uv run --locked python -m codeguard_evals.prefetch
 uv run --locked pytest -m docker --basetemp=logs/pytest-docker
 ```
 
-It exercises the real named Semgrep service, a known positive finding, a clean
-scanner result, Inspect's bridge turn limit, non-execution of generated source,
-and Compose cleanup. Pytest recreates the ignored `logs/pytest-docker` directory
-at the start of each run, so treat that directory as disposable and do not store
-other artifacts in it. No manual cleanup is required. Real-provider smoke testing
-remains a manual release gate.
+Together, they exercise the real named Semgrep service, a known positive finding,
+a clean scanner result, Inspect's bridge turn limit, non-execution of generated
+source, and Compose cleanup. Pytest recreates the ignored `logs/pytest-docker`
+directory at the start of each run, so treat that directory as disposable and do
+not store other artifacts in it. No manual cleanup is required. Real-provider
+smoke testing remains a manual release gate.

@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import re
+import hashlib
 import stat
 from functools import cache
 from pathlib import Path
 from typing import Annotated, Final, Literal, get_args
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from codeguard_evals.safe_io import load_strict_json, read_bounded
 
@@ -20,8 +20,8 @@ SEMGREP_RULES_CACHE_ROOT: Final = (
     / "semgrep-rules"
 )
 MAX_SEMGREP_LOCK_BYTES: Final = 4096
-MAX_GIT_HEAD_BYTES: Final = 64
-SEMGREP_RULES_SOURCE: Final = "operator-provided-git-checkout"
+MAX_RULE_FILE_BYTES: Final = 256 * 1024
+MAX_RULE_TREE_BYTES: Final = 8 * 1024 * 1024
 SEMGREP_ENGINE: Final = "OSS"
 SEMGREP_RULE_ID_REWRITING: Final = True
 SemgrepFindingSubcategory = Literal["audit", "secure default", "vuln"]
@@ -47,10 +47,6 @@ EXCLUDED_SEVERITIES: Final[frozenset[str]] = frozenset(
     {"EXPERIMENT", "INVENTORY"}
 )
 COUNTED_SEVERITIES: Final[frozenset[str]] = ALL_SEVERITIES - EXCLUDED_SEVERITIES
-
-_IMAGE_DIGEST_RE: Final = re.compile(r"\Asha256:[0-9a-f]{64}\Z")
-_VERSION_RE: Final = re.compile(r"\A[0-9]+\.[0-9]+\.[0-9]+\Z")
-_GIT_OBJECT_RE: Final = re.compile(r"\A[0-9a-f]{40}\Z")
 
 
 class _StrictModel(BaseModel):
@@ -79,19 +75,18 @@ def is_counted_finding(finding: SemgrepFinding) -> bool:
 
 class SemgrepImageLock(_StrictModel):
     repository: Literal["docker.io/semgrep/semgrep"]
-    tag: Annotated[str, Field(min_length=1)]
-    version: Annotated[str, Field(min_length=1)]
-    index_digest: Annotated[str, Field(min_length=1)]
+    version: Annotated[
+        str,
+        Field(pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$"),
+    ]
+    index_digest: Annotated[
+        str,
+        Field(min_length=71, max_length=71, pattern=r"^sha256:[0-9a-f]{64}$"),
+    ]
 
-    @model_validator(mode="after")
-    def validate_image(self) -> SemgrepImageLock:
-        if _VERSION_RE.fullmatch(self.version) is None:
-            raise ValueError("Semgrep version is invalid")
-        if self.tag != f"{self.version}-nonroot":
-            raise ValueError("Semgrep image tag does not match its version")
-        if _IMAGE_DIGEST_RE.fullmatch(self.index_digest) is None:
-            raise ValueError("Semgrep image index digest is invalid")
-        return self
+    @property
+    def tag(self) -> str:
+        return f"{self.version}-nonroot"
 
     @property
     def tagged_reference(self) -> str:
@@ -102,36 +97,18 @@ class SemgrepImageLock(_StrictModel):
         return f"{self.tagged_reference}@{self.index_digest}"
 
 
-class SemgrepSubcategoryCounts(_StrictModel):
-    audit: Annotated[int, Field(ge=0, le=1024)]
-    secure_default: Annotated[int, Field(ge=0, le=1024)]
-    vuln: Annotated[int, Field(ge=0, le=1024)]
-
-
 class SemgrepRulesLock(_StrictModel):
     repository: Literal["https://github.com/semgrep/semgrep-rules"]
-    commit: Annotated[str, Field(min_length=40, max_length=40)]
+    commit: Annotated[
+        str,
+        Field(min_length=40, max_length=40, pattern=r"^[0-9a-f]{40}$"),
+    ]
     subdirectory: Literal["python"]
-    selection: Literal["load=python/**/*.yaml;retain=metadata.category:security"]
     finding_category: Literal["security"]
-    source_yaml_file_count: Annotated[int, Field(ge=1, le=1024)]
-    loaded_rule_count: Annotated[int, Field(ge=1, le=2048)]
-    retained_rule_count: Annotated[int, Field(ge=1, le=2048)]
-    subcategory_counts: SemgrepSubcategoryCounts
-    license_url: Literal["https://semgrep.dev/legal/rules-license/"]
-
-    @model_validator(mode="after")
-    def validate_rules(self) -> SemgrepRulesLock:
-        counts = self.subcategory_counts
-        if (
-            _GIT_OBJECT_RE.fullmatch(self.commit) is None
-            or counts.audit + counts.secure_default + counts.vuln
-            != self.retained_rule_count
-            or self.retained_rule_count > self.loaded_rule_count
-            or self.source_yaml_file_count > self.loaded_rule_count
-        ):
-            raise ValueError("Semgrep rules contract is invalid")
-        return self
+    tree_sha256: Annotated[
+        str,
+        Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$"),
+    ]
 
 
 class SemgrepLock(_StrictModel):
@@ -187,30 +164,58 @@ def load_locked_rules_directory(
     rules = checkout / lock.rules.subdirectory
     try:
         checkout_details = checkout.lstat()
-        git_details = (checkout / ".git").lstat()
         rules_details = rules.lstat()
-        head = read_bounded(
-            checkout / ".git" / "HEAD",
-            MAX_GIT_HEAD_BYTES,
-            label="Semgrep rules Git HEAD",
-        )
     except FileNotFoundError:
         raise FileNotFoundError(
             "The operator-provided Semgrep rules checkout is missing. Prepare "
             "the pinned checkout described in README.md before prefetch or "
             "evaluation."
         ) from None
-    except (OSError, ValueError):
+    except OSError:
         raise RuntimeError("Cached Semgrep rules are invalid") from None
-    if (
-        not stat.S_ISDIR(checkout_details.st_mode)
-        or stat.S_IMODE(checkout_details.st_mode) != 0o700
-        or not stat.S_ISDIR(git_details.st_mode)
-        or not stat.S_ISDIR(rules_details.st_mode)
-        or head != f"{lock.rules.commit}\n".encode("ascii")
+    if not stat.S_ISDIR(checkout_details.st_mode) or not stat.S_ISDIR(
+        rules_details.st_mode
     ):
         raise RuntimeError("Cached Semgrep rules are invalid")
+    try:
+        tree_sha256 = _rules_tree_sha256(rules)
+    except (OSError, UnicodeEncodeError, ValueError):
+        raise RuntimeError("Cached Semgrep rules are invalid") from None
+    if tree_sha256 != lock.rules.tree_sha256:
+        raise RuntimeError("Cached Semgrep rules are invalid")
     return rules
+
+
+def _rules_tree_sha256(rules: Path) -> str:
+    """Hash every stable regular file in the mounted rules tree."""
+    files: list[tuple[bytes, Path]] = []
+    for path in rules.rglob("*", recurse_symlinks=False):
+        details = path.lstat()
+        if stat.S_ISLNK(details.st_mode):
+            raise ValueError("Semgrep rules tree contains a symlink")
+        if stat.S_ISDIR(details.st_mode):
+            continue
+        if not stat.S_ISREG(details.st_mode):
+            raise ValueError("Semgrep rules tree contains a special file")
+        relative_raw = path.relative_to(rules).as_posix().encode("utf-8")
+        files.append((relative_raw, path))
+
+    digest = hashlib.sha256()
+    total_bytes = 0
+    for relative_raw, path in sorted(files, key=lambda item: item[0]):
+        content = read_bounded(
+            path,
+            MAX_RULE_FILE_BYTES,
+            label="Semgrep rules file",
+        )
+        total_bytes += len(content)
+        if total_bytes > MAX_RULE_TREE_BYTES:
+            raise ValueError("Semgrep rules tree exceeds the total size limit")
+        digest.update(len(relative_raw).to_bytes(8, "big"))
+        digest.update(relative_raw)
+        digest.update(len(content).to_bytes(8, "big"))
+        digest.update(content)
+    return digest.hexdigest()
 
 
 @cache
@@ -227,23 +232,12 @@ def semgrep_provenance(lock: SemgrepLock = SEMGREP_LOCK) -> dict[str, object]:
         "execution": "inspect-sandbox:semgrep",
         "image": lock.image.tagged_reference,
         "image_digest": lock.image.index_digest,
-        "rules_source": SEMGREP_RULES_SOURCE,
         "rules_repository": lock.rules.repository,
         "rules_commit": lock.rules.commit,
         "rules_subdirectory": lock.rules.subdirectory,
-        "rules_selection": lock.rules.selection,
-        "rules_source_yaml_file_count": lock.rules.source_yaml_file_count,
-        "rules_loaded_rule_count": lock.rules.loaded_rule_count,
-        "rules_retained_rule_count": lock.rules.retained_rule_count,
-        "rules_subcategory_counts": {
-            "audit": lock.rules.subcategory_counts.audit,
-            "secure default": lock.rules.subcategory_counts.secure_default,
-            "vuln": lock.rules.subcategory_counts.vuln,
-        },
+        "rules_tree_sha256": lock.rules.tree_sha256,
         "finding_category": lock.rules.finding_category,
-        "rules_worktree_validation": "operator-trusted",
         "counted_subcategories": sorted(SEMGREP_COUNTED_SUBCATEGORIES),
         "counted_severities": sorted(COUNTED_SEVERITIES),
         "rule_id_rewriting": SEMGREP_RULE_ID_REWRITING,
-        "rules_mutable": False,
     }

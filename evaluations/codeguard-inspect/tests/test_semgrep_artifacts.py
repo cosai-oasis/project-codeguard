@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -9,12 +11,14 @@ import pytest
 
 from codeguard_evals.semgrep_artifacts import (
     COUNTED_SEVERITIES,
+    MAX_RULE_FILE_BYTES,
+    MAX_RULE_TREE_BYTES,
     SEMGREP_COUNTED_SUBCATEGORIES,
     SEMGREP_IMAGE_REFERENCE,
     SEMGREP_LOCK,
-    SEMGREP_RULES_SOURCE,
     SemgrepFinding,
     SemgrepLock,
+    _rules_tree_sha256 as calculate_rules_tree_sha256,
     is_counted_finding,
     load_locked_rules_directory,
     load_semgrep_lock,
@@ -27,26 +31,60 @@ def _cached_checkout(
     root: Path,
     *,
     lock: SemgrepLock = SEMGREP_LOCK,
-    head: str | None = None,
-    checkout_mode: int = 0o700,
+    files: dict[str, bytes] | None = None,
 ) -> tuple[Path, Path]:
     root.mkdir(mode=0o700, exist_ok=True)
     root.chmod(0o700)
     checkout = semgrep_rules_checkout_path(lock, cache_root=root)
-    checkout.mkdir(mode=checkout_mode)
-    checkout.chmod(checkout_mode)
-    git = checkout / ".git"
-    git.mkdir()
-    (git / "HEAD").write_text(
-        f"{lock.rules.commit if head is None else head}\n",
-        encoding="ascii",
-    )
+    checkout.mkdir()
     rules = checkout / lock.rules.subdirectory
     rules.mkdir()
+    for relative, content in (files or {}).items():
+        target = rules / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(content)
     return checkout, rules
 
 
-def test_tracked_lock_pins_image_and_complete_python_rules_checkout() -> None:
+def _expected_rules_tree_sha256(
+    files: dict[str, bytes],
+) -> str:
+    digest = hashlib.sha256()
+    framed: list[tuple[bytes, bytes]] = []
+    for relative, content in files.items():
+        framed.append((relative.encode("utf-8"), content))
+    for relative_raw, content in sorted(framed):
+        digest.update(len(relative_raw).to_bytes(8, "big"))
+        digest.update(relative_raw)
+        digest.update(len(content).to_bytes(8, "big"))
+        digest.update(content)
+    return digest.hexdigest()
+
+
+def _lock_for_files(files: dict[str, bytes]) -> SemgrepLock:
+    value = SEMGREP_LOCK.model_dump(mode="json")
+    value["rules"]["tree_sha256"] = _expected_rules_tree_sha256(files)
+    return SemgrepLock.model_validate(value)
+
+
+def test_rules_tree_sha256_is_rule_relative_ordered_and_framed(
+    tmp_path: Path,
+) -> None:
+    files = {"z.yaml": b"z", "nested/a.py": b"a", "README.md": b"docs"}
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    for root, entries in ((first, files.items()), (second, reversed(files.items()))):
+        for relative, content in entries:
+            target = root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+
+    expected = "9fa6003728b952cb196027ac3e5c62c994612a471f6c937d09185a9e266a085e"
+    assert calculate_rules_tree_sha256(first) == expected
+    assert calculate_rules_tree_sha256(second) == expected
+
+
+def test_tracked_lock_pins_image_and_complete_python_rules_tree() -> None:
     assert SEMGREP_LOCK.schema_version == 3
     assert SEMGREP_LOCK.image.version == "1.173.0"
     assert SEMGREP_LOCK.image.tag == "1.173.0-nonroot"
@@ -62,47 +100,27 @@ def test_tracked_lock_pins_image_and_complete_python_rules_checkout() -> None:
         == "40b8c63f75dc7c22c8a77482d73bfb864b146f7e"
     )
     assert SEMGREP_LOCK.rules.subdirectory == "python"
-    assert SEMGREP_LOCK.rules.selection == (
-        "load=python/**/*.yaml;retain=metadata.category:security"
+    assert SEMGREP_LOCK.rules.tree_sha256 == (
+        "defc43c66fd02d51057745f530f2c181"
+        "a796f69f4c29bb887c28abcb984e13c6"
     )
-    assert SEMGREP_LOCK.rules.source_yaml_file_count == 337
-    assert SEMGREP_LOCK.rules.loaded_rule_count == 378
-    assert SEMGREP_LOCK.rules.retained_rule_count == 269
-    assert SEMGREP_LOCK.rules.subcategory_counts.model_dump() == {
-        "audit": 135,
-        "secure_default": 1,
-        "vuln": 133,
-    }
 
 
-def test_provenance_records_loaded_and_retained_rule_contract() -> None:
+def test_provenance_records_scanner_and_rules_identity() -> None:
     assert semgrep_provenance() == {
         "version": "1.173.0",
         "engine": "OSS",
         "execution": "inspect-sandbox:semgrep",
         "image": "docker.io/semgrep/semgrep:1.173.0-nonroot",
         "image_digest": SEMGREP_LOCK.image.index_digest,
-        "rules_source": SEMGREP_RULES_SOURCE,
         "rules_repository": SEMGREP_LOCK.rules.repository,
         "rules_commit": SEMGREP_LOCK.rules.commit,
         "rules_subdirectory": "python",
-        "rules_selection": (
-            "load=python/**/*.yaml;retain=metadata.category:security"
-        ),
-        "rules_source_yaml_file_count": 337,
-        "rules_loaded_rule_count": 378,
-        "rules_retained_rule_count": 269,
-        "rules_subcategory_counts": {
-            "audit": 135,
-            "secure default": 1,
-            "vuln": 133,
-        },
+        "rules_tree_sha256": SEMGREP_LOCK.rules.tree_sha256,
         "finding_category": "security",
-        "rules_worktree_validation": "operator-trusted",
         "counted_subcategories": sorted(SEMGREP_COUNTED_SUBCATEGORIES),
         "counted_severities": sorted(COUNTED_SEVERITIES),
         "rule_id_rewriting": True,
-        "rules_mutable": False,
     }
 
 
@@ -111,13 +129,11 @@ def test_provenance_records_loaded_and_retained_rule_contract() -> None:
     [
         lambda value: value.update(schema_version=2),
         lambda value: value.update(unexpected=True),
-        lambda value: value["image"].update(tag="latest"),
+        lambda value: value["image"].update(version="latest"),
         lambda value: value["image"].update(index_digest="sha256:bad"),
         lambda value: value["rules"].update(commit="main"),
+        lambda value: value["rules"].update(tree_sha256="bad"),
         lambda value: value["rules"].update(subdirectory="javascript"),
-        lambda value: value["rules"].update(selection="all"),
-        lambda value: value["rules"].update(loaded_rule_count=1),
-        lambda value: value["rules"]["subcategory_counts"].update(vuln=132),
     ],
 )
 def test_lock_rejects_malformed_contracts(
@@ -144,9 +160,113 @@ def test_checkout_path_is_derived_only_from_the_locked_commit(
 def test_locked_rules_directory_accepts_exact_private_checkout(
     tmp_path: Path,
 ) -> None:
-    _checkout, rules = _cached_checkout(tmp_path)
+    files = {
+        "z-last.yaml": b"rules: []\n",
+        "nested/a-first.py": b"print('fixture')\n",
+        "fixtures/rule.test.yaml": b"fixture\n",
+        "README.md": b"rules documentation\n",
+    }
+    lock = _lock_for_files(files)
+    _checkout, rules = _cached_checkout(tmp_path, lock=lock, files=files)
 
-    assert load_locked_rules_directory(cache_root=tmp_path) == rules
+    assert (
+        load_locked_rules_directory(lock, cache_root=tmp_path) == rules
+    )
+
+
+@pytest.mark.parametrize("mutation", ["content", "path", "add", "delete"])
+def test_locked_rules_directory_rejects_tree_identity_changes(
+    mutation: str,
+    tmp_path: Path,
+) -> None:
+    files = {
+        "one.yaml": b"rules: []\n",
+        "nested/two.py": b"print('fixture')\n",
+    }
+    lock = _lock_for_files(files)
+    _checkout, rules = _cached_checkout(tmp_path, lock=lock, files=files)
+    if mutation == "content":
+        (rules / "nested/two.py").write_bytes(b"print('changed')\n")
+    elif mutation == "path":
+        (rules / "one.yaml").rename(rules / "renamed.yaml")
+    elif mutation == "add":
+        (rules / "added.md").write_bytes(b"added\n")
+    else:
+        (rules / "one.yaml").unlink()
+
+    with pytest.raises(RuntimeError, match="rules are invalid"):
+        load_locked_rules_directory(lock, cache_root=tmp_path)
+
+
+@pytest.mark.parametrize("kind", ["file", "directory"])
+def test_locked_rules_directory_rejects_every_symlink(
+    kind: str,
+    tmp_path: Path,
+) -> None:
+    files = {"rule.yaml": b"rules: []\n"}
+    lock = _lock_for_files(files)
+    _checkout, rules = _cached_checkout(tmp_path, lock=lock, files=files)
+    if kind == "file":
+        external = tmp_path / "external.txt"
+        external.write_text("external\n")
+        (rules / "linked.txt").symlink_to(external)
+    else:
+        external = tmp_path / "external"
+        external.mkdir()
+        (rules / "linked").symlink_to(external, target_is_directory=True)
+
+    with pytest.raises(RuntimeError, match="rules are invalid"):
+        load_locked_rules_directory(lock, cache_root=tmp_path)
+
+
+@pytest.mark.parametrize(
+    "relative",
+    ["rule.yml", "rule.test.yaml", "rule.fixed.yml", "fixture.py", "README.md"],
+)
+def test_every_regular_file_type_participates_in_the_digest(
+    relative: str,
+    tmp_path: Path,
+) -> None:
+    files = {"rule.yaml": b"rules: []\n"}
+    lock = _lock_for_files(files)
+    _checkout, rules = _cached_checkout(tmp_path, lock=lock, files=files)
+    (rules / relative).write_bytes(b"new file\n")
+
+    with pytest.raises(RuntimeError, match="rules are invalid"):
+        load_locked_rules_directory(lock, cache_root=tmp_path)
+
+
+def test_locked_rules_directory_rejects_special_file(
+    tmp_path: Path,
+) -> None:
+    files = {"rule.yaml": b"rules: []\n"}
+    lock = _lock_for_files(files)
+    _checkout, rules = _cached_checkout(tmp_path, lock=lock, files=files)
+    os.mkfifo(rules / "special")
+
+    with pytest.raises(RuntimeError, match="rules are invalid"):
+        load_locked_rules_directory(lock, cache_root=tmp_path)
+
+
+@pytest.mark.parametrize("size_kind", ["file", "total"])
+def test_locked_rules_directory_enforces_tree_size_limits(
+    size_kind: str,
+    tmp_path: Path,
+) -> None:
+    if size_kind == "file":
+        files = {"large.bin": b"x" * (MAX_RULE_FILE_BYTES + 1)}
+    else:
+        file_count = MAX_RULE_TREE_BYTES // MAX_RULE_FILE_BYTES + 1
+        content = b"x" * MAX_RULE_FILE_BYTES
+        files = {
+            f"files/{index:02d}.bin": content
+            for index in range(file_count)
+        }
+    lock = _lock_for_files(files)
+    _cached_checkout(tmp_path, lock=lock, files=files)
+
+    with pytest.raises(RuntimeError, match="rules are invalid"):
+        load_locked_rules_directory(lock, cache_root=tmp_path)
 
 
 def test_missing_rules_names_the_operator_managed_checkout(
@@ -176,34 +296,28 @@ def test_cache_root_rejects_symlinks_and_nonprivate_permissions(
 
 
 @pytest.mark.parametrize(
-    ("mutation", "message"),
-    [
-        ("checkout-mode", "rules are invalid"),
-        ("head", "rules are invalid"),
-        ("git-file", "rules are invalid"),
-        ("rules-symlink", "rules are invalid"),
-    ],
+    "mutation",
+    ["checkout-symlink", "rules-file", "rules-symlink"],
 )
-def test_checkout_rejects_invalid_boundaries(
+def test_rejects_symlinked_checkout_or_invalid_rules_root(
     mutation: str,
-    message: str,
     tmp_path: Path,
 ) -> None:
     checkout, rules = _cached_checkout(tmp_path)
-    if mutation == "checkout-mode":
-        checkout.chmod(0o755)
-    elif mutation == "head":
-        (checkout / ".git" / "HEAD").write_text("ref: refs/heads/main\n")
-    elif mutation == "git-file":
-        git = checkout / ".git"
-        (git / "HEAD").unlink()
-        git.rmdir()
-        git.write_text("gitdir: elsewhere\n")
+    if mutation == "checkout-symlink":
+        rules.rmdir()
+        checkout.rmdir()
+        external = tmp_path / "external"
+        (external / SEMGREP_LOCK.rules.subdirectory).mkdir(parents=True)
+        checkout.symlink_to(external, target_is_directory=True)
     else:
         rules.rmdir()
-        rules.symlink_to(tmp_path, target_is_directory=True)
+        if mutation == "rules-file":
+            rules.write_text("not a directory\n")
+        else:
+            rules.symlink_to(tmp_path, target_is_directory=True)
 
-    with pytest.raises(RuntimeError, match=message):
+    with pytest.raises(RuntimeError, match="rules are invalid"):
         load_locked_rules_directory(cache_root=tmp_path)
 
 

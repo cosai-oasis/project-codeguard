@@ -1,0 +1,53 @@
+---
+name: Validate CodeGuard Evaluations
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '.gitignore'
+      - '.github/workflows/validate-codeguard-evaluations.yml'
+      - 'evaluations/codeguard-inspect/**'
+      - 'skills/codeguard/**'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - '.gitignore'
+      - '.github/workflows/validate-codeguard-evaluations.yml'
+      - 'evaluations/codeguard-inspect/**'
+      - 'skills/codeguard/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: evaluations/codeguard-inspect
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.11.28"
+
+      - name: Install locked dependencies
+        run: uv sync --locked --managed-python
+
+      - name: Run non-Docker tests
+        run: uv run --locked pytest
+
+      - name: Discover Inspect tasks
+        run: uv run --locked inspect list tasks codeguard_evals/securityeval
+
+      - name: Validate Compose configuration
+        run: docker compose --file sandbox/compose.yaml config --quiet

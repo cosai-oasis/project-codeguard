@@ -162,9 +162,11 @@ def _replace_solution(container: str, source: Path) -> None:
             "--user",
             SANDBOX_USER,
             container,
-            "/bin/sh",
-            "-c",
-            f"rm -f {SOLUTION_PATH} {SANDBOX_WORKDIR}/executed",
+            "/bin/rm",
+            "-f",
+            "--",
+            SOLUTION_PATH,
+            f"{SANDBOX_WORKDIR}/executed",
         ]
     )
     _copy(container, source, SOLUTION_PATH)
@@ -218,7 +220,7 @@ def test_live_container_enforces_outer_sandbox_policy(
         for marker in ("API_KEY", "CREDENTIAL", "PASSWORD", "SECRET", "TOKEN")
     )
 
-    supervisor = _exec(container, "/bin/sh", "-c", "cat /proc/1/status")
+    supervisor = _exec(container, "/bin/cat", "/proc/1/status")
     assert supervisor.returncode == 0
     supervisor_cap_eff = re.search(
         r"^CapEff:\s*([0-9a-f]+)$", supervisor.stdout, re.MULTILINE
@@ -229,7 +231,7 @@ def test_live_container_enforces_outer_sandbox_policy(
     assert "NoNewPrivs:\t1" in supervisor.stdout
     assert "Seccomp:\t2" in supervisor.stdout
 
-    process_status = _exec(container, "/bin/sh", "-c", "cat /proc/self/status")
+    process_status = _exec(container, "/bin/cat", "/proc/self/status")
     assert process_status.returncode == 0
     process_cap_eff = re.search(
         r"^CapEff:\s*([0-9a-f]+)$", process_status.stdout, re.MULTILINE
@@ -248,9 +250,8 @@ def test_live_container_enforces_outer_sandbox_policy(
 
     root_status = _exec(
         container,
-        "/bin/sh",
-        "-c",
-        "cat /proc/self/status",
+        "/bin/cat",
+        "/proc/self/status",
         user=SANDBOX_ROOT_USER,
     )
     assert root_status.returncode == 0
@@ -470,9 +471,10 @@ def test_malicious_outputs_are_bounded_and_never_executed(
             "--user",
             SANDBOX_USER,
             container,
-            "/bin/sh",
-            "-c",
-            f"rm -f {SOLUTION_PATH}",
+            "/bin/rm",
+            "-f",
+            "--",
+            SOLUTION_PATH,
         ]
     )
     socket_result = _exec(
@@ -743,7 +745,6 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     assert score.value == {
         "valid_output": 1,
         "loc": 2,
-        "implemented_output": 1,
         "finding_count": 0,
         "skill_loaded": 1,
     }

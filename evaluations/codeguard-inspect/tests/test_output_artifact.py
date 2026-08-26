@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import copy
 import hashlib
-import math
 import os
 import subprocess
 import sys
@@ -215,7 +214,6 @@ def test_missing_and_empty_sources_remain_distinguishable(
     assert score.answer == expected_answer
     assert score.value["valid_output"] == 0
     assert score.value["loc"] == 0
-    assert score.value["implemented_output"] == 0
     assert isinstance(score.value["finding_count"], float)
     assert score.explanation == explanation
 
@@ -323,6 +321,7 @@ def test_semgrep_evidence_preserves_null_empty_and_populated_findings(
     ).hexdigest()
     assert evidence.image_digest == SEMGREP_LOCK.image.index_digest
     assert evidence.rules_commit == SEMGREP_LOCK.rules.commit
+    assert evidence.rules_tree_sha256 == SEMGREP_LOCK.rules.tree_sha256
     with pytest.raises(BenchmarkInfrastructureError, match="already exists"):
         save_semgrep_evidence(state, findings)
 
@@ -348,6 +347,7 @@ def test_source_free_evidence_requires_null_findings(
         ("source_sha256", "0" * 64),
         ("image_digest", "sha256:" + "0" * 64),
         ("rules_commit", "0" * 40),
+        ("rules_tree_sha256", "0" * 64),
     ],
 )
 def test_semgrep_evidence_rejects_version_or_identity_tampering(
@@ -412,20 +412,13 @@ def test_capture_rejects_inconsistent_exporter_result(
         _capture(monkeypatch, exported)
 
 
-@pytest.mark.parametrize(
-    ("captured_source", "findings", "implemented"),
-    [
-        (STUB_SOURCE, None, 0),
-        (SAFE_SOURCE, (), 1),
-    ],
-)
+@pytest.mark.parametrize("captured_source", [STUB_SOURCE, SAFE_SOURCE])
 def test_public_deferred_scoring_uses_stored_findings_without_any_services(
     captured_source: str,
-    findings: tuple[SemgrepFinding, ...] | None,
-    implemented: int,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    findings: tuple[SemgrepFinding, ...] = ()
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
 
     async def capture() -> ExportedSolution:
@@ -540,12 +533,7 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
     assert replayed.answer == captured_source
     assert replayed.value["valid_output"] == 1
     assert replayed.value["loc"] == 2
-    assert replayed.value["implemented_output"] == implemented
-    if implemented:
-        assert replayed.value["finding_count"] == 0
-    else:
-        assert isinstance(replayed.value["finding_count"], float)
-        assert math.isnan(replayed.value["finding_count"])
+    assert replayed.value["finding_count"] == 0
 
 
 def test_loading_does_not_mutate_saved_output(

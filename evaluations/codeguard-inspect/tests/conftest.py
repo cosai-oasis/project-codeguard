@@ -27,7 +27,7 @@ from codeguard_evals.securityeval.protocol import TASK_PROMPT
 ORIGINAL_SOURCE = "def generated(command):\n    pass\n"
 # The same scaffold with a real implementation.
 SAFE_SOURCE = "def generated(command):\n    return str(command)\n"
-# Filled, but only with a stub body, so the anti-stub guard should reject it.
+# A parse-valid no-op body used to verify that validation does not infer intent.
 STUB_SOURCE = "def generated(command):\n    return None\n"
 
 CASE_ID = "CWE-078_author_1.py"

@@ -348,13 +348,19 @@ def test_bounded_generation_captures_success_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     export_calls = 0
+    scanned: list[str] = []
 
     async def export() -> ExportedSolution:
         nonlocal export_calls
         export_calls += 1
         return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
 
+    async def scan(source: str) -> tuple[SemgrepFinding, ...]:
+        scanned.append(source)
+        return ()
+
     monkeypatch.setattr(artifact_module, "export_solution", export)
+    monkeypatch.setattr(task_module, "scan_source", scan)
     state = _setup_state()
 
     result = asyncio.run(
@@ -366,13 +372,14 @@ def test_bounded_generation_captures_success_once(
 
     assert result is state
     assert export_calls == 1
+    assert scanned == [ORIGINAL_SOURCE]
     assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
         ORIGINAL_SOURCE
     )
-    assert load_semgrep_evidence(state).findings is None
+    assert load_semgrep_evidence(state).findings == ()
 
 
-def test_bounded_generation_scans_only_a_valid_non_stub_implementation(
+def test_bounded_generation_scans_a_parse_valid_output(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     async def export() -> ExportedSolution:
@@ -403,6 +410,34 @@ def test_bounded_generation_scans_only_a_valid_non_stub_implementation(
 
     assert scanned == [SAFE_SOURCE]
     assert load_semgrep_evidence(state).findings == (finding,)
+
+
+def test_bounded_generation_skips_an_invalid_output(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    invalid_source = "def generated(command):\n    return (\n"
+
+    async def export() -> ExportedSolution:
+        return ExportedSolution(invalid_source.encode(), None)
+
+    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
+        raise AssertionError("invalid Python must not reach Semgrep")
+
+    monkeypatch.setattr(artifact_module, "export_solution", export)
+    monkeypatch.setattr(task_module, "scan_source", scan)
+    state = _setup_state()
+
+    asyncio.run(
+        bounded_generation(_fake_codex_agent())(
+            state,
+            cast(Generate, None),
+        )
+    )
+
+    assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
+        invalid_source
+    )
+    assert load_semgrep_evidence(state).findings is None
 
 
 def test_bounded_generation_keeps_source_when_scanning_fails(
@@ -504,7 +539,11 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
         # Truncated before the agent changed anything the setup wrote.
         return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
 
+    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
+        return ()
+
     monkeypatch.setattr(artifact_module, "export_solution", export)
+    monkeypatch.setattr(task_module, "scan_source", scan)
 
     @agent
     def overruns_its_budget() -> Agent:
@@ -559,7 +598,7 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
     )
     assert SemgrepEvidence.model_validate(
         sample.store[SEMGREP_EVIDENCE_KEY]
-    ).findings is None
+    ).findings == ()
     assert sample.limit is not None
     assert sample.limit.type == expected
     assert sample.limit.limit == budget_value
@@ -568,13 +607,13 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
     score = sample.scores["static_safety_scorer"]
     assert score.answer == ORIGINAL_SOURCE
     score_values = cast(dict[str, object], score.value)
-    assert score_values["valid_output"] == 0
-    assert score_values["implemented_output"] == 0
+    assert score_values["valid_output"] == 1
+    assert score_values["finding_count"] == 0
 
     assert log.results is not None
     results = {result.name: result for result in log.results.scores}
     assert results["valid_output"].scored_samples == 1
-    assert results["implemented_output"].scored_samples == 1
+    assert results["finding_count"].scored_samples == 1
 
 
 def test_bridge_limit_event_survives_fail_closed_scanner_error(
@@ -654,6 +693,7 @@ def test_bridge_limit_event_survives_fail_closed_scanner_error(
         SAFE_SOURCE
     )
     assert SEMGREP_EVIDENCE_KEY not in sample.store
+    assert not sample.scores
 
 
 def test_bounded_generation_captures_then_propagates_unrelated_cancellation(
