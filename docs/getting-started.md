@@ -22,7 +22,7 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
 === "Windsurf"
 
     Windsurf uses `.windsurf/rules` for rule configuration.
-
+    
     :material-book-open-page-variant: [Windsurf Rules Documentation](https://docs.windsurf.com/windsurf/cascade/memories#rules)
 
 === "Devin"
@@ -58,11 +58,6 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
     Hermes uses `.hermes/skills` for skill configuration.
 
     :material-book-open-page-variant: [Hermes Skills Documentation](https://hermes-agent.nousresearch.com/docs/skills/)
-
-!!! warning "Windsurf deprecation period"
-    Windsurf bundles remain supported during the transition period. The final
-    supported release and removal date will be announced in advance through
-    the release notes.
 
 ## Installation
 
@@ -374,7 +369,6 @@ For GitHub repositories that copy CodeGuard files directly into source control, 
 
 - Cursor (`.cursor/rules/`)
 - Windsurf (`.windsurf/rules/`)
-- Devin (`.devin/skills/codeguard/rules/`)
 - GitHub Copilot (`.github/instructions/`)
 - Antigravity (`.agents/rules/`)
 - OpenCode (`.opencode/skills/codeguard/rules/`)

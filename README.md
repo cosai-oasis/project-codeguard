@@ -5,7 +5,7 @@
 
 This repository is for the work of the **Coalition for Secure AI (CoSAI)**. CoSAI is an [OASIS Open Project](https://www.oasis-open.org/open-projects/) and an open ecosystem of AI and security experts from industry-leading organizations. We are dedicated to sharing best practices for secure AI deployment and collaborating on AI security research and tool development.
 
-For more information on CoSAI, please visit the [CoSAI website](https://www.oasis-open.org/projects/cosai/) and the [Open Project repository](https://github.com/cosai-oasis/oasis-open-project), which contains our governance information and project charter.
+For more information on CoSAI, please visit the [CoSAI website](https://www.coalitionforsecureai.org) and the [Open Project repository](https://github.com/cosai-oasis/oasis-open-project), which contains our governance information and project charter.
 
 
 ## What is Project CodeGuard?
@@ -31,10 +31,6 @@ Project CodeGuard is designed to integrate seamlessly across the entire AI codin
 - **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development. You can use the skills and rules in the “planning phase” of an AI coding agent to steer models toward secure patterns from the start.
 - **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
 - **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, Devin, and Claude Code can use the rules for code review.
-
-> **Windsurf transition:** Windsurf bundles remain supported during the
-> deprecation period. The final supported release and removal date will be
-> announced in advance through the release notes.
 
 
 ## Security Coverage

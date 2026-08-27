@@ -14,18 +14,13 @@ This page helps you pick the right path for your situation. For step-by-step ins
 |:---|:---|:---|
 | **Solo developer, one repo** | Rule / instruction files | Glob-scoped — only rules matching the file you're editing load. Lowest token cost, simplest setup. |
 | **Team sharing via git** | Rule files or Agent Skills, **project-scoped** | Committed to the repo — every contributor gets CodeGuard automatically on clone. |
-| **Want zero local files / auto-updates** | Plugin marketplace (Claude Code) or remote instructions (OpenCode) | One command, no files to maintain, always current. |
+| **Want a host-managed install and updates** | Plugin marketplace (Claude Code or Codex) or remote instructions (OpenCode) | No copied rule files to maintain; the host manages the installed package. |
 | **Prefer a one-click install from your IDE's extension marketplace** | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Familiar "install extension" UX; auto-updates through the marketplace; one package covers all four VS Code-family IDEs. |
 | **Org admin enforcing policy** | Org-managed dashboard (Cursor Team Rules, Copilot org instructions) | Centrally enforced across every repo without per-project setup. |
 | **Already running MCP infrastructure** | MCP server (self-hosted) | Rules served dynamically; integrates with your existing MCP tooling. |
 
 !!! tip "Not sure? Start here"
-    Download the pre-built bundle for your tool from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases) and drop it into your repo. You can switch routes later — the underlying rules are the same.
-
-!!! warning "Windsurf deprecation period"
-    Windsurf bundles remain supported during the transition period. The final
-    supported release and removal date will be announced in advance through
-    the release notes. Devin support is additive and uses a separate bundle.
+    Download the pre-built rule files for your tool from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases) and drop them into your repo. You can switch routes later — the underlying rules are the same.
 
 ## Fast Decision Tree
 
@@ -136,12 +131,13 @@ A skill is a self-describing capability the model invokes **on demand** when the
 
 ### Plugin marketplace
 
-A managed install: one command, the tool fetches and updates the skill for you.
+A managed install: register the marketplace once, then let the host's plugin
+tooling install and refresh the skill for you.
 
-- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`)
-- **Best for:** Claude Code users who want the lowest-maintenance setup.
-- **Tradeoffs:** Claude Code only. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) for details.
-- **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code) and AI System Governance for managed-settings enforcement.
+- **Supported by:** Claude Code (`/plugin install codeguard-security@project-codeguard`), Codex (`codex plugin marketplace add cosai-oasis/project-codeguard`, then `codex plugin add codeguard-security@project-codeguard`)
+- **Best for:** Claude Code and Codex users who want the lowest-maintenance setup.
+- **Tradeoffs:** Marketplace installation is available only for Claude Code and Codex. Both plugins include only the CodeGuard skill. Use the ZIP bundle or source files for the reviewer agent. The MCP server remains a separate self-hosted option. See the [Claude Code Plugin guide](claude-code-skill-plugin.md) and the [Codex Plugin guide](codex-skill-plugin.md) for installation details.
+- **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers (Claude Code, Codex) and AI System Governance for managed-settings enforcement.
 
 ### IDE marketplace extension
 
@@ -259,14 +255,14 @@ An administrator configures the rules once in the vendor's team/org settings; th
     Not every tool offers centrally pushed rules. For these, use **project-scope** install (commit rules to each repo) or a shared template repository as your enforcement mechanism:
 
     - **OpenCode** — open-source CLI with no vendor dashboard; closest equivalent is a shared `opencode.json` committed to repos.
-    - **Codex, Antigravity, Windsurf, Devin** — check current vendor documentation; at the time of writing we have not verified an org-level rule-push mechanism for these tools.
+    - **Codex, Antigravity, Windsurf** — check current vendor documentation; at the time of writing we have not verified an org-level rule-push mechanism for these tools.
     - **OpenClaw, Hermes** — filesystem-based skill discovery only; no central admin layer.
 
 ### MCP server
 
 The AI tool connects to a Model Context Protocol server that exposes CodeGuard rules as a resource or tool. Rules are fetched dynamically per query rather than stored as static files.
 
-- **Supported by:** Cursor, Windsurf, Devin, GitHub Copilot, Claude Code (any MCP-capable client)
+- **Supported by:** Cursor, Windsurf, GitHub Copilot, Claude Code (any MCP-capable client)
 - **Best for:** Teams that already operate MCP infrastructure and want centralized, live rule serving.
 - **Tradeoffs:** Requires a running server process. Adds network latency. You manage the server lifecycle.
 - **Responsible CoSAI personas:** AI Platform Provider (hosts and operates the MCP server), with AI System Governance owning the served policy, Agentic Platform and Framework Providers integrating MCP into IDEs, and Application Developer consuming the MCP-served rules.
@@ -283,7 +279,7 @@ Project CodeGuard aligns with the [CoSAI standard personas](personas.md) (see th
 | Rule / instruction files (user scope) | Application Developer, AI System Users | — |
 | Agent Skills (project scope) | Application Developer | AI System Governance, Agentic Platform and Framework Providers |
 | Agent Skills (user scope) | Application Developer, AI System Users | Agentic Platform and Framework Providers |
-| Plugin marketplace (Claude Code) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
+| Plugin marketplace (Claude Code, Codex) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
 | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Application Developer | Agentic Platform and Framework Providers, AI System Governance |
 | Remote instructions / installer (OpenCode, Codex) | Application Developer | Agentic Platform and Framework Providers |
 | Org-managed dashboard (Cursor Team Rules, GitHub Copilot org custom instructions, Claude Code managed settings) | AI System Governance | Agentic Platform and Framework Providers, AI Platform Provider (for endpoint management) |

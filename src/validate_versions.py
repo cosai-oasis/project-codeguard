@@ -6,6 +6,8 @@ Validates that all version strings match across:
 - pyproject.toml
 - .claude-plugin/plugin.json
 - .claude-plugin/marketplace.json
+- .codex-plugin/plugin.json
+- skills/codeguard/SKILL.md
 """
 
 import json
@@ -34,7 +36,7 @@ def get_pyproject_version(root: Path) -> str:
 
 
 def get_plugin_version(root: Path) -> str:
-    """Get version from plugin.json."""
+    """Get version from the Claude Code plugin manifest."""
     plugin_path = root / ".claude-plugin" / "plugin.json"
     with open(plugin_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -42,7 +44,7 @@ def get_plugin_version(root: Path) -> str:
 
 
 def set_plugin_version(version: str, root: Path) -> None:
-    """Set version in plugin.json."""
+    """Set version in the Claude Code plugin manifest."""
     plugin_path = root / ".claude-plugin" / "plugin.json"
     with open(plugin_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -52,8 +54,27 @@ def set_plugin_version(version: str, root: Path) -> None:
         f.write("\n")
 
 
+def get_codex_plugin_version(root: Path) -> str:
+    """Get version from the Codex plugin.json."""
+    plugin_path = root / ".codex-plugin" / "plugin.json"
+    with open(plugin_path, encoding="utf-8") as f:
+        data = json.load(f)
+    return data["version"]
+
+
+def set_codex_plugin_version(version: str, root: Path) -> None:
+    """Set version in the Codex plugin.json."""
+    plugin_path = root / ".codex-plugin" / "plugin.json"
+    with open(plugin_path, encoding="utf-8") as f:
+        data = json.load(f)
+    data["version"] = version
+    with open(plugin_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+
+
 def get_marketplace_version(root: Path) -> str:
-    """Get version from marketplace.json."""
+    """Get version from the Claude Code marketplace entry."""
     marketplace_path = root / ".claude-plugin" / "marketplace.json"
     with open(marketplace_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -61,7 +82,7 @@ def get_marketplace_version(root: Path) -> str:
 
 
 def set_marketplace_version(version: str, root: Path) -> None:
-    """Set version in marketplace.json."""
+    """Set version in the Claude Code marketplace entry."""
     marketplace_path = root / ".claude-plugin" / "marketplace.json"
     with open(marketplace_path, encoding="utf-8") as f:
         data = json.load(f)
@@ -95,7 +116,9 @@ def get_skill_codeguard_version(root: Path) -> str:
     return _read_front_matter_value(skill_path, "codeguard-version")
 
 
-def validate_versions(expected_version: str, root: Path = None) -> list[VersionCheck]:
+def validate_versions(
+    expected_version: str, root: Path | None = None
+) -> list[VersionCheck]:
     """
     Validate all versions match the expected version.
 
@@ -113,12 +136,26 @@ def validate_versions(expected_version: str, root: Path = None) -> list[VersionC
         VersionCheck(
             "pyproject.toml", expected_version, get_pyproject_version(root), False
         ),
-        VersionCheck("plugin.json", expected_version, get_plugin_version(root), False),
         VersionCheck(
-            "marketplace.json", expected_version, get_marketplace_version(root), False
+            ".claude-plugin/plugin.json",
+            expected_version,
+            get_plugin_version(root),
+            False,
         ),
         VersionCheck(
-            "SKILL.md",
+            ".claude-plugin/marketplace.json",
+            expected_version,
+            get_marketplace_version(root),
+            False,
+        ),
+        VersionCheck(
+            ".codex-plugin/plugin.json",
+            expected_version,
+            get_codex_plugin_version(root),
+            False,
+        ),
+        VersionCheck(
+            "skills/codeguard/SKILL.md",
             expected_version,
             get_skill_codeguard_version(root),
             False,

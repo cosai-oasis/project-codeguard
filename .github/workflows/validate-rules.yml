@@ -8,6 +8,9 @@ on:
   pull_request:
     paths:
       - '.github/workflows/validate-rules.yml'
+      - '.claude-plugin/**'
+      - '.codex-plugin/**'
+      - 'skills/codeguard/**'
       - 'sources/**'
       - 'src/**'
       - 'pyproject.toml'
@@ -17,6 +20,9 @@ on:
       - develop
     paths:
       - '.github/workflows/validate-rules.yml'
+      - '.claude-plugin/**'
+      - '.codex-plugin/**'
+      - 'skills/codeguard/**'
       - 'sources/**'
       - 'src/**'
       - 'pyproject.toml'
@@ -28,20 +34,23 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
         with:
           enable-cache: true
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.11'
 
       - name: Install dependencies
         run: uv sync
+
+      - name: Validate versions
+        run: uv run python src/validate_versions.py "$(uv version --short)"
 
       - name: Validate unified rules
         run: uv run python src/validate_unified_rules.py sources/

@@ -49,10 +49,12 @@ nav:
   - Choosing an Install Path: install-paths.md
   - CoSAI Personas: personas.md
   - Claude Code Plugin: claude-code-skill-plugin.md
+  - Codex Plugin: codex-skill-plugin.md
   - MCP Server: mcp-server.md
   - CodeGuard Reviewer: codeguard-reviewer.md
   - Skills: skills.md
   - Custom Rules: custom-rules.md
+  - Project Decisions: adr/index.md
   - FAQ: faq.md
 markdown_extensions:
   - admonition
@@ -69,4 +71,3 @@ markdown_extensions:
       
 extra:
   generator: false
-

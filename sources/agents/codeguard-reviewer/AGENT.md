@@ -28,10 +28,10 @@ The CodeGuard rule files live at `{RULES_DIR}/codeguard-*{RULE_EXT}` (one per ru
    Exclude from every search:
    - Your own rule directory `{RULES_DIR}/` and any CodeGuard host
      directories (`.claude/`, `.cursor/`, `.codex/`, `.opencode/`,
-     `.agents/`, `.windsurf/`, `.devin/`, `.github/instructions/`,
-     `.github/agents/`, `.openclaw/`, `.hermes/`). These contain
-     CodeGuard-generated rules or agents (with example secrets and banned-API
-     snippets) and must never be reported as findings.
+     `.agents/`, `.windsurf/`, `.devin/`, `.github/instructions/`, `.github/agents/`,
+     `.openclaw/`, `.hermes/`). These contain CodeGuard-generated rules or
+     agents (with example secrets and banned-API snippets) and must never be
+     reported as findings.
    - Vendored/generated paths: `.git/`, `node_modules/`, `vendor/`,
      `.venv/`, `venv/`, `dist/`, `build/`, `target/`, and any directory the
      repo's `.gitignore` excludes.
