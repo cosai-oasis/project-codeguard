@@ -369,6 +369,7 @@ For GitHub repositories that copy CodeGuard files directly into source control, 
 
 - Cursor (`.cursor/rules/`)
 - Windsurf (`.windsurf/rules/`)
+- Devin (`.devin/skills/codeguard/rules/`)
 - GitHub Copilot (`.github/instructions/`)
 - Antigravity (`.agents/rules/`)
 - OpenCode (`.opencode/skills/codeguard/rules/`)
@@ -384,7 +385,10 @@ For GitHub repositories that copy CodeGuard files directly into source control, 
 
 The workflow runs monthly (1st at 9:00 UTC) and can also be triggered manually from the **Actions** tab.
 
-This workflow refreshes CodeGuard rule files only. To update bundled skills, agents, or other generated support files, re-download the release archive for your tool.
+This workflow refreshes CodeGuard rule files. For Agent Skill bundles, it also
+refreshes `SKILL.md` so the skill instructions and version metadata stay in sync.
+To update agents or other generated support files, re-download the release
+archive for your tool.
 
 ## Verify Installation
 
