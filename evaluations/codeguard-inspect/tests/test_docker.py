@@ -574,6 +574,11 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
     score = sample.scores["static_safety_scorer"]
     assert score.answer == source
     assert score.value["finding_count"] >= 1
+    assert score.value["subcategory_secure_default"] >= 1
+    assert score.value["severity_error"] >= 1
+    assert score.explanation is not None
+    assert "Subcategory:" in score.explanation
+    assert "Severity:" in score.explanation
 
 
 def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit(
@@ -752,5 +757,11 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
         "valid_output": 1,
         "loc": 2,
         "finding_count": 0,
+        "subcategory_vuln": 0,
+        "subcategory_secure_default": 0,
+        "subcategory_audit": 0,
+        "severity_error": 0,
+        "severity_warning": 0,
+        "severity_info": 0,
         "skill_loaded": 1,
     }

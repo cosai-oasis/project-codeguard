@@ -20,10 +20,12 @@ from codeguard_evals.sandbox_protocol import (
     SOURCE_FILENAME,
 )
 from codeguard_evals.semgrep_artifacts import (
+    ALL_SEMGREP_CONFIDENCES,
     ALL_SEMGREP_SUBCATEGORIES,
     ALL_SEVERITIES,
     SEMGREP_ENGINE,
     SEMGREP_LOCK,
+    SemgrepConfidence,
     SemgrepFinding,
     SemgrepFindingSubcategory,
     SemgrepSeverity,
@@ -227,12 +229,19 @@ def _validated_scan(
             or subcategory[0] not in ALL_SEMGREP_SUBCATEGORIES
         ):
             raise RuntimeError("Semgrep finding subcategory is invalid")
+        confidence = result.extra.metadata.get("confidence")
+        if (
+            not isinstance(confidence, str)
+            or confidence not in ALL_SEMGREP_CONFIDENCES
+        ):
+            raise RuntimeError("Semgrep finding confidence is invalid")
         findings.append(
             SemgrepFinding(
                 rule_id=result.check_id,
                 severity=cast(SemgrepSeverity, result.extra.severity),
                 line=result.start.line,
                 subcategory=cast(SemgrepFindingSubcategory, subcategory[0]),
+                confidence=cast(SemgrepConfidence, confidence),
             )
         )
     return tuple(

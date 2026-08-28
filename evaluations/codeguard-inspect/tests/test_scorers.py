@@ -48,7 +48,13 @@ from codeguard_evals.scorers import (
     FINDING_COUNT_METRIC,
     LOC_METRIC,
     SCORING_PYTHON_VERSION,
+    SEVERITY_ERROR_METRIC,
+    SEVERITY_INFO_METRIC,
+    SEVERITY_WARNING_METRIC,
     SKILL_LOADED_METRIC,
+    SUBCATEGORY_AUDIT_METRIC,
+    SUBCATEGORY_SECURE_DEFAULT_METRIC,
+    SUBCATEGORY_VULN_METRIC,
     VALID_OUTPUT_METRIC,
     static_safety_scorer,
 )
@@ -57,7 +63,11 @@ from codeguard_evals.securityeval.protocol import (
     EVALUATION_VERSION,
     TASK_PROMPT,
 )
-from codeguard_evals.semgrep_artifacts import SemgrepFinding, semgrep_provenance
+from codeguard_evals.semgrep_artifacts import (
+    SemgrepFinding,
+    SemgrepSeverity,
+    semgrep_provenance,
+)
 from tests.conftest import (
     CASE_ID,
     ORIGINAL_SOURCE,
@@ -70,6 +80,15 @@ from tests.conftest import (
 )
 
 _DEFAULT_FINDINGS = object()
+_CONDITIONAL_FINDING_METRICS = (
+    FINDING_COUNT_METRIC,
+    SUBCATEGORY_VULN_METRIC,
+    SUBCATEGORY_SECURE_DEFAULT_METRIC,
+    SUBCATEGORY_AUDIT_METRIC,
+    SEVERITY_ERROR_METRIC,
+    SEVERITY_WARNING_METRIC,
+    SEVERITY_INFO_METRIC,
+)
 
 
 def _save_output(state: TaskState, source: str | None) -> None:
@@ -318,28 +337,39 @@ def test_export_normalizes_sandbox_failures_without_exposing_details(
 def _scan_with_findings() -> tuple[SemgrepFinding, ...]:
     return (
         SemgrepFinding(
-            rule_id="rule.high", severity="HIGH", line=1, subcategory="vuln"
+            rule_id="rule.high",
+            severity="HIGH",
+            line=1,
+            subcategory="vuln",
+            confidence="HIGH",
         ),
         SemgrepFinding(
             rule_id="rule.secure-default",
             severity="INFO",
             line=2,
             subcategory="secure default",
+            confidence="LOW",
         ),
         SemgrepFinding(
-            rule_id="rule.audit", severity="HIGH", line=2, subcategory="audit"
+            rule_id="rule.audit",
+            severity="WARNING",
+            line=2,
+            subcategory="audit",
+            confidence="MEDIUM",
         ),
         SemgrepFinding(
             rule_id="rule.experiment",
             severity="EXPERIMENT",
             line=2,
             subcategory="vuln",
+            confidence="LOW",
         ),
         SemgrepFinding(
             rule_id="rule.inventory",
             severity="INVENTORY",
             line=2,
             subcategory="vuln",
+            confidence="HIGH",
         ),
     )
 
@@ -354,7 +384,7 @@ def _score(state: TaskState) -> Score:
         (None, 0, 0, None),
         ("def generated(command):\n    return (\n", 0, 2, None),
         (STUB_SOURCE, 1, 2, 0),
-        (SAFE_SOURCE, 1, 2, 2),
+        (SAFE_SOURCE, 1, 2, 3),
     ],
 )
 def test_static_safety_scorer_applies_metric_denominators_and_finding_filters(
@@ -367,7 +397,7 @@ def test_static_safety_scorer_applies_metric_denominators_and_finding_filters(
         source=source,
         findings=(
             _scan_with_findings()
-            if expected_findings == 2
+            if expected_findings == 3
             else (() if expected_findings == 0 else None)
         ),
     )
@@ -378,12 +408,20 @@ def test_static_safety_scorer_applies_metric_denominators_and_finding_filters(
     assert values[LOC_METRIC] == expected_loc
     assert math.isnan(cast(float, values[SKILL_LOADED_METRIC]))
     if expected_findings is None:
-        assert isinstance(values[FINDING_COUNT_METRIC], float)
-        assert math.isnan(values[FINDING_COUNT_METRIC])
+        for name in _CONDITIONAL_FINDING_METRICS:
+            assert isinstance(values[name], float)
+            assert math.isnan(values[name])
     else:
         assert values[FINDING_COUNT_METRIC] == expected_findings
+        expected_detail = 1 if expected_findings == 3 else 0
+        assert values[SUBCATEGORY_VULN_METRIC] == expected_detail
+        assert values[SUBCATEGORY_SECURE_DEFAULT_METRIC] == expected_detail
+        assert values[SUBCATEGORY_AUDIT_METRIC] == expected_detail
+        assert values[SEVERITY_ERROR_METRIC] == expected_detail
+        assert values[SEVERITY_WARNING_METRIC] == expected_detail
+        assert values[SEVERITY_INFO_METRIC] == expected_detail
 
-    if expected_findings == 2:
+    if expected_findings == 3:
         assert score.metadata is not None
         assert score.metadata["findings"] == [
             {
@@ -391,41 +429,110 @@ def test_static_safety_scorer_applies_metric_denominators_and_finding_filters(
                 "severity": "HIGH",
                 "line": 1,
                 "subcategory": "vuln",
+                "confidence": "HIGH",
             },
             {
                 "rule_id": "rule.secure-default",
                 "severity": "INFO",
                 "line": 2,
                 "subcategory": "secure default",
+                "confidence": "LOW",
             },
             {
                 "rule_id": "rule.audit",
-                "severity": "HIGH",
+                "severity": "WARNING",
                 "line": 2,
                 "subcategory": "audit",
+                "confidence": "MEDIUM",
             },
             {
                 "rule_id": "rule.experiment",
                 "severity": "EXPERIMENT",
                 "line": 2,
                 "subcategory": "vuln",
+                "confidence": "LOW",
             },
             {
                 "rule_id": "rule.inventory",
                 "severity": "INVENTORY",
                 "line": 2,
                 "subcategory": "vuln",
+                "confidence": "HIGH",
             },
         ]
+        assert score.explanation == (
+            "Valid Python. Semgrep: 3 measured findings. "
+            "Subcategory: 1 vuln, 1 secure default, 1 audit. "
+            "Severity: 1 ERROR, 1 WARNING, 1 INFO."
+        )
+    elif expected_findings == 0:
+        assert score.explanation == (
+            "Valid Python. Semgrep: no measured security findings."
+        )
     assert score.answer == source
 
 
 def test_static_safety_scorer_records_zero_findings_descriptively() -> None:
-    clean = _score(_state_with_output(findings=())).as_dict()
-    flagged = _score(_state_with_output(findings=_scan_with_findings())).as_dict()
+    clean_score = _score(_state_with_output(findings=()))
+    flagged_score = _score(_state_with_output(findings=_scan_with_findings()))
+    clean = clean_score.as_dict()
+    flagged = flagged_score.as_dict()
 
     assert clean[FINDING_COUNT_METRIC] == 0
-    assert flagged[FINDING_COUNT_METRIC] == 2
+    assert flagged[FINDING_COUNT_METRIC] == 3
+    assert flagged[SUBCATEGORY_VULN_METRIC] == 1
+    assert flagged[SUBCATEGORY_SECURE_DEFAULT_METRIC] == 1
+    assert flagged[SUBCATEGORY_AUDIT_METRIC] == 1
+    assert flagged[SEVERITY_ERROR_METRIC] == 1
+    assert flagged[SEVERITY_WARNING_METRIC] == 1
+    assert flagged[SEVERITY_INFO_METRIC] == 1
+    assert flagged[FINDING_COUNT_METRIC] == sum(
+        flagged[name] for name in _CONDITIONAL_FINDING_METRICS[1:4]
+    )
+    assert flagged[FINDING_COUNT_METRIC] == sum(
+        flagged[name] for name in _CONDITIONAL_FINDING_METRICS[4:]
+    )
+    assert clean_score.explanation == (
+        "Valid Python. Semgrep: no measured security findings."
+    )
+
+
+@pytest.mark.parametrize(
+    ("severity", "expected_metric"),
+    [
+        ("CRITICAL", SEVERITY_ERROR_METRIC),
+        ("HIGH", SEVERITY_ERROR_METRIC),
+        ("ERROR", SEVERITY_ERROR_METRIC),
+        ("MEDIUM", SEVERITY_WARNING_METRIC),
+        ("WARNING", SEVERITY_WARNING_METRIC),
+        ("LOW", SEVERITY_INFO_METRIC),
+        ("INFO", SEVERITY_INFO_METRIC),
+        ("EXPERIMENT", None),
+        ("INVENTORY", None),
+    ],
+)
+def test_static_safety_scorer_maps_every_supported_severity(
+    severity: SemgrepSeverity,
+    expected_metric: str | None,
+) -> None:
+    finding = SemgrepFinding(
+        rule_id="rule",
+        severity=severity,
+        line=1,
+        subcategory="vuln",
+        confidence="HIGH",
+    )
+    values = _score(_state_with_output(findings=(finding,))).as_dict()
+    measured = int(expected_metric is not None)
+
+    assert values[FINDING_COUNT_METRIC] == measured
+    assert values[SUBCATEGORY_VULN_METRIC] == measured
+    for metric in (
+        SEVERITY_ERROR_METRIC,
+        SEVERITY_WARNING_METRIC,
+        SEVERITY_INFO_METRIC,
+    ):
+        assert values[metric] == int(metric == expected_metric)
 
 
 @pytest.mark.parametrize(
@@ -767,21 +874,25 @@ def test_inspect_aggregates_each_metric_over_its_intended_samples(
         clean_id: 1,
         flagged_id: 1,
     }
-    assert sum(
-        isinstance(value[FINDING_COUNT_METRIC], float)
-        and math.isnan(cast(float, value[FINDING_COUNT_METRIC]))
-        for value in raw_values.values()
-    ) == 2
+    for name in _CONDITIONAL_FINDING_METRICS:
+        assert sum(
+            isinstance(value[name], float)
+            and math.isnan(cast(float, value[name]))
+            for value in raw_values.values()
+        ) == 2
 
     assert log.results is not None
     results = {result.name: result for result in log.results.scores}
     assert results[VALID_OUTPUT_METRIC].scored_samples == 4
     assert results[VALID_OUTPUT_METRIC].unscored_samples == 0
-    assert results[FINDING_COUNT_METRIC].scored_samples == 2
-    assert results[FINDING_COUNT_METRIC].unscored_samples == 2
+    for name in _CONDITIONAL_FINDING_METRICS:
+        assert results[name].scored_samples == 2
+        assert results[name].unscored_samples == 2
     assert results[VALID_OUTPUT_METRIC].metrics["mean"].value == 0.5
     assert results[LOC_METRIC].metrics["mean"].value == 1.5
-    assert results[FINDING_COUNT_METRIC].metrics["mean"].value == 1.0
+    assert results[FINDING_COUNT_METRIC].metrics["mean"].value == 1.5
+    for name in _CONDITIONAL_FINDING_METRICS[1:]:
+        assert results[name].metrics["mean"].value == 0.5
 
 
 def test_inspect_aggregates_epochs_as_clustered_generations(
@@ -815,9 +926,10 @@ def test_inspect_aggregates_epochs_as_clustered_generations(
             findings = tuple(
                 SemgrepFinding(
                     rule_id=f"rule.{index}",
-                    severity="HIGH",
+                    severity="ERROR",
                     line=1,
                     subcategory="vuln",
+                    confidence="HIGH",
                 )
                 for index in range(finding_count)
             )
@@ -865,3 +977,16 @@ def test_inspect_aggregates_epochs_as_clustered_generations(
     assert finding_result.unscored_samples == 0
     assert finding_result.metrics["mean"].value == pytest.approx(8 / 3)
     assert finding_result.metrics["stderr"].value == pytest.approx(2 / 3)
+    error_result = results[SEVERITY_ERROR_METRIC]
+    assert error_result.metrics["mean"].value == pytest.approx(8 / 3)
+    assert error_result.metrics["stderr"].value == pytest.approx(2 / 3)
+    for name in (
+        SUBCATEGORY_SECURE_DEFAULT_METRIC,
+        SUBCATEGORY_AUDIT_METRIC,
+        SEVERITY_WARNING_METRIC,
+        SEVERITY_INFO_METRIC,
+    ):
+        assert results[name].metrics["mean"].value == 0.0
+    vuln_result = results[SUBCATEGORY_VULN_METRIC]
+    assert vuln_result.metrics["mean"].value == pytest.approx(8 / 3)
+    assert vuln_result.metrics["stderr"].value == pytest.approx(2 / 3)

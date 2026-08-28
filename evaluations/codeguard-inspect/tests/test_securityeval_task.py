@@ -390,6 +390,7 @@ def test_bounded_generation_scans_a_parse_valid_output(
         severity="ERROR",
         line=2,
         subcategory="vuln",
+        confidence="HIGH",
     )
     scanned: list[str] = []
 

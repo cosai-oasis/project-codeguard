@@ -47,6 +47,7 @@ def _finding(
     engine_kind: object = "OSS",
     category: object = "security",
     subcategory: object = ("vuln",),
+    confidence: object = "MEDIUM",
 ) -> dict[str, object]:
     return {
         "check_id": rule_id,
@@ -57,6 +58,7 @@ def _finding(
             "metadata": {
                 "category": category,
                 "subcategory": list(cast(tuple[object, ...], subcategory)),
+                "confidence": confidence,
             },
             "severity": severity,
             "engine_kind": engine_kind,
@@ -166,6 +168,7 @@ def test_scan_uses_exact_named_sandbox_contract_and_normalizes_findings(
                 category="correctness",
                 rule_id="rule.ignored",
                 subcategory=(),
+                confidence=None,
             ),
         ],
         extras={"profiling_results": [], "future_top_level_field": {}},
@@ -222,18 +225,21 @@ def test_scan_uses_exact_named_sandbox_contract_and_normalizes_findings(
             "severity": "INFO",
             "line": 1,
             "subcategory": "vuln",
+            "confidence": "MEDIUM",
         },
         {
             "rule_id": "rule.audit",
             "severity": "HIGH",
             "line": 2,
             "subcategory": "audit",
+            "confidence": "MEDIUM",
         },
         {
             "rule_id": "rule.z",
             "severity": "HIGH",
             "line": 2,
             "subcategory": "vuln",
+            "confidence": "MEDIUM",
         },
     ]
     assert SAFE_SOURCE not in " ".join(environment.execs[0][0])
@@ -321,6 +327,7 @@ def test_scan_ignores_unconsumed_finding_fields(
             "severity": "HIGH",
             "line": 1,
             "subcategory": "vuln",
+            "confidence": "MEDIUM",
         }
     ]
 
@@ -386,6 +393,9 @@ def test_scan_fails_closed_on_report_contract_changes(
         (_finding(subcategory=()), "subcategory is invalid"),
         (_finding(subcategory=("vuln", "audit")), "subcategory is invalid"),
         (_finding(subcategory=("unknown",)), "subcategory is invalid"),
+        (_finding(confidence=None), "confidence is invalid"),
+        (_finding(confidence=[]), "confidence is invalid"),
+        (_finding(confidence="UNKNOWN"), "confidence is invalid"),
     ],
 )
 def test_scan_fails_closed_on_invalid_consumed_finding_data(

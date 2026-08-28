@@ -10,16 +10,14 @@ from typing import Any
 import pytest
 
 from codeguard_evals.semgrep_artifacts import (
-    COUNTED_SEVERITIES,
+    ALL_SEMGREP_SUBCATEGORIES,
+    MEASURED_SEVERITIES,
     MAX_RULE_FILE_BYTES,
     MAX_RULE_TREE_BYTES,
-    SEMGREP_COUNTED_SUBCATEGORIES,
     SEMGREP_IMAGE_REFERENCE,
     SEMGREP_LOCK,
-    SemgrepFinding,
     SemgrepLock,
     _rules_tree_sha256 as calculate_rules_tree_sha256,
-    is_counted_finding,
     load_locked_rules_directory,
     load_semgrep_lock,
     semgrep_provenance,
@@ -118,8 +116,8 @@ def test_provenance_records_scanner_and_rules_identity() -> None:
         "rules_subdirectory": "python",
         "rules_tree_sha256": SEMGREP_LOCK.rules.tree_sha256,
         "finding_category": "security",
-        "counted_subcategories": sorted(SEMGREP_COUNTED_SUBCATEGORIES),
-        "counted_severities": sorted(COUNTED_SEVERITIES),
+        "measured_subcategories": sorted(ALL_SEMGREP_SUBCATEGORIES),
+        "measured_severities": sorted(MEASURED_SEVERITIES),
         "rule_id_rewriting": True,
     }
 
@@ -319,54 +317,3 @@ def test_rejects_symlinked_checkout_or_invalid_rules_root(
 
     with pytest.raises(RuntimeError, match="rules are invalid"):
         load_locked_rules_directory(cache_root=tmp_path)
-
-
-@pytest.mark.parametrize(
-    ("finding", "expected"),
-    [
-        (
-            SemgrepFinding(
-                rule_id="a", severity="ERROR", line=1, subcategory="vuln"
-            ),
-            True,
-        ),
-        (
-            SemgrepFinding(
-                rule_id="b",
-                severity="INFO",
-                line=1,
-                subcategory="secure default",
-            ),
-            True,
-        ),
-        (
-            SemgrepFinding(
-                rule_id="c", severity="HIGH", line=1, subcategory="audit"
-            ),
-            False,
-        ),
-        (
-            SemgrepFinding(
-                rule_id="d",
-                severity="EXPERIMENT",
-                line=1,
-                subcategory="vuln",
-            ),
-            False,
-        ),
-        (
-            SemgrepFinding(
-                rule_id="e",
-                severity="INVENTORY",
-                line=1,
-                subcategory="vuln",
-            ),
-            False,
-        ),
-    ],
-)
-def test_counted_finding_filter_is_explicit(
-    finding: SemgrepFinding,
-    expected: bool,
-) -> None:
-    assert is_counted_finding(finding) is expected

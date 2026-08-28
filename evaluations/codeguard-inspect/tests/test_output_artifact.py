@@ -41,7 +41,16 @@ from codeguard_evals.sandbox_client import (
     ExportedSolution,
 )
 from codeguard_evals.sandbox_protocol import MAX_PYTHON_SOURCE_BYTES
-from codeguard_evals.scorers import static_safety_scorer
+from codeguard_evals.scorers import (
+    FINDING_COUNT_METRIC,
+    SEVERITY_ERROR_METRIC,
+    SEVERITY_INFO_METRIC,
+    SEVERITY_WARNING_METRIC,
+    SUBCATEGORY_AUDIT_METRIC,
+    SUBCATEGORY_SECURE_DEFAULT_METRIC,
+    SUBCATEGORY_VULN_METRIC,
+    static_safety_scorer,
+)
 from codeguard_evals.securityeval.protocol import (
     EVALUATION_VERSION,
     TASK_PROMPT,
@@ -187,8 +196,20 @@ def test_capture_preserves_model_output_and_stores_validated_source(
 @pytest.mark.parametrize(
     ("source", "reason", "expected_source", "expected_answer", "explanation"),
     [
-        (None, "missing output", None, None, "missing output"),
-        (b"", None, "", "", "empty solution"),
+        (
+            None,
+            "missing output",
+            None,
+            None,
+            "Output validation: missing output. Semgrep was not run.",
+        ),
+        (
+            b"",
+            None,
+            "",
+            "",
+            "Output validation: empty solution. Semgrep was not run.",
+        ),
     ],
 )
 def test_missing_and_empty_sources_remain_distinguishable(
@@ -214,7 +235,16 @@ def test_missing_and_empty_sources_remain_distinguishable(
     assert score.answer == expected_answer
     assert score.value["valid_output"] == 0
     assert score.value["loc"] == 0
-    assert isinstance(score.value["finding_count"], float)
+    for name in (
+        FINDING_COUNT_METRIC,
+        SUBCATEGORY_VULN_METRIC,
+        SUBCATEGORY_SECURE_DEFAULT_METRIC,
+        SUBCATEGORY_AUDIT_METRIC,
+        SEVERITY_ERROR_METRIC,
+        SEVERITY_WARNING_METRIC,
+        SEVERITY_INFO_METRIC,
+    ):
+        assert isinstance(score.value[name], float)
     assert score.explanation == explanation
 
 
@@ -302,6 +332,7 @@ def test_replay_rejects_unbounded_or_non_utf8_source(
                 severity="ERROR",
                 line=2,
                 subcategory="vuln",
+                confidence="HIGH",
             ),
         ),
     ],
@@ -375,22 +406,48 @@ def test_semgrep_evidence_is_bound_to_saved_source(
         load_semgrep_evidence(state)
 
 
+def _normalized_finding(**changes: object) -> dict[str, object]:
+    finding: dict[str, object] = {
+        "rule_id": "rule",
+        "severity": "HIGH",
+        "line": 1,
+        "subcategory": "vuln",
+        "confidence": "HIGH",
+    }
+    finding.update(changes)
+    return finding
+
+
 @pytest.mark.parametrize(
-    "findings",
+    "finding",
     [
-        [{"rule_id": "", "severity": "HIGH", "line": 1, "subcategory": "vuln"}],
-        [{"rule_id": "rule", "severity": "UNKNOWN", "line": 1, "subcategory": "vuln"}],
-        [{"rule_id": "rule", "severity": "HIGH", "line": 0, "subcategory": "vuln"}],
-        [{"rule_id": "rule", "severity": "HIGH", "line": 1, "subcategory": "other"}],
+        _normalized_finding(rule_id=""),
+        _normalized_finding(severity="UNKNOWN"),
+        _normalized_finding(line=0),
+        _normalized_finding(subcategory="other"),
+        _normalized_finding(confidence="UNKNOWN"),
     ],
 )
 def test_semgrep_evidence_strictly_validates_normalized_findings(
-    findings: object,
+    finding: object,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     state = _capture(monkeypatch, _export())
     save_semgrep_evidence(state, ())
-    _evidence_payload(state)["findings"] = findings
+    _evidence_payload(state)["findings"] = [finding]
+
+    with pytest.raises(BenchmarkInfrastructureError, match="evidence is invalid"):
+        load_semgrep_evidence(state)
+
+
+def test_semgrep_evidence_requires_finding_confidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    state = _capture(monkeypatch, _export())
+    save_semgrep_evidence(state, ())
+    finding = _normalized_finding()
+    finding.pop("confidence")
+    _evidence_payload(state)["findings"] = [finding]
 
     with pytest.raises(BenchmarkInfrastructureError, match="evidence is invalid"):
         load_semgrep_evidence(state)
@@ -548,6 +605,15 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
     assert replayed.value["valid_output"] == 1
     assert replayed.value["loc"] == 2
     assert replayed.value["finding_count"] == 0
+    assert replayed.value["subcategory_vuln"] == 0
+    assert replayed.value["subcategory_secure_default"] == 0
+    assert replayed.value["subcategory_audit"] == 0
+    assert replayed.value["severity_error"] == 0
+    assert replayed.value["severity_warning"] == 0
+    assert replayed.value["severity_info"] == 0
+    assert replayed.explanation == (
+        "Valid Python. Semgrep: no measured security findings."
+    )
 
 
 def test_loading_does_not_mutate_saved_output(

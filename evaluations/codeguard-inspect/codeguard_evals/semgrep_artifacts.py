@@ -28,8 +28,9 @@ SemgrepFindingSubcategory = Literal["audit", "secure default", "vuln"]
 ALL_SEMGREP_SUBCATEGORIES: Final[frozenset[str]] = frozenset(
     get_args(SemgrepFindingSubcategory)
 )
-SEMGREP_COUNTED_SUBCATEGORIES: Final[frozenset[str]] = frozenset(
-    {"secure default", "vuln"}
+SemgrepConfidence = Literal["HIGH", "MEDIUM", "LOW"]
+ALL_SEMGREP_CONFIDENCES: Final[frozenset[str]] = frozenset(
+    get_args(SemgrepConfidence)
 )
 SemgrepSeverity = Literal[
     "ERROR",
@@ -46,7 +47,7 @@ ALL_SEVERITIES: Final[frozenset[str]] = frozenset(get_args(SemgrepSeverity))
 EXCLUDED_SEVERITIES: Final[frozenset[str]] = frozenset(
     {"EXPERIMENT", "INVENTORY"}
 )
-COUNTED_SEVERITIES: Final[frozenset[str]] = ALL_SEVERITIES - EXCLUDED_SEVERITIES
+MEASURED_SEVERITIES: Final[frozenset[str]] = ALL_SEVERITIES - EXCLUDED_SEVERITIES
 
 
 class _StrictModel(BaseModel):
@@ -60,17 +61,10 @@ class SemgrepFinding(_StrictModel):
     severity: SemgrepSeverity
     line: Annotated[int, Field(ge=1)]
     subcategory: SemgrepFindingSubcategory
+    confidence: SemgrepConfidence
 
     def record(self) -> dict[str, object]:
         return self.model_dump(mode="json")
-
-
-def is_counted_finding(finding: SemgrepFinding) -> bool:
-    """Apply the finding filter recorded in evaluation provenance."""
-    return (
-        finding.severity in COUNTED_SEVERITIES
-        and finding.subcategory in SEMGREP_COUNTED_SUBCATEGORIES
-    )
 
 
 class SemgrepImageLock(_StrictModel):
@@ -237,7 +231,7 @@ def semgrep_provenance(lock: SemgrepLock = SEMGREP_LOCK) -> dict[str, object]:
         "rules_subdirectory": lock.rules.subdirectory,
         "rules_tree_sha256": lock.rules.tree_sha256,
         "finding_category": lock.rules.finding_category,
-        "counted_subcategories": sorted(SEMGREP_COUNTED_SUBCATEGORIES),
-        "counted_severities": sorted(COUNTED_SEVERITIES),
+        "measured_subcategories": sorted(ALL_SEMGREP_SUBCATEGORIES),
+        "measured_severities": sorted(MEASURED_SEVERITIES),
         "rule_id_rewriting": SEMGREP_RULE_ID_REWRITING,
     }
