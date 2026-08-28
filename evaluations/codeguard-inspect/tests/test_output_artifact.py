@@ -487,11 +487,25 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
     inspect_executable = Path(sys.executable).with_name("inspect")
     assert inspect_executable.is_file()
     project_root = Path(__file__).parents[1]
+    scorer_path = project_root / "codeguard_evals" / "scorers.py"
     rescored_path = tmp_path / "rescored.eval"
     environment = os.environ.copy()
-    environment.pop("OPENAI_API_KEY", None)
+    for name in (
+        "AZUREAI_OPENAI_API_KEY",
+        "AZUREAI_OPENAI_API_VERSION",
+        "AZUREAI_OPENAI_BASE_URL",
+        "AZURE_OPENAI_API_KEY",
+        "AZURE_OPENAI_BASE_URL",
+        "AZURE_OPENAI_ENDPOINT",
+        "INSPECT_API_KEY_OVERRIDE",
+        "INSPECT_TELEMETRY",
+        "OPENAI_API_KEY",
+        "OPENAI_API_VERSION",
+        "OPENAI_BASE_URL",
+        "PYTHONPATH",
+    ):
+        environment.pop(name, None)
     environment["DOCKER_HOST"] = "unix:///nonexistent/codeguard-test.sock"
-    environment["PYTHONPATH"] = str(project_root)
     result = subprocess.run(
         [
             str(inspect_executable),
@@ -502,7 +516,7 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
             "--stream",
             "1",
             "--scorer",
-            "codeguard_evals/scorers.py@static_safety_scorer",
+            f"{scorer_path}@static_safety_scorer",
             "--action",
             "overwrite",
             "--output-file",
@@ -510,7 +524,7 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
             "--display",
             "none",
         ],
-        cwd=project_root,
+        cwd=tmp_path,
         env=environment,
         stdin=subprocess.DEVNULL,
         capture_output=True,

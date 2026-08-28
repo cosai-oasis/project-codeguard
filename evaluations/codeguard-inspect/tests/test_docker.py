@@ -601,6 +601,12 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
                 "cmd": (
                     "/usr/local/bin/python -I -c \"import os; "
                     "from pathlib import Path; "
+                    "from urllib.parse import urlsplit; "
+                    "assert os.environ.get('OPENAI_API_KEY')=='api-key'; "
+                    "bridge=urlsplit(os.environ.get('OPENAI_BASE_URL','')); "
+                    "assert bridge.scheme=='http'; "
+                    "assert bridge.hostname in {'localhost','127.0.0.1'}; "
+                    "assert bridge.port is not None and bridge.path=='/v1'; "
                     "status=Path('/proc/self/status').read_text(); "
                     "caps={line.split(':',1)[0]:int(line.split()[1],16) "
                     "for line in status.splitlines() if line.startswith('Cap')}; "

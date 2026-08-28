@@ -19,6 +19,7 @@ from codeguard_evals.semgrep_artifacts import (
     SEMGREP_LOCK,
     semgrep_rules_checkout_path,
 )
+from codeguard_evals.semgrep_runner import SEMGREP_JOBS
 from tests.conftest import assert_tmpfs_policy
 
 DOCKERFILE = SANDBOX_CONFIG.with_name("Dockerfile")
@@ -96,7 +97,8 @@ def test_semgrep_container_is_a_locked_read_only_named_environment() -> None:
     assert service["security_opt"] == ["no-new-privileges:true"]
     assert service["init"] is True
     assert service["pids_limit"] == 128
-    assert service["cpus"] == 1.0
+    assert SEMGREP_JOBS == 4
+    assert service["cpus"] == float(SEMGREP_JOBS)
     assert service["mem_limit"] == "2g"
     assert service["memswap_limit"] == "2g"
     assert service["stop_grace_period"] == "2s"

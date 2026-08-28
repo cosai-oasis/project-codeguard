@@ -60,7 +60,7 @@ services:
     pids_limit: 128
     mem_limit: 2g
     memswap_limit: 2g
-    cpus: 1.0
+    cpus: 4.0
     stop_grace_period: 2s
     ulimits:
       core:

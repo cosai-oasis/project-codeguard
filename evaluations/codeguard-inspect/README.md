@@ -34,7 +34,8 @@ All 121 pinned SecurityEval cases run in each condition:
   is scanned; missing and invalid outputs leave this metric unscored rather than
   appearing clean. Zero means only that the pinned scanner contract retained no
   counted finding. It does not prove task completion, correctness, or security.
-- `skill_loaded` records a recognized successful read of CodeGuard's `SKILL.md`.
+- `skill_loaded` records a correlated successful tool response containing the
+  complete pinned CodeGuard `SKILL.md` document.
   It is scored only in the CodeGuard condition.
 
 The harness deliberately does not infer whether a parse-valid program is a real
@@ -101,6 +102,10 @@ uv run --locked python -m codeguard_evals.prefetch
 docker compose --file sandbox/compose.yaml build
 ```
 
+`uv sync` installs the private `codeguard_evals` package editable from this
+checkout so the normal `inspect` executable can import the harness. Running an
+unsynced task source file is not supported.
+
 The prefetch command:
 
 1. Verifies the private rules-cache boundary and locked rules-tree digest.
@@ -143,17 +148,29 @@ Use a clean committed harness checkout so the recorded revision identifies the
 experiment. Replace `openai/MODEL` with the model under evaluation. Prefer an
 immutable model identifier when available.
 
+Inspect reads provider settings from a `.env` file in this directory. Copy only
+the relevant entries from `.env.example`: direct OpenAI uses `OPENAI_API_KEY`;
+Azure OpenAI uses `AZUREAI_OPENAI_API_KEY`, `AZUREAI_OPENAI_BASE_URL`, and, only
+when required by the deployment, `AZUREAI_OPENAI_API_VERSION`. Select an Azure
+deployment with `openai/azure/DEPLOYMENT_NAME`. The ignored `.env` is excluded
+from the default-deny Docker build context and is read by host-side Inspect; the
+real provider credential is not forwarded to either container.
+
 Start with one sample:
 
 ```bash
 uv run --locked inspect eval \
   codeguard_evals/securityeval/securityeval.py@securityeval_static_safety_codeguard \
   --model openai/MODEL \
+  --reasoning-effort medium \
   --sample-id static_safety/codeguard/CWE-078_author_1.py \
   --max-retries 0 \
   --max-samples 1 \
   --log-dir logs/securityeval-smoke
 ```
+
+`--sample-id` selects this one benchmark case. `--max-samples 1` limits sample
+concurrency; it does not reduce the dataset on its own.
 
 Run the full matrix:
 
@@ -161,6 +178,7 @@ Run the full matrix:
 uv run --locked inspect eval-set \
   codeguard_evals/securityeval/securityeval.py \
   --model openai/MODEL \
+  --reasoning-effort medium \
   --epochs 3 \
   --no-epochs-reducer \
   --retry-attempts 0 \
@@ -177,6 +195,11 @@ This launches 1,089 generations: 3 conditions x 121 cases x 3 epochs. The
 documented settings intentionally run serially. `--no-epochs-reducer` preserves
 each generation because missing and invalid outputs have no `finding_count`,
 and standard errors are clustered by case.
+
+Each Semgrep scan is capped at four logical CPUs and uses four parallel jobs.
+The serial command above therefore uses at most four scanner CPUs. On a
+12-logical-CPU Docker allocation, two concurrent samples leave four CPUs of
+headroom; three can briefly use the full allocation when their scans overlap.
 
 Serial execution controls concurrency but blocks conditions in task order. For
 comparative studies, repeat runs with the condition order rotated so provider or
@@ -202,8 +225,10 @@ uv run --locked inspect view --log-dir logs/securityeval-matrix
 ```
 
 Keep the viewer loopback-only. Logs contain prompts, generated source, model
-messages, tool activity, and normalized scanner findings. The harness does not
-redact them, so use only public, non-sensitive benchmark inputs.
+messages, tool activity, normalized scanner findings, Git provenance, and
+potentially machine-specific sandbox paths. The harness does not redact them,
+so use only public, non-sensitive benchmark inputs and review raw `.eval` files
+before sharing them.
 
 The solver stores two independently validated records:
 
@@ -236,11 +261,12 @@ uv run --locked inspect score \
 ```
 
 The scorer revalidates the source and evidence identity, recalculates the metric,
-and never launches a sandbox. A log whose original Semgrep scan failed has no
-findings evidence and cannot be recovered with `inspect score`; a separate
-source re-scan workflow is intentionally deferred. Re-score only trusted logs
-from the matching checkout because logs are trusted input, not authenticated
-artifacts.
+and never launches a sandbox. For CodeGuard samples it also compares the logged
+skill-read response with the complete bounded `SKILL.md` from the matching
+checkout. A log whose original Semgrep scan failed has no findings evidence and
+cannot be recovered with `inspect score`; a separate source re-scan workflow is
+intentionally deferred. Re-score only trusted logs from the matching checkout
+because logs are trusted input, not authenticated artifacts.
 
 Inspect's viewer reports each metric separately. Always interpret
 `finding_count`, which is conditional on parse-valid output, alongside
@@ -251,9 +277,13 @@ Inspect's viewer reports each metric separately. Always interpret
 ### Skill routing
 
 Codex uses normal implicit skill routing. `skill_loaded` is one when the logged
-tool-call pair shows a successful recognized reader command for the exact
-installed `SKILL.md`. It is a lower bound: an unrecognized read path can produce
-zero, and a successful read does not prove that the guidance was followed.
+tool-call pair references the exact installed `SKILL.md` and its successful
+response contains the complete pinned document text. Merely printing its name
+and heading does not count. The check supports both direct tool calls and the
+current wrapped Inspect/Codex exec form without parsing wrapper-specific status
+prose. It remains a narrow process signal: an unrecognized or truncated read can
+produce zero, and a successful complete read does not prove that the guidance was
+followed.
 
 The CodeGuard condition validates and hashes the repository's
 `skills/codeguard` directory, installs those exact bytes under
@@ -319,8 +349,9 @@ reject a different version rather than applying a compatibility fallback.
   Inspect writes source into a bounded container-only tmpfs before invoking
   Semgrep with a structured argument array; the source is not a host bind mount.
 - Inspect owns creation and cleanup of both services. The scorer performs no
-  Docker lifecycle or host subprocess work and can replay entirely from stored
-  evidence.
+  Docker lifecycle or host subprocess work. It replays source and scanner
+  metrics from stored evidence and validates CodeGuard skill routing against
+  the bounded skill snapshot from the matching checkout.
 - Ordinary containers still share the host kernel. The pinned public benchmark
   is the supported input. Run modified, private, or deliberately adversarial
   parser-exploit inputs in a disposable VM.

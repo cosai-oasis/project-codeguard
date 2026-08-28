@@ -22,7 +22,14 @@ dev = [
 [tool.uv]
 constraint-dependencies = ["aiohttp>=3.14.3"]
 exclude-newer = "7 days"
-package = false
+
+[build-system]
+requires = ["uv_build==0.12.5"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "codeguard_evals"
+module-root = ""
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

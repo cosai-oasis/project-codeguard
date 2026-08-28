@@ -22,10 +22,12 @@ from inspect_ai.model import (
 )
 from inspect_ai.scorer import Score, Target
 from inspect_ai.solver import Generate, Solver, TaskState, solver
+from inspect_ai.tool import ToolCallError
 from inspect_ai.util import OutputLimitExceededError
 
 import codeguard_evals.sandbox_client as sandbox_client
 import codeguard_evals.scorers as scorer_module
+from codeguard_evals.codeguard import load_codeguard
 from codeguard_evals.output_artifact import (
     SAVED_OUTPUT_KEY,
     SavedOutput,
@@ -451,69 +453,118 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
         "cwe": SAMPLE_CWE,
         "condition": "codeguard",
     }
+    expected_skill = load_codeguard()["SKILL.md"].decode("utf-8")
+    skill_document = (
+        "Script completed\nOutput:\n"
+        f"{expected_skill}"
+        "\n--- solution.py ---\n"
+        "def generated(command): ...\n"
+    )
 
-    def state_with_command(
-        command: str,
+    def state_with_call(
+        function: str,
+        arguments: dict[str, object],
         *,
-        exit_code: int,
+        output: str = skill_document,
         source: str | None = SAFE_SOURCE,
         result_id: str = "read-skill",
+        tool_error: ToolCallError | None = None,
+        parse_error: str | None = None,
     ) -> TaskState:
         state = _state_with_output(
             source=source,
             sample_id=codeguard_id,
             metadata=metadata,
         )
+        assistant = ModelOutput.for_tool_call(
+            "mockllm/model",
+            function,
+            arguments,
+            tool_call_id="read-skill",
+        ).message
+        assert assistant.tool_calls is not None
+        assistant.tool_calls[0].parse_error = parse_error
         state.messages = [
-            ModelOutput.for_tool_call(
-                "mockllm/model",
-                "exec_command",
-                {"cmd": command},
-                tool_call_id="read-skill",
-            ).message,
+            assistant,
             ChatMessageTool(
-                content=f"Process exited with code {exit_code}",
+                content=output,
                 tool_call_id=result_id,
-                function="exec_command",
+                function=function,
+                error=tool_error,
             ),
         ]
         return state
 
     skill_path = f"{CODEGUARD_SKILL_DIR}/SKILL.md"
-    loaded = state_with_command(
-        f"sed -n '1,160p' {skill_path}",
-        exit_code=0,
+    direct_read = state_with_call(
+        "exec_command",
+        {"cmd": f"sed -n '1,160p' {skill_path}"},
         source=None,
     )
-    skipped = _state_with_output(sample_id=codeguard_id, metadata=metadata)
-    path_check_only = state_with_command(f"test -f {skill_path}", exit_code=0)
-    failed_read = state_with_command(f"cat {skill_path}", exit_code=1)
-    failed_read.messages[-1] = ChatMessageTool(
-        content=(
-            "Process exited with code 1\n"
-            "Output:\n"
-            "Process exited with code 0"
-        ),
-        tool_call_id="read-skill",
-        function="exec_command",
+    wrapped_read = state_with_call(
+        "exec",
+        {
+            "input": (
+                "const r = await tools.exec_command({"
+                f'cmd:"sed -n \'1,240p\' {skill_path}"'
+                "}); text(r.output);"
+            )
+        },
     )
-    uncorrelated_read = state_with_command(
-        f"cat {skill_path}",
-        exit_code=0,
+    skipped = _state_with_output(sample_id=codeguard_id, metadata=metadata)
+    path_check_only = state_with_call(
+        "exec_command",
+        {"cmd": f"test -f {skill_path}"},
+        output="Process exited with code 0",
+    )
+    marker_only_output = state_with_call(
+        "exec_command",
+        {"cmd": f"cat {skill_path}"},
+        output=(
+            "Process exited with code 0\n"
+            "name: codeguard\n"
+            "# CodeGuard Skill\n"
+        ),
+    )
+    unrelated_path = state_with_call(
+        "exec_command",
+        {"cmd": "cat /tmp/SKILL.md"},
+    )
+    uncorrelated_read = state_with_call(
+        "exec_command",
+        {"cmd": f"cat {skill_path}"},
         result_id="different-call",
     )
+    errored_read = state_with_call(
+        "exec_command",
+        {"cmd": f"cat {skill_path}"},
+        tool_error=ToolCallError("permission", "permission denied"),
+    )
+    malformed_call = state_with_call(
+        "exec_command",
+        {"cmd": f"cat {skill_path}"},
+        parse_error="invalid tool arguments",
+    )
 
-    loaded_values = _score(loaded).as_dict()
+    direct_values = _score(direct_read).as_dict()
+    wrapped_values = _score(wrapped_read).as_dict()
     skipped_values = _score(skipped).as_dict()
     path_check_values = _score(path_check_only).as_dict()
-    failed_read_values = _score(failed_read).as_dict()
+    marker_only_values = _score(marker_only_output).as_dict()
+    unrelated_values = _score(unrelated_path).as_dict()
     uncorrelated_values = _score(uncorrelated_read).as_dict()
+    errored_values = _score(errored_read).as_dict()
+    malformed_values = _score(malformed_call).as_dict()
 
-    assert loaded_values[SKILL_LOADED_METRIC] == 1
+    assert direct_values[SKILL_LOADED_METRIC] == 1
+    assert wrapped_values[SKILL_LOADED_METRIC] == 1
     assert skipped_values[SKILL_LOADED_METRIC] == 0
     assert path_check_values[SKILL_LOADED_METRIC] == 0
-    assert failed_read_values[SKILL_LOADED_METRIC] == 0
+    assert marker_only_values[SKILL_LOADED_METRIC] == 0
+    assert unrelated_values[SKILL_LOADED_METRIC] == 0
     assert uncorrelated_values[SKILL_LOADED_METRIC] == 0
+    assert errored_values[SKILL_LOADED_METRIC] == 0
+    assert malformed_values[SKILL_LOADED_METRIC] == 0
 
 
 def test_static_safety_scorer_records_replayable_scoring_provenance(
