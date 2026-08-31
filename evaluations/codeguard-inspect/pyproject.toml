@@ -1,0 +1,39 @@
+[project]
+name = "codeguard-inspect-evaluations"
+version = "0.1.0"
+description = "Inspect AI evaluations for Project CodeGuard"
+requires-python = ">=3.13,<3.14"
+# This is a reproducible evaluation application, not a reusable library.
+# Exact runtime pins prevent framework and scorer upgrades from changing results.
+dependencies = [
+    "huggingface-hub==1.26.0",
+    "inspect-ai==0.3.255",
+    "inspect-swe==0.2.67",
+    "openai==2.53.0",
+    "pydantic==2.13.4",
+    "pyyaml==6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.uv]
+constraint-dependencies = ["aiohttp>=3.14.3"]
+exclude-newer = "7 days"
+
+[build-system]
+requires = ["uv_build==0.12.5"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "codeguard_evals"
+module-root = ""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-m", "not docker"]
+markers = [
+    "docker: explicitly enabled tests that launch Docker and a mock-backed Codex CLI",
+]
