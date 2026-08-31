@@ -560,6 +560,9 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
 
     assert log.status == "success", log.error
     assert containers_after == containers_before
+    assert log.eval.task_display_name == "SecurityEval — CodeGuard"
+    assert log.eval.tags == ["securityeval", "static-safety", "codeguard"]
+    assert log.eval.viewer == task.viewer
     assert log.samples is not None and len(log.samples) == 1
     sample = log.samples[0]
     evidence = SemgrepEvidence.model_validate(
@@ -574,8 +577,13 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
     score = sample.scores["static_safety_scorer"]
     assert score.answer == source
     assert score.value["finding_count"] >= 1
+    assert score.value["semgrep_flagged_output"] == 1
     assert score.value["subcategory_secure_default"] >= 1
     assert score.value["severity_error"] >= 1
+    assert score.value["finding_count"] == sum(
+        score.value[name]
+        for name in ("confidence_high", "confidence_medium", "confidence_low")
+    )
     assert score.explanation is not None
     assert "Subcategory:" in score.explanation
     assert "Severity:" in score.explanation
@@ -755,13 +763,18 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     assert score.metadata is not None
     assert score.value == {
         "valid_output": 1,
+        "changed_output": 1,
         "loc": 2,
         "finding_count": 0,
+        "semgrep_flagged_output": 0,
         "subcategory_vuln": 0,
         "subcategory_secure_default": 0,
         "subcategory_audit": 0,
         "severity_error": 0,
         "severity_warning": 0,
         "severity_info": 0,
+        "confidence_high": 0,
+        "confidence_medium": 0,
+        "confidence_low": 0,
         "skill_loaded": 1,
     }

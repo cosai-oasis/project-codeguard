@@ -6,7 +6,7 @@ import platform
 from collections.abc import Mapping
 from importlib.metadata import version as distribution_version
 from pathlib import Path
-from typing import Final
+from typing import Final, Literal, NamedTuple
 
 import anyio
 from inspect_ai import Task, task
@@ -23,6 +23,14 @@ from inspect_ai.util import (
     time_limit,
     token_limit,
     turn_limit,
+)
+from inspect_ai.viewer import (
+    SampleScoreView,
+    ScoreColorScale,
+    TaskSamplesColumn,
+    TaskSamplesSort,
+    TaskSamplesView,
+    ViewerConfig,
 )
 from inspect_swe import codex_cli
 
@@ -50,7 +58,24 @@ from codeguard_evals.sandbox_protocol import (
     SANDBOX_WORKDIR,
     SOURCE_FILENAME,
 )
-from codeguard_evals.scorers import static_safety_scorer
+from codeguard_evals.scorers import (
+    CHANGED_OUTPUT_METRIC,
+    CONFIDENCE_HIGH_METRIC,
+    CONFIDENCE_LOW_METRIC,
+    CONFIDENCE_MEDIUM_METRIC,
+    FINDING_COUNT_METRIC,
+    LOC_METRIC,
+    SEMGREP_FLAGGED_OUTPUT_METRIC,
+    SEVERITY_ERROR_METRIC,
+    SEVERITY_INFO_METRIC,
+    SEVERITY_WARNING_METRIC,
+    SKILL_LOADED_METRIC,
+    SUBCATEGORY_AUDIT_METRIC,
+    SUBCATEGORY_SECURE_DEFAULT_METRIC,
+    SUBCATEGORY_VULN_METRIC,
+    VALID_OUTPUT_METRIC,
+    static_safety_scorer,
+)
 from codeguard_evals.securityeval.dataset import (
     SECURITYEVAL_FILENAME,
     SECURITYEVAL_REPO_ID,
@@ -90,6 +115,113 @@ SOLUTION_WRITE_COMMAND: Final = (
     "status=none",
     "conv=excl",
 )
+_SCORER_NAME: Final = "static_safety_scorer"
+_CONDITION_DISPLAY_NAMES: Final[Mapping[Condition, str]] = {
+    "baseline": "SecurityEval — Baseline",
+    "secure_prompt": "SecurityEval — Secure prompt",
+    "codeguard": "SecurityEval — CodeGuard",
+}
+
+
+class _ScoreViewSpec(NamedTuple):
+    name: str
+    label: str
+    visible: bool = True
+    palette: Literal["good-high", "neutral"] = "neutral"
+    skill_only: bool = False
+
+
+_SCORE_VIEW_SPECS: Final = (
+    _ScoreViewSpec(CHANGED_OUTPUT_METRIC, "Changed", palette="good-high"),
+    _ScoreViewSpec(VALID_OUTPUT_METRIC, "Valid Python", palette="good-high"),
+    _ScoreViewSpec(SEMGREP_FLAGGED_OUTPUT_METRIC, "Semgrep flagged"),
+    _ScoreViewSpec(FINDING_COUNT_METRIC, "Findings"),
+    _ScoreViewSpec(SEVERITY_ERROR_METRIC, "Error"),
+    _ScoreViewSpec(SEVERITY_WARNING_METRIC, "Warning"),
+    _ScoreViewSpec(SEVERITY_INFO_METRIC, "Info"),
+    _ScoreViewSpec(LOC_METRIC, "LOC"),
+    _ScoreViewSpec(SUBCATEGORY_VULN_METRIC, "Vuln", visible=False),
+    _ScoreViewSpec(
+        SUBCATEGORY_SECURE_DEFAULT_METRIC,
+        "Secure default",
+        visible=False,
+    ),
+    _ScoreViewSpec(SUBCATEGORY_AUDIT_METRIC, "Audit", visible=False),
+    _ScoreViewSpec(CONFIDENCE_HIGH_METRIC, "High confidence", visible=False),
+    _ScoreViewSpec(
+        CONFIDENCE_MEDIUM_METRIC,
+        "Medium confidence",
+        visible=False,
+    ),
+    _ScoreViewSpec(CONFIDENCE_LOW_METRIC, "Low confidence", visible=False),
+    _ScoreViewSpec(
+        SKILL_LOADED_METRIC,
+        "Skill loaded",
+        palette="good-high",
+        skill_only=True,
+    ),
+)
+
+
+def _securityeval_viewer(*, include_skill: bool) -> ViewerConfig:
+    specs = [
+        spec for spec in _SCORE_VIEW_SPECS if include_skill or not spec.skill_only
+    ]
+    score_columns = [
+        TaskSamplesColumn.score(
+            _SCORER_NAME,
+            spec.name,
+            visible=spec.visible,
+        )
+        for spec in specs
+    ]
+
+    binary_scale = ScoreColorScale(palette="good-high", min=0, max=1)
+    neutral_scale = ScoreColorScale(palette="neutral", min=0)
+    color_scales: dict[str, str | ScoreColorScale] = {
+        spec.name: binary_scale if spec.palette == "good-high" else neutral_scale
+        for spec in specs
+    }
+
+    return ViewerConfig(
+        sample_score_view=SampleScoreView(default="grid"),
+        task_samples_view=TaskSamplesView(
+            name="SecurityEval static safety",
+            columns=[
+                TaskSamplesColumn(id="sampleStatus"),
+                TaskSamplesColumn(id="sampleId"),
+                TaskSamplesColumn(id="epoch"),
+                TaskSamplesColumn(id="limit"),
+                *score_columns,
+                TaskSamplesColumn(id="duration"),
+                TaskSamplesColumn(id="tokens"),
+            ],
+            sort=[
+                TaskSamplesSort.score(
+                    _SCORER_NAME,
+                    SEMGREP_FLAGGED_OUTPUT_METRIC,
+                    dir="desc",
+                ),
+                TaskSamplesSort.score(
+                    _SCORER_NAME,
+                    FINDING_COUNT_METRIC,
+                    dir="desc",
+                ),
+                TaskSamplesSort.score(
+                    _SCORER_NAME,
+                    CHANGED_OUTPUT_METRIC,
+                    dir="asc",
+                ),
+                TaskSamplesSort(column="sampleId"),
+                TaskSamplesSort(column="epoch"),
+            ],
+            multiline=False,
+            compact_scores=True,
+            score_labels={spec.name: spec.label for spec in specs},
+            score_color_scales=color_scales,
+            color_scales_enabled=True,
+        ),
+    )
 
 
 @solver
@@ -320,8 +452,11 @@ def _securityeval_task(condition: Condition) -> Task:
         fail_on_error=True,
         continue_on_fail=True,
         score_on_error=False,
+        display_name=_CONDITION_DISPLAY_NAMES[condition],
         name=task_name,
         version=EVALUATION_VERSION,
+        tags=["securityeval", "static-safety", condition.replace("_", "-")],
+        viewer=_securityeval_viewer(include_skill=skill_name is not None),
         metadata={
             "benchmark": "SecurityEval",
             "suite": STATIC_SAFETY_SUITE,

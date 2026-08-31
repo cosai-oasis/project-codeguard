@@ -15,6 +15,7 @@ from inspect_ai.event import SampleLimitEvent
 from inspect_ai.model import get_model
 from inspect_ai.solver import Generate, TaskState
 from inspect_ai.util import LimitExceededError
+from inspect_ai.viewer import TaskSamplesColumn
 
 import codeguard_evals.output_artifact as artifact_module
 from codeguard_evals.codeguard import codeguard_content_sha256
@@ -136,6 +137,16 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
 
     skill_name = condition_skill_name(condition)
     assert task.name == securityeval_task_name(condition)
+    assert task.display_name == {
+        "baseline": "SecurityEval — Baseline",
+        "secure_prompt": "SecurityEval — Secure prompt",
+        "codeguard": "SecurityEval — CodeGuard",
+    }[condition]
+    assert task.tags == [
+        "securityeval",
+        "static-safety",
+        condition.replace("_", "-"),
+    ]
     assert task.setup is not None
     assert len(task.setup) == (2 if condition == "codeguard" else 1)
     assert task.sandbox is not None
@@ -157,6 +168,92 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     assert task.checkpoint == Task(checkpoint=False).checkpoint
     assert task.version == EVALUATION_VERSION
     assert task.scorer is not None and len(task.scorer) == 1
+    assert task.viewer is not None
+    assert task.viewer.sample_score_view is not None
+    assert task.viewer.sample_score_view.default == "grid"
+    sample_view = task.viewer.task_samples_view
+    assert sample_view is not None and not isinstance(sample_view, list)
+    assert sample_view.multiline is False
+    assert sample_view.compact_scores is True
+    assert sample_view.color_scales_enabled is True
+    assert sample_view.sort is not None
+    assert [sort.column for sort in sample_view.sort] == [
+        TaskSamplesColumn.score(
+            "static_safety_scorer", "semgrep_flagged_output"
+        ).id,
+        TaskSamplesColumn.score("static_safety_scorer", "finding_count").id,
+        TaskSamplesColumn.score("static_safety_scorer", "changed_output").id,
+        "sampleId",
+        "epoch",
+    ]
+    assert [sort.dir for sort in sample_view.sort] == [
+        "desc",
+        "desc",
+        "asc",
+        "asc",
+        "asc",
+    ]
+    assert sample_view.columns is not None
+    visible_scores = [
+        "changed_output",
+        "valid_output",
+        "semgrep_flagged_output",
+        "finding_count",
+        "severity_error",
+        "severity_warning",
+        "severity_info",
+        "loc",
+    ]
+    hidden_scores = [
+        "subcategory_vuln",
+        "subcategory_secure_default",
+        "subcategory_audit",
+        "confidence_high",
+        "confidence_medium",
+        "confidence_low",
+    ]
+    skill_column = TaskSamplesColumn.score(
+        "static_safety_scorer", "skill_loaded"
+    ).id
+    expected_score_ids = [
+        TaskSamplesColumn.score("static_safety_scorer", name).id
+        for name in (*visible_scores, *hidden_scores)
+    ]
+    if condition == "codeguard":
+        expected_score_ids.append(skill_column)
+    assert [column.id for column in sample_view.columns] == [
+        "sampleStatus",
+        "sampleId",
+        "epoch",
+        "limit",
+        *expected_score_ids,
+        "duration",
+        "tokens",
+    ]
+    columns = {column.id: column.visible for column in sample_view.columns}
+    assert all(
+        columns[TaskSamplesColumn.score("static_safety_scorer", name).id]
+        for name in visible_scores
+    )
+    assert all(
+        not columns[TaskSamplesColumn.score("static_safety_scorer", name).id]
+        for name in hidden_scores
+    )
+    assert (skill_column in columns) is (condition == "codeguard")
+    assert sample_view.score_labels is not None
+    assert sample_view.score_labels["semgrep_flagged_output"] == "Semgrep flagged"
+    assert sample_view.score_labels["confidence_medium"] == "Medium confidence"
+    assert sample_view.score_color_scales is not None
+    finding_scale = sample_view.score_color_scales["finding_count"]
+    assert not isinstance(finding_scale, str)
+    assert finding_scale.palette == "neutral"
+    assert finding_scale.min == 0
+    assert finding_scale.max is None
+    changed_scale = sample_view.score_color_scales["changed_output"]
+    assert not isinstance(changed_scale, str)
+    assert changed_scale.palette == "good-high"
+    assert changed_scale.min == 0
+    assert changed_scale.max == 1
     assert len(task.dataset) == 1
     sample = task.dataset[0]
     assert sample.files is None
@@ -609,11 +706,13 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
     assert score.answer == ORIGINAL_SOURCE
     score_values = cast(dict[str, object], score.value)
     assert score_values["valid_output"] == 1
+    assert score_values["changed_output"] == 0
     assert score_values["finding_count"] == 0
 
     assert log.results is not None
     results = {result.name: result for result in log.results.scores}
     assert results["valid_output"].scored_samples == 1
+    assert results["changed_output"].metrics["total"].value == 0
     assert results["finding_count"].scored_samples == 1
 
 
