@@ -1,26 +1,26 @@
 # Installing with APM
 
-[APM (Agent Package Manager)](https://github.com/microsoft/apm) is the
-recommended way to install CodeGuard when your team uses more than one AI
-coding harness, or when you want reproducible, lockfile-pinned agent context.
+[APM (Agent Package Manager)](https://github.com/microsoft/apm) provides an
+**optional, additive** install path for the CodeGuard Agent Skill. Use it when
+your team already uses APM for agent context, or when you want lockfile-pinned
+skill installs across multiple harnesses.
 
-One command deploys CodeGuard rules, skills, and the reviewer agent to every
-detected IDE — Cursor, GitHub Copilot, Claude Code, Windsurf, Codex, and
-others — without downloading separate ZIP files per tool.
+APM does **not** replace pre-built rule ZIPs, the Claude Code plugin, or the
+[CodeGuard MCP Server](mcp-server.md). Those paths remain the primary ways to
+install glob-scoped security rules and centrally managed guidance. The APM
+package ships the **CodeGuard Agent Skill only** — `SKILL.md` and its rule
+bodies — to avoid duplicating the same guidance across formats.
 
-## Why APM instead of manual ZIP copy?
+This aligns with ongoing skill modernization tracked in
+[#125](https://github.com/cosai-oasis/project-codeguard/issues/125).
 
-| Manual ZIP install | APM install |
+## When to use APM
+
+| Use APM when… | Use another path when… |
 |:---|:---|
-| Pick the ZIP for your IDE | One package for all harnesses |
-| Copy `.cursor/`, `.windsurf/`, etc. by hand | `apm install` writes the right paths |
-| No lockfile or integrity pins | `apm.lock.yaml` pins content hashes |
-| Hard to update across a team | `apm update` refreshes all targets |
-| Each IDE needs its own release artifact | Same manifest everywhere |
-
-APM does **not** replace the [CodeGuard MCP Server](mcp-server.md). Use MCP when
-you want centrally managed, live rules without vendoring files into every repo.
-Use APM when you want rules committed to the project with reproducible installs.
+| You want the CodeGuard skill in multiple harnesses from one command | You need always-on, glob-scoped rule files |
+| Your team already standardizes on `apm.yml` | APM CLI is unavailable in your environment |
+| You want `apm.lock.yaml` integrity pins for the skill bundle | You want centrally managed live rules → use MCP |
 
 ## Prerequisites
 
@@ -51,7 +51,7 @@ From your project root:
 # Initialize APM (skip if apm.yml already exists)
 apm init my-project -y
 
-# Install CodeGuard (pin a release tag in production)
+# Install CodeGuard skill (pin a release tag in production)
 apm install cosai-oasis/project-codeguard#v1.4.0
 ```
 
@@ -66,21 +66,21 @@ apm install cosai-oasis/project-codeguard#v1.4.0 \
 
 ## What gets installed
 
-After `apm install`, CodeGuard deploys:
+After `apm install`, CodeGuard deploys the Agent Skill bundle:
 
 | Primitive | Purpose |
 |:---|:---|
-| **Instructions** (23 rules) | Glob-scoped security rules per harness |
-| **Skill** (`codeguard/SKILL.md`) | Workflow skill with language/tag mappings |
-| **Skill rules** (`codeguard/rules/`) | Full rule bodies for skill-based tools |
-| **Agent** (`codeguard-reviewer`) | SARIF security review subagent |
+| **Skill** (`codeguard/SKILL.md`) | On-demand security workflow with language/tag mappings |
+| **Skill rules** (`codeguard/rules/`) | Full rule bodies referenced by the skill |
 
-Example paths after install:
+Example path after install:
 
-- Cursor: `.cursor/rules/codeguard-*.mdc`
-- Copilot: `.github/instructions/codeguard-*.instructions.md`
-- Claude: `.claude/rules/codeguard-*.md`
-- Shared skills: `.agents/skills/codeguard/`
+- Shared skills: `.agents/skills/codeguard/SKILL.md` and `.agents/skills/codeguard/rules/`
+
+Harness-specific skill directories may also receive copies depending on your
+APM targets. The package does **not** deploy glob-scoped instruction files or
+the CodeGuard reviewer agent — use [release ZIPs](getting-started.md#option-2-install-pre-built-rules)
+for per-IDE rule files.
 
 ## Commit these files
 
@@ -90,7 +90,7 @@ After installing into a team repository, commit:
 |:---|:---|
 | `apm.yml` | Yes — declares the dependency |
 | `apm.lock.yaml` | Yes — pins resolved versions and hashes |
-| `.cursor/`, `.github/`, `.claude/`, `.agents/`, etc. | Yes — gives every contributor instant access on clone |
+| `.agents/skills/codeguard/` (and harness skill dirs) | Yes — gives every contributor the skill on clone |
 | `apm_modules/` | No — rebuilt from the lockfile (APM adds this to `.gitignore`) |
 
 ## Updating CodeGuard
@@ -107,7 +107,7 @@ apm install cosai-oasis/project-codeguard#v1.5.0
 
 ## Local development (this repository)
 
-Contributors regenerate the APM package layout from unified sources:
+Contributors regenerate the APM skill layout from unified sources:
 
 ```bash
 uv run python src/convert_to_ide_formats.py
@@ -115,9 +115,7 @@ uv run python src/convert_to_ide_formats.py
 
 This writes:
 
-- `.apm/instructions/` — APM instruction primitives
-- `.apm/skills/codeguard/` — skill bundle
-- `.apm/agents/codeguard-reviewer.agent.md` — reviewer agent
+- `.apm/skills/codeguard/` — skill bundle copied from `skills/codeguard/`
 - `apm.yml` — package manifest (version synced from `pyproject.toml`)
 
 Validate an install locally:
@@ -136,7 +134,7 @@ and CI gates via `apm audit --ci`. See the
 ## Fallback: pre-built ZIP releases
 
 If APM is not available in your environment, continue using the
-[release ZIP files](getting-started.md#option-1-install-pre-built-rules-recommended)
+[release ZIP files](getting-started.md#option-2-install-pre-built-rules)
 for your specific IDE. The underlying rules are identical.
 
 ## Further reading

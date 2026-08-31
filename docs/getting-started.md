@@ -61,12 +61,12 @@ Not sure which route fits your situation? See **[Choosing an Install Path](insta
 
 ![CodeGuard install routes per tool](images/codeguard-install-flowchart.svg)
 
-### Option 1: Install with APM (Recommended)
+### Optional: Install the CodeGuard skill with APM
 
-[APM (Agent Package Manager)](https://github.com/microsoft/apm) installs CodeGuard
-to every supported AI coding harness from one command. This is the best choice
-when your team uses more than one IDE or you want lockfile-pinned, reproducible
-installs.
+[APM (Agent Package Manager)](https://github.com/microsoft/apm) provides an
+optional install path for the **CodeGuard Agent Skill** across multiple
+harnesses. It does not replace pre-built rule ZIPs — use those for glob-scoped
+security rules.
 
 ```bash
 # Install APM CLI (once per machine)
@@ -84,14 +84,15 @@ apm install cosai-oasis/project-codeguard#v1.4.0 \
   --target cursor,copilot,claude,windsurf,codex
 ```
 
-Commit `apm.yml`, `apm.lock.yaml`, and the deployed rule directories so every
-contributor gets CodeGuard on clone.
+Commit `apm.yml`, `apm.lock.yaml`, and the deployed skill directories so every
+contributor gets the CodeGuard skill on clone.
 
 Full details: **[Installing with APM](apm-install.md)**
 
-### Option 2: Install Pre-built Rules
+### Option 1: Install Pre-built Rules (Recommended)
 
-Select your AI coding tool and follow the instructions when APM is not available:
+Select your AI coding tool and follow the instructions below. You can also add
+the CodeGuard skill via [APM](apm-install.md) as an optional complement.
 
 === "Cursor"
 

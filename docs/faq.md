@@ -16,13 +16,13 @@ This FAQ document provides clear, concise answers to help developers seamlessly 
 
 **A:** Detailed installation instructions are available in our [Getting Started guide](getting-started.md). In summary:
 
-**Recommended:** use [APM](apm-install.md) for a single install command that works across Cursor, Copilot, Claude Code, Windsurf, Codex, and other harnesses:
+**Recommended:** download the latest release from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases), extract the archive, and copy the appropriate rules directory to your project root (e.g. `.cursor/` for Cursor, `.opencode/` for OpenCode).
+
+**Optional:** if your team uses [APM](apm-install.md), you can install the CodeGuard Agent Skill across harnesses:
 
 ```bash
 apm install cosai-oasis/project-codeguard#v1.4.0
 ```
-
-**Alternative:** download the latest release from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases), extract the archive, and copy the appropriate rules directory to your project root (e.g. `.cursor/` for Cursor, `.opencode/` for OpenCode).
 
 Restart your AI coding tool and start coding — the assistant will automatically follow the security rules.
 

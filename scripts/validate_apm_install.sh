@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Validate CodeGuard APM package installs and deploys rules to multiple harnesses.
+# Validate CodeGuard APM skill-only package installs across harnesses.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -70,18 +70,10 @@ check_count() {
   echo "✅ ${label}: ${actual} files"
 }
 
-check_count "Cursor rules" "*/.cursor/rules/codeguard-*.mdc"
-check_count "Copilot instructions" "*/.github/instructions/codeguard-*.instructions.md"
-check_count "Claude rules" "*/.claude/rules/codeguard-*.md"
-check_count "Windsurf rules" "*/.windsurf/rules/codeguard-*.md"
 check_count "Skill rules" "*/.agents/skills/codeguard/rules/codeguard-*.md"
-
-test -f "${CONSUMER}/.codex/agents/codeguard-reviewer.toml" \
-  || { echo "❌ Codex reviewer agent missing"; exit 1; }
-echo "✅ Codex reviewer agent present"
 
 test -f "${CONSUMER}/.agents/skills/codeguard/SKILL.md" \
   || { echo "❌ CodeGuard SKILL.md missing"; exit 1; }
 echo "✅ CodeGuard SKILL.md present"
 
-echo "✅ APM install validation passed"
+echo "✅ APM skill install validation passed"

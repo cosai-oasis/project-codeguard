@@ -27,7 +27,6 @@ from formats import (
     OpenClawFormat,
     HermesFormat,
     ClaudeFormat,
-    ApmInstructionFormat,
 )
 from utils import get_version_from_pyproject
 from validate_versions import set_plugin_version, set_marketplace_version
@@ -142,7 +141,6 @@ def convert_rules(
         all_formats.append(OpenClawFormat(version))
         all_formats.append(HermesFormat(version))
         all_formats.append(ClaudeFormat(version))
-        all_formats.append(ApmInstructionFormat(version))
 
     converter = RuleConverter(formats=all_formats)
     path = Path(input_path)
@@ -197,7 +195,7 @@ def convert_rules(
                 # Construct output path
                 # Agent Skills goes to project root ./skills/
                 # Other formats go to dist/ (or specified output_dir)
-                if format_name in ("agentskills", "apm"):
+                if format_name == "agentskills":
                     base_dir = PROJECT_ROOT
                 else:
                     base_dir = output_base
@@ -397,11 +395,6 @@ if __name__ == "__main__":
         print(f"✅ Cleaned {cli_args.output_dir}/ directory")
 
     if has_core:
-        apm_instructions = PROJECT_ROOT / ".apm" / "instructions"
-        if apm_instructions.exists():
-            shutil.rmtree(apm_instructions)
-            print("✅ Cleaned .apm/instructions/ directory")
-
         skills_rules_dir = PROJECT_ROOT / "skills" / "codeguard" / "rules"
         if skills_rules_dir.exists():
             shutil.rmtree(skills_rules_dir)

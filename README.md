@@ -50,10 +50,11 @@ Project CodeGuard skills and rules cover essential security domains:
 
 Get started in minutes:
 
-### Recommended: Install with APM (all IDEs)
+### Optional: Install the CodeGuard skill with APM
 
-[APM (Agent Package Manager)](https://github.com/microsoft/apm) installs CodeGuard
-to every AI coding harness from one command — no per-IDE ZIP files to copy.
+[APM (Agent Package Manager)](https://github.com/microsoft/apm) provides an
+optional install path for the CodeGuard Agent Skill across harnesses. Pre-built
+release ZIPs remain the primary way to install glob-scoped security rules.
 
 ```bash
 curl -sSL https://aka.ms/apm-unix | sh   # install APM CLI once
@@ -64,7 +65,7 @@ apm install cosai-oasis/project-codeguard#v1.4.0
 See [Installing with APM](docs/apm-install.md) for targets, lockfiles, and team
 commit guidance.
 
-### Alternative: Pre-built release ZIPs
+### Recommended: Pre-built release ZIPs
 
 1. **Download the skills and rules** from our [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
 2. **Copy to your project** — place the IDE-specific directory in your repository
@@ -81,7 +82,7 @@ This repository also includes an [MCP](https://modelcontextprotocol.io/) server 
 ## How It Works
 
 1. **Security skills and rules** are written in unified markdown format (`sources/` directory)
-2. **Conversion tools** translate skills and rules into formats for popular coding agents and [APM packages](docs/apm-install.md)
-3. **Release automation** packages skills and rules into downloadable ZIP files and APM manifests
+2. **Conversion tools** translate skills and rules into formats for popular coding agents; the optional [APM package](docs/apm-install.md) ships the Agent Skill only
+3. **Release automation** packages skills and rules into downloadable ZIP files and an optional APM skill manifest
 4. **AI assistants** reference these skills and rules when generating or reviewing code
 5. **Secure code** is produced automatically without developer intervention

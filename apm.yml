@@ -1,7 +1,7 @@
 name: project-codeguard
 version: 1.4.0
-description: 'CoSAI CodeGuard security rules and skills for AI coding agents. Install
-  with: apm install cosai-oasis/project-codeguard'
+description: 'CoSAI CodeGuard Agent Skill for AI coding agents. Install with: apm
+  install cosai-oasis/project-codeguard'
 author: cosai-oasis
 dependencies:
   apm: []
