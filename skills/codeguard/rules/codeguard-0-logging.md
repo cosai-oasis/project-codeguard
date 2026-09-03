@@ -3,7 +3,6 @@ description: Logging & monitoring (structured telemetry, redaction, integrity, d
 languages:
 - c
 - javascript
-- yaml
 alwaysApply: false
 tags:
 - privacy
