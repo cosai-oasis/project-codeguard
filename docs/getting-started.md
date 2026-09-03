@@ -25,6 +25,13 @@ Before you begin, familiarize yourself with how rules work in your AI coding too
     
     :material-book-open-page-variant: [Windsurf Rules Documentation](https://docs.windsurf.com/windsurf/cascade/memories#rules)
 
+=== "Devin"
+
+    Devin discovers Agent Skills in `.devin/skills` and other supported
+    Agent Skills directories.
+
+    :material-book-open-page-variant: [Devin Skills Documentation](https://docs.devin.ai/product-guides/skills)
+
 === "GitHub Copilot"
 
     GitHub Copilot uses `.github/instructions` for rule configuration.
@@ -61,7 +68,7 @@ Not sure which route fits your situation? See **[Choosing an Install Path](insta
 
 ![CodeGuard install routes per tool](images/codeguard-install-flowchart.svg)
 
-### Option 1: Install Pre-built Rules (Recommended)
+### Option 1: Install Pre-built Bundles (Recommended)
 
 Select your AI coding tool and follow the instructions:
 
@@ -88,6 +95,18 @@ Select your AI coding tool and follow the instructions:
         ```
 
     4. **Restart** Windsurf to load the rules
+
+=== "Devin"
+
+    1. **Download** [`codeguard-devin.zip`](https://github.com/cosai-oasis/project-codeguard/releases) from the Releases page
+    2. **Extract** the ZIP file
+    3. **Copy** the `.devin/` directory to your project root:
+
+        ```bash
+        cp -r .devin/ /path/to/your/project/
+        ```
+
+    4. **Start or reload** a Devin session so it discovers the CodeGuard skill
 
 === "GitHub Copilot"
 
@@ -312,9 +331,10 @@ uv run python src/convert_to_ide_formats.py
 # Or include all rules (core + owasp supplementary)
 uv run python src/convert_to_ide_formats.py --source core owasp
 
-# Copy the generated rules to your project
+# Copy the generated bundle directories to your project
 cp -r dist/.cursor/ /path/to/your/project/
 cp -r dist/.windsurf/ /path/to/your/project/
+cp -r dist/.devin/ /path/to/your/project/ # Devin skill
 cp -r dist/.github/ /path/to/your/project/
 cp -r dist/.agents/ /path/to/your/project/   # Antigravity rules + Codex skill
 cp -r dist/.codex/ /path/to/your/project/    # Codex reviewer agent
@@ -349,6 +369,7 @@ For GitHub repositories that copy CodeGuard files directly into source control, 
 
 - Cursor (`.cursor/rules/`)
 - Windsurf (`.windsurf/rules/`)
+- Devin (`.devin/skills/codeguard/rules/`)
 - GitHub Copilot (`.github/instructions/`)
 - Antigravity (`.agents/rules/`)
 - OpenCode (`.opencode/skills/codeguard/rules/`)
@@ -364,7 +385,10 @@ For GitHub repositories that copy CodeGuard files directly into source control, 
 
 The workflow runs monthly (1st at 9:00 UTC) and can also be triggered manually from the **Actions** tab.
 
-This workflow refreshes CodeGuard rule files only. To update bundled skills, agents, or other generated support files, re-download the release archive for your tool.
+This workflow refreshes CodeGuard rule files. For Agent Skill bundles, it also
+refreshes `SKILL.md` so the skill instructions and version metadata stay in sync.
+To update agents or other generated support files, re-download the release
+archive for your tool.
 
 ## Verify Installation
 
@@ -401,6 +425,9 @@ your-project/
 │       └── codeguard/
 ├── .windsurf/
 │   └── rules/
+├── .devin/
+│   └── skills/
+│       └── codeguard/
 └── ... (your project files)
 ```
 

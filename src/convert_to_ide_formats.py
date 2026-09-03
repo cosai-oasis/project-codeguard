@@ -18,6 +18,7 @@ from emit_agents import emit_agents
 from formats import (
     CursorFormat,
     WindsurfFormat,
+    DevinFormat,
     CopilotFormat,
     AgentSkillsFormat,
     AntigravityFormat,
@@ -140,6 +141,7 @@ def convert_rules(
     # Only include Agent Skills–based formats (skills with SKILL.md) for core rules
     if include_agentskills:
         all_formats.append(AgentSkillsFormat(version))
+        all_formats.append(DevinFormat(version))
         all_formats.append(OpenCodeFormat(version))
         all_formats.append(CodexFormat(version))
         all_formats.append(OpenClawFormat(version))
