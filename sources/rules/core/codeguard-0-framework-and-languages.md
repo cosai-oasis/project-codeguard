@@ -10,8 +10,6 @@ languages:
 - python
 - ruby
 - typescript
-- xml
-- yaml
 alwaysApply: false
 ---
 

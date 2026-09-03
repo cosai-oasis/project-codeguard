@@ -2,12 +2,10 @@
 description: Client-side web security (XSS/DOM XSS, CSP, CSRF, clickjacking, XS-Leaks,
   third-party JS)
 languages:
-- c
 - html
 - javascript
 - php
 - typescript
-- vlang
 tags:
 - web
 alwaysApply: false
