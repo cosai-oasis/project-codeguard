@@ -832,6 +832,13 @@ uv<span class="w"> </span>run<span class="w"> </span>fastmcp<span class="w"> </s
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>src/codeguard-mcp
 docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
 </code></pre></div>
+<p>Docker Compose publishes the server on <code>127.0.0.1</code> by default. Keep that default
+when the reverse proxy runs on the Docker host. If the proxy runs on another
+host, set <code>CODEGUARD_PUBLISH_ADDRESS</code> to a specific private interface and use
+firewall or security-group rules to allow the published port only from the
+proxy. The proxy must provide TLS and authentication. Do not publish on
+<code>0.0.0.0</code> unless equivalent network controls prevent direct access to the
+backend port.</p>
 <h2 id="connect-your-ide">Connect Your IDE</h2>
 <p>Add the server to your MCP client configuration:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Local</label><label for="__tabbed_1_2">Org-wide</label></div>
@@ -928,7 +935,12 @@ Documents which rules were applied
 <tr>
 <td style="text-align: left;"><code>CODEGUARD_HOST</code></td>
 <td style="text-align: left;"><code>0.0.0.0</code></td>
-<td style="text-align: left;">Bind address</td>
+<td style="text-align: left;">Server bind address</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>CODEGUARD_PUBLISH_ADDRESS</code></td>
+<td style="text-align: left;"><code>127.0.0.1</code></td>
+<td style="text-align: left;">Docker host address for the published port</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>CODEGUARD_PORT</code></td>
