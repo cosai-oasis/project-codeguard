@@ -23,6 +23,14 @@ cd src/codeguard-mcp
 docker compose up --build
 ```
 
+Docker Compose publishes the server on `127.0.0.1` by default. Keep that default
+when the reverse proxy runs on the Docker host. If the proxy runs on another
+host, set `CODEGUARD_PUBLISH_ADDRESS` to a specific private interface and use
+firewall or security-group rules to allow the published port only from the
+proxy. The proxy must provide TLS and authentication. Do not publish on
+`0.0.0.0` unless equivalent network controls prevent direct access to the
+backend port.
+
 ## Connect Your IDE
 
 Add the server to your MCP client configuration:
@@ -103,7 +111,8 @@ All settings are controlled via environment variables with the `CODEGUARD_` pref
 
 | Variable | Default | Description |
 |:---------|:--------|:------------|
-| `CODEGUARD_HOST` | `0.0.0.0` | Bind address |
+| `CODEGUARD_HOST` | `0.0.0.0` | Server bind address |
+| `CODEGUARD_PUBLISH_ADDRESS` | `127.0.0.1` | Docker host address for the published port |
 | `CODEGUARD_PORT` | `8080` | Bind port |
 | `CODEGUARD_LOG_LEVEL` | `INFO` | Log level |
 | `CODEGUARD_TRANSPORT` | `streamable-http` | `streamable-http` or `stdio` |

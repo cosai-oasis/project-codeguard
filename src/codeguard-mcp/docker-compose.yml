@@ -5,7 +5,9 @@ services:
       dockerfile: src/codeguard-mcp/Dockerfile
     container_name: codeguard-mcp
     ports:
-      - "${CODEGUARD_PORT:-8080}:8080"
+      - target: 8080
+        published: "${CODEGUARD_PORT:-8080}"
+        host_ip: "${CODEGUARD_PUBLISH_ADDRESS:-127.0.0.1}"
     environment:
       - CODEGUARD_LOG_LEVEL=${CODEGUARD_LOG_LEVEL:-INFO}
     read_only: true
