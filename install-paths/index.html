@@ -1096,7 +1096,7 @@
 <li>Requires write access to the repo and a reviewed PR to land the rule files.</li>
 <li>Someone on the team owns updates — either manually on each CodeGuard release or via the <a href="../getting-started/#keeping-vendored-rules-updated-optional">optional auto-update GitHub Action</a>, which still needs a reviewer to merge its PRs.</li>
 <li>Rule changes are visible in diff/PR history, so treat them like any other code change (review, CODEOWNERS, branch protection).</li>
-<li>If contributors use different AI tools, you may need to commit multiple format directories (<code>.cursor/</code>, <code>.windsurf/</code>, <code>.github/</code>, …) and keep them in sync.</li>
+<li>If contributors use different AI tools, you may need to commit multiple format directories (<code>.cursor/</code>, <code>.windsurf/</code>, <code>.devin/</code>, <code>.github/</code>, …) and keep them in sync.</li>
 </ul>
 <p><strong>Choose this when:</strong> you want consistent security guidance for everyone working in a specific codebase. This is the <strong>recommended default</strong> for most teams.</p>
 </div>
@@ -1133,7 +1133,7 @@
 <h3 id="agent-skills">Agent Skills</h3>
 <p>A skill is a self-describing capability the model invokes <strong>on demand</strong> when the task is security-relevant. Nothing loads until the model decides it's needed.</p>
 <ul>
-<li><strong>Supported by:</strong> Cursor (<code>.cursor/skills/</code>), Windsurf (<code>.windsurf/skills/</code>), OpenCode (<code>.opencode/skills/</code>), Codex (<code>.agents/skills/</code>), OpenClaw (<code>.openclaw/skills/</code>), Hermes (<code>.hermes/skills/</code>)</li>
+<li><strong>Supported by:</strong> Cursor (<code>.cursor/skills/</code>), Windsurf (<code>.windsurf/skills/</code>), Devin (<code>.devin/skills/</code>), OpenCode (<code>.opencode/skills/</code>), Codex (<code>.agents/skills/</code>), OpenClaw (<code>.openclaw/skills/</code>), Hermes (<code>.hermes/skills/</code>)</li>
 <li><strong>Best for:</strong> Context-sensitive workflows, polyglot repos, tools that natively support the <a href="https://agentskills.io/">Agent Skills standard</a>.</li>
 <li><strong>Tradeoffs:</strong> Activation depends on the model recognizing the task as security-relevant. Slightly less deterministic than always-on rule files.</li>
 <li><strong>Responsible CoSAI personas:</strong> Application Developer, with Agentic Platform and Framework Providers supplying the skill discovery and invocation model.</li>
@@ -1544,6 +1544,10 @@ tooling install and refresh the skill for you.</p>
 <td style="text-align: left;"><code>&lt;repo&gt;/.windsurf/rules/</code></td>
 </tr>
 <tr>
+<td style="text-align: left;">Devin</td>
+<td style="text-align: left;"><code>&lt;repo&gt;/.devin/skills/</code></td>
+</tr>
+<tr>
 <td style="text-align: left;">GitHub Copilot</td>
 <td style="text-align: left;"><code>&lt;repo&gt;/.github/instructions/</code></td>
 </tr>
@@ -1596,6 +1600,10 @@ tooling install and refresh the skill for you.</p>
 <tr>
 <td style="text-align: left;">Windsurf</td>
 <td style="text-align: left;"><code>~/.windsurf/rules/</code></td>
+</tr>
+<tr>
+<td style="text-align: left;">Devin</td>
+<td style="text-align: left;">Repository-scoped only; use <code>&lt;repo&gt;/.devin/skills/</code></td>
 </tr>
 <tr>
 <td style="text-align: left;">OpenCode</td>
