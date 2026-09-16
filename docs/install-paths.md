@@ -82,7 +82,7 @@ Before picking a mechanism, decide **who** should end up with CodeGuard active. 
     - Requires write access to the repo and a reviewed PR to land the rule files.
     - Someone on the team owns updates — either manually on each CodeGuard release or via the [optional auto-update GitHub Action](getting-started.md#keeping-vendored-rules-updated-optional), which still needs a reviewer to merge its PRs.
     - Rule changes are visible in diff/PR history, so treat them like any other code change (review, CODEOWNERS, branch protection).
-    - If contributors use different AI tools, you may need to commit multiple format directories (`.cursor/`, `.windsurf/`, `.github/`, …) and keep them in sync.
+    - If contributors use different AI tools, you may need to commit multiple format directories (`.cursor/`, `.windsurf/`, `.devin/`, `.github/`, …) and keep them in sync.
 
     **Choose this when:** you want consistent security guidance for everyone working in a specific codebase. This is the **recommended default** for most teams.
 
@@ -124,7 +124,7 @@ Static markdown files the AI tool reads from a known directory. Each rule declar
 
 A skill is a self-describing capability the model invokes **on demand** when the task is security-relevant. Nothing loads until the model decides it's needed.
 
-- **Supported by:** Cursor (`.cursor/skills/`), Windsurf (`.windsurf/skills/`), OpenCode (`.opencode/skills/`), Codex (`.agents/skills/`), OpenClaw (`.openclaw/skills/`), Hermes (`.hermes/skills/`)
+- **Supported by:** Cursor (`.cursor/skills/`), Windsurf (`.windsurf/skills/`), Devin (`.devin/skills/`), OpenCode (`.opencode/skills/`), Codex (`.agents/skills/`), OpenClaw (`.openclaw/skills/`), Hermes (`.hermes/skills/`)
 - **Best for:** Context-sensitive workflows, polyglot repos, tools that natively support the [Agent Skills standard](https://agentskills.io/).
 - **Tradeoffs:** Activation depends on the model recognizing the task as security-relevant. Slightly less deterministic than always-on rule files.
 - **Responsible CoSAI personas:** Application Developer, with Agentic Platform and Framework Providers supplying the skill discovery and invocation model.
@@ -386,6 +386,7 @@ Most tools look for rules/skills in **two** places: inside the current repositor
     |:---|:---|
     | Cursor | `<repo>/.cursor/rules/` |
     | Windsurf | `<repo>/.windsurf/rules/` |
+    | Devin | `<repo>/.devin/skills/` |
     | GitHub Copilot | `<repo>/.github/instructions/` |
     | Antigravity | `<repo>/.agents/rules/` |
     | OpenCode | `<repo>/.opencode/skills/` |
@@ -407,6 +408,7 @@ Most tools look for rules/skills in **two** places: inside the current repositor
     |:---|:---|
     | Cursor | `~/.cursor/rules/` |
     | Windsurf | `~/.windsurf/rules/` |
+    | Devin | Repository-scoped only; use `<repo>/.devin/skills/` |
     | OpenCode | `~/.config/opencode/skills/` |
     | Codex | `~/.agents/skills/` |
     | Claude Code | `~/.claude/skills/` or `/plugin install` (user-global by default) |

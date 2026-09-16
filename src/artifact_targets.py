@@ -14,6 +14,7 @@ SKILL_COPY_HOSTS: list[str] = [
     ".claude",
     ".opencode",
     ".agents",  # Codex discovers skills under .agents/skills/ (cross-tool path)
+    ".devin",  # Devin discovers product-specific skills here
     ".openclaw",
     ".hermes",
 ]

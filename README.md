@@ -30,7 +30,7 @@ Project CodeGuard solves this by embedding security best practices directly into
 Project CodeGuard is designed to integrate seamlessly across the entire AI coding lifecycle. 
 - **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development. You can use the skills and rules in the “planning phase” of an AI coding agent to steer models toward secure patterns from the start.
 - **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
-- **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, and Claude Code can use the rules for code review. 
+- **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, Devin, and Claude Code can use the rules for code review.
 
 
 ## Security Coverage
