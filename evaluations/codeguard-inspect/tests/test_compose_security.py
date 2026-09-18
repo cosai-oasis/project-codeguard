@@ -7,8 +7,10 @@ from pathlib import Path
 import yaml
 
 from codeguard_evals.sandbox_protocol import (
+    CODEX_HOME_DIR,
     SANDBOX_NAME,
     SANDBOX_ROOT_USER,
+    SANDBOX_USER_HOME,
     SANDBOX_WORKDIR,
     SEMGREP_SANDBOX_NAME,
     SEMGREP_SANDBOX_USER,
@@ -176,7 +178,7 @@ def test_dockerfile_pins_its_base_and_creates_the_nonroot_identity() -> None:
         f"useradd --uid {EXPECTED_SANDBOX_ID} --gid {EXPECTED_SANDBOX_ID}"
         in dockerfile
     )
-    assert f"--home-dir {SANDBOX_WORKDIR}" in dockerfile
+    assert f"--home-dir {SANDBOX_USER_HOME}" in dockerfile
     assert "--no-create-home" in dockerfile
     assert "--no-log-init" in dockerfile
     assert "--shell /usr/sbin/nologin" in dockerfile
@@ -185,8 +187,9 @@ def test_dockerfile_pins_its_base_and_creates_the_nonroot_identity() -> None:
     assert "install -d -m 0555" in dockerfile
     assert "COPY --chmod=0444" in dockerfile
     assert "codeguard_evals/export_solution.py" in dockerfile
-    assert f"ENV HOME={SANDBOX_WORKDIR} " in dockerfile
+    assert f"ENV HOME={SANDBOX_USER_HOME} " in dockerfile
     assert f"WORKDIR {SANDBOX_WORKDIR}" in dockerfile
+    assert not CODEX_HOME_DIR.startswith(f"{SANDBOX_WORKDIR}/")
     assert ">> /etc/passwd" not in dockerfile
     assert ">> /etc/group" not in dockerfile
     assert "/opt/codeguard" not in dockerfile

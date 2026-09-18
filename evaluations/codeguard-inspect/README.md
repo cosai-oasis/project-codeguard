@@ -188,6 +188,19 @@ uv run --locked inspect eval \
 `--sample-id` selects this one benchmark case. `--max-samples 1` limits sample
 concurrency; it does not reduce the dataset on its own.
 
+Every condition receives the same one-sentence notice that network access, Git,
+and `rg` are unavailable. No condition receives task-specific guidance. Codex
+state lives in a separate, private `/home/nonroot/.codex` tmpfs rather than
+under the task workspace.
+
+Generation defaults to 16 agent turns and 600 seconds, with a 1,200-second task
+backstop. These replace the earlier 8/300/900 limits. For budget comparisons,
+pass `-T agent_turn_limit=8` or `-T agent_turn_limit=16`; the effective generation
+limits are always recorded in `metadata.generation_limits`. Compare conditions
+under matching environment and budget settings, using fresh log directories.
+Do not substitute Inspect's top-level `--turn-limit`: it can stop the solver
+chain before the harness captures and scans the generated source.
+
 Run the full matrix:
 
 ```bash
@@ -195,6 +208,7 @@ uv run --locked inspect eval-set \
   codeguard_evals/securityeval/securityeval.py \
   --model openai/MODEL \
   --reasoning-effort medium \
+  -T agent_turn_limit=16 \
   --epochs 3 \
   --no-epochs-reducer \
   --retry-attempts 0 \
@@ -258,9 +272,8 @@ Within a stored evidence record, `findings: null` means scanning was not
 applicable; an empty findings collection means Semgrep ran successfully and
 found no retained security findings.
 
-Development logs created by earlier commits of this unmerged evaluator lack the
-current evidence schema or rules-tree identity and are not supported by the
-current scorer.
+Early development logs without the current evidence schema or rules-tree
+identity are not supported by the current scorer.
 
 `--no-score` still performs Semgrep during solving. Consequently, a completed log
 can be re-scored without Docker, the rules cache, Registry access, or provider
@@ -317,16 +330,20 @@ followed.
 
 The CodeGuard condition validates and hashes the repository's
 `skills/codeguard` directory, installs those exact bytes under
-`/workspace/.codex/skills/codeguard`, and makes the snapshot read-only before
-generation. It does not reshape the published skill.
+`/home/nonroot/.codex/skills/codeguard`, and makes the snapshot read-only before
+generation. Both the `rules/` and `references/` layouts are supported without
+reshaping the published skill. Metadata records the declared skill version, or
+`unspecified` when none is declared; the content hash identifies the exact
+snapshot in either case.
 
 ### Generation limits and evidence
 
-The output-token, turn, and generation-time limits are scoped to the agent. A
-limit-stopped sample is therefore captured and scanned rather than disappearing
-from the metric denominators. Exact `LimitExceededError` provenance, or Inspect's
-matching recent sample-limit event for a bridge-promoted cancellation, identifies
-these cases.
+The output-token, operator-selected turn, and generation-time limits are scoped
+to the agent. A limit-stopped sample is therefore captured and scanned rather
+than disappearing from the metric denominators. The configured values are
+stored in task metadata. Exact `LimitExceededError` provenance, or Inspect's
+matching recent sample-limit event for a bridge-promoted cancellation,
+identifies these cases.
 
 Operator interruption, shutdown, and unrelated errors capture the source but do
 not start Semgrep; they re-raise promptly. Output capture is shielded only long
@@ -380,6 +397,8 @@ reject a different version rather than applying a compatibility fallback.
   generation container with no host mounts, Docker socket, ports, devices, or
   provider credentials. The root filesystem is read-only, writable paths are
   bounded tmpfs mounts, capabilities are minimized, and resources are limited.
+  Agent state and installed skills use a private tmpfs under
+  `/home/nonroot/.codex`, outside the `/workspace` task directory.
   `/var/tmp` is the sole writable executable tmpfs because Inspect runs its
   injected tooling there; it is bounded, sticky, and container-local.
 - A fixed exporter accepts only a stable regular `/workspace/solution.py` of at

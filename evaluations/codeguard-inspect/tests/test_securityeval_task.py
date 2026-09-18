@@ -48,6 +48,7 @@ from codeguard_evals.securityeval.dataset import (
     SecurityEvalCase,
 )
 from codeguard_evals.securityeval.protocol import (
+    AGENT_ENVIRONMENT_INSTRUCTIONS,
     EVALUATION_VERSION,
     Condition,
     condition_skill_name,
@@ -58,11 +59,11 @@ from codeguard_evals.securityeval.securityeval import (
     AGENT_TIME_LIMIT,
     CODEGUARD_DIRECTORY_MODE,
     CODEGUARD_FILE_MODE,
-    CODEGUARD_RULES_DIR,
     CODEGUARD_SKILL_DIR,
     CODEX_VERSION,
     MAX_GENERATION_TOKENS,
     SAMPLE_TIME_LIMIT,
+    TURN_LIMIT,
     bounded_generation,
 )
 from codeguard_evals.semgrep_artifacts import SemgrepFinding
@@ -79,7 +80,7 @@ def _fake_codex_agent() -> Agent:
     return execute
 
 
-def _codeguard_snapshot() -> dict[str, bytes]:
+def _codeguard_snapshot(guidance_dir: str = "rules") -> dict[str, bytes]:
     return {
         "SKILL.md": (
             b"---\n"
@@ -90,9 +91,9 @@ def _codeguard_snapshot() -> dict[str, bytes]:
             b"purpose: Secure code generation guidance\n"
             b"---\n"
             b"# CodeGuard\n"
-            b"Read the relevant file in the `rules/` directory.\n"
+            b"Read the relevant guidance file.\n"
         ),
-        "rules/codeguard-0-python.md": b"# Python\nAvoid shell=True.\n",
+        f"{guidance_dir}/codeguard-0-python.md": b"# Python\nAvoid shell=True.\n",
     }
 
 
@@ -119,9 +120,11 @@ def _stub_loaders(monkeypatch: pytest.MonkeyPatch) -> None:
         ("securityeval_static_safety_codeguard", "codeguard"),
     ],
 )
+@pytest.mark.parametrize("agent_turn_limit", [None, 7], ids=["default", "custom"])
 def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     factory: str,
     condition: Condition,
+    agent_turn_limit: int | None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _stub_loaders(monkeypatch)
@@ -133,7 +136,10 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
 
     monkeypatch.setattr(task_module, "codex_cli", fake_codex_cli)
 
-    task = getattr(task_module, factory)()
+    arguments = (
+        {} if agent_turn_limit is None else {"agent_turn_limit": agent_turn_limit}
+    )
+    task = getattr(task_module, factory)(**arguments)
 
     skill_name = condition_skill_name(condition)
     assert task.name == securityeval_task_name(condition)
@@ -260,6 +266,7 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     assert sample.input == securityeval_prompt(condition)
 
     assert observed["version"] == CODEX_VERSION
+    assert observed["system_prompt"] == AGENT_ENVIRONMENT_INSTRUCTIONS
     assert observed["cwd"] == SANDBOX_WORKDIR
     assert observed["home_dir"] == CODEX_HOME_DIR
     assert observed["user"] == SANDBOX_USER
@@ -273,6 +280,26 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     assert task.metadata["skill_available"] is (skill_name is not None)
     assert (task.metadata["codeguard"] is not None) == (skill_name is not None)
     assert task.metadata["python_version"] == task_module.PYTHON_VERSION
+    assert task.metadata["generation_limits"] == {
+        "output_tokens": task_module.OUTPUT_TOKEN_LIMIT,
+        "turns": TURN_LIMIT if agent_turn_limit is None else agent_turn_limit,
+        "agent_seconds": AGENT_TIME_LIMIT,
+    }
+
+
+@pytest.mark.parametrize("agent_turn_limit", [True, 0, -1, 1.5, "16"])
+def test_tasks_reject_invalid_agent_turn_limits(
+    agent_turn_limit: object,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def unexpected_dataset_load() -> list[SecurityEvalCase]:
+        pytest.fail("Invalid limits must fail before loading the dataset")
+
+    monkeypatch.setattr(task_module, "load_securityeval_cases", unexpected_dataset_load)
+    with pytest.raises(ValueError, match="positive integer"):
+        task_module.securityeval_static_safety_baseline(
+            agent_turn_limit=agent_turn_limit,  # type: ignore[arg-type]
+        )
 
 
 def _setup_state(target: str = ORIGINAL_SOURCE) -> TaskState:
@@ -342,11 +369,13 @@ def test_solution_setup_rejects_an_invalid_target_before_exec(
     assert environment.calls == []
 
 
+@pytest.mark.parametrize("guidance_dir", ["rules", "references"])
 def test_codeguard_setup_installs_the_exact_repository_bytes(
+    guidance_dir: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     success = SimpleNamespace(success=True)
-    snapshot = _codeguard_snapshot()
+    snapshot = _codeguard_snapshot(guidance_dir)
     environment = FakeSandbox(success, success, success, success, success)
     monkeypatch.setattr(task_module, "sandbox", lambda _name: environment)
     state = _setup_state()
@@ -357,7 +386,7 @@ def test_codeguard_setup_installs_the_exact_repository_bytes(
 
     assert result is state
     assert environment.calls[0] == (
-        ["/usr/bin/mkdir", "-p", task_module.CODEGUARD_RULES_DIR],
+        ["/usr/bin/mkdir", "-p", f"{CODEGUARD_SKILL_DIR}/{guidance_dir}"],
         {
             "user": SANDBOX_ROOT_USER,
             "timeout": 10,
@@ -395,7 +424,7 @@ def test_codeguard_setup_installs_the_exact_repository_bytes(
             CODEGUARD_DIRECTORY_MODE,
             CODEX_SKILLS_DIR,
             CODEGUARD_SKILL_DIR,
-            CODEGUARD_RULES_DIR,
+            f"{CODEGUARD_SKILL_DIR}/{guidance_dir}",
         ],
         {
             "user": SANDBOX_ROOT_USER,
@@ -631,7 +660,8 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
     scorer would find no evidence and the sample would leave every denominator.
     """
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
-    monkeypatch.setattr(task_module, budget, budget_value)
+    if budget != "TURN_LIMIT":
+        monkeypatch.setattr(task_module, budget, budget_value)
 
     async def export() -> ExportedSolution:
         # Truncated before the agent changed anything the setup wrote.
@@ -673,7 +703,12 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
                 )
             ]
         ),
-        solver=bounded_generation(overruns_its_budget()),
+        solver=bounded_generation(
+            overruns_its_budget(),
+            agent_turn_limit=(
+                cast(int, budget_value) if budget == "TURN_LIMIT" else TURN_LIMIT
+            ),
+        ),
         scorer=static_safety_scorer(),
         time_limit=SAMPLE_TIME_LIMIT,
     )
@@ -721,7 +756,6 @@ def test_bridge_limit_event_survives_fail_closed_scanner_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
-    monkeypatch.setattr(task_module, "TURN_LIMIT", 2)
 
     async def export() -> ExportedSolution:
         return ExportedSolution(SAFE_SOURCE.encode(), None)
@@ -759,7 +793,7 @@ def test_bridge_limit_event_survives_fail_closed_scanner_error(
                 )
             ]
         ),
-        solver=bounded_generation(overruns_turn_limit()),
+        solver=bounded_generation(overruns_turn_limit(), agent_turn_limit=2),
         scorer=static_safety_scorer(),
         time_limit=SAMPLE_TIME_LIMIT,
         score_on_error=False,
@@ -879,6 +913,11 @@ def test_task_records_pinned_provenance(
         "codex_version": CODEX_VERSION,
         "inspect_swe_version": task_module.INSPECT_SWE_VERSION,
         "python_version": task_module.PYTHON_VERSION,
+        "generation_limits": {
+            "output_tokens": task_module.OUTPUT_TOKEN_LIMIT,
+            "turns": TURN_LIMIT,
+            "agent_seconds": AGENT_TIME_LIMIT,
+        },
         "skill_available": True,
         "codeguard": {
             "version": "1.4.0",

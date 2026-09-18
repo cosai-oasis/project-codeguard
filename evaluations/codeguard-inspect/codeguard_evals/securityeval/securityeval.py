@@ -85,6 +85,7 @@ from codeguard_evals.securityeval.dataset import (
     securityeval_samples,
 )
 from codeguard_evals.securityeval.protocol import (
+    AGENT_ENVIRONMENT_INSTRUCTIONS,
     CODEGUARD_SKILL_DIR,
     EVALUATION_VERSION,
     STATIC_SAFETY_SUITE,
@@ -97,13 +98,15 @@ from codeguard_evals.semgrep_runner import scan_source
 
 MAX_GENERATION_TOKENS: Final = 4_096
 OUTPUT_TOKEN_LIMIT: Final = 32_768
-TURN_LIMIT: Final = 8
-AGENT_TIME_LIMIT: Final = 300
+TURN_LIMIT: Final = 16
+AGENT_TIME_LIMIT: Final = 600
 CODEX_VERSION: Final = "0.146.0"
 # Backstop for a wedged sandbox only. Generation has its own scoped budget, and
 # the bounded setup, export, and scan steps fit well inside the remainder.
-SAMPLE_TIME_LIMIT: Final = 900
-CODEGUARD_RULES_DIR: Final = f"{CODEGUARD_SKILL_DIR}/rules"
+# Keep at least AGENT_TIME_LIMIT plus headroom: if this fires first, the sample
+# aborts before the solver can capture and scan the generated source, so a
+# limit-stopped generation would be dropped from the metrics instead of counted.
+SAMPLE_TIME_LIMIT: Final = 1_200
 CODEGUARD_FILE_MODE: Final = "0444"
 CODEGUARD_DIRECTORY_MODE: Final = "0555"
 SANDBOX_CONFIG: Final = Path(__file__).parents[2] / "sandbox" / "compose.yaml"
@@ -254,12 +257,21 @@ def install_codeguard_skill(snapshot: Mapping[str, bytes]) -> Solver:
     frozen = dict(snapshot)
     codeguard_version(frozen)
     files = tuple(sorted(frozen.items()))
+    guidance_dirs = tuple(
+        sorted(
+            {
+                f"{CODEGUARD_SKILL_DIR}/{path.split('/', 1)[0]}"
+                for path in frozen
+                if "/" in path
+            }
+        )
+    )
 
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         del generate
         environment = sandbox(SANDBOX_NAME)
         directory_result = await environment.exec(
-            ["/usr/bin/mkdir", "-p", CODEGUARD_RULES_DIR],
+            ["/usr/bin/mkdir", "-p", *guidance_dirs],
             user=SANDBOX_ROOT_USER,
             timeout=10,
             timeout_retry=False,
@@ -306,7 +318,7 @@ def install_codeguard_skill(snapshot: Mapping[str, bytes]) -> Solver:
                 CODEGUARD_DIRECTORY_MODE,
                 CODEX_SKILLS_DIR,
                 CODEGUARD_SKILL_DIR,
-                CODEGUARD_RULES_DIR,
+                *guidance_dirs,
             ],
             user=SANDBOX_ROOT_USER,
             timeout=10,
@@ -322,7 +334,7 @@ def install_codeguard_skill(snapshot: Mapping[str, bytes]) -> Solver:
 
 
 @solver
-def bounded_generation(agent: Agent) -> Solver:
+def bounded_generation(agent: Agent, *, agent_turn_limit: int = TURN_LIMIT) -> Solver:
     """Budget generation and always capture its saved artifact.
 
     Applying these as task limits would abort the whole solver chain, so a
@@ -330,10 +342,12 @@ def bounded_generation(agent: Agent) -> Solver:
     from every metric instead of counting as the weak generation it is.
     """
 
+    effective_turn_limit = _validate_agent_turn_limit(agent_turn_limit)
+
     async def solve(state: TaskState, generate: Generate) -> TaskState:
         limits: dict[str, Limit] = {
             "token": token_limit(OUTPUT_TOKEN_LIMIT, type="output"),
-            "turn": turn_limit(TURN_LIMIT),
+            "turn": turn_limit(effective_turn_limit),
             "time": time_limit(AGENT_TIME_LIMIT),
         }
         collect_evidence = False
@@ -355,6 +369,12 @@ def bounded_generation(agent: Agent) -> Solver:
                     await _capture_semgrep_evidence(state)
 
     return solve
+
+
+def _validate_agent_turn_limit(value: int) -> int:
+    if type(value) is not int or value < 1:
+        raise ValueError("agent_turn_limit must be a positive integer")
+    return value
 
 
 async def _capture_semgrep_evidence(state: TaskState) -> None:
@@ -389,24 +409,35 @@ def _has_applied_generation_limit_event(limits: dict[str, Limit]) -> bool:
 
 
 @task
-def securityeval_static_safety_baseline() -> Task:
+def securityeval_static_safety_baseline(
+    agent_turn_limit: int = TURN_LIMIT,
+) -> Task:
     """Measure the Codex static-safety baseline without a security skill."""
-    return _securityeval_task("baseline")
+    return _securityeval_task("baseline", agent_turn_limit=agent_turn_limit)
 
 
 @task
-def securityeval_static_safety_secure_prompt() -> Task:
+def securityeval_static_safety_secure_prompt(
+    agent_turn_limit: int = TURN_LIMIT,
+) -> Task:
     """Measure a plain security-focused prompt without a skill."""
-    return _securityeval_task("secure_prompt")
+    return _securityeval_task("secure_prompt", agent_turn_limit=agent_turn_limit)
 
 
 @task
-def securityeval_static_safety_codeguard() -> Task:
+def securityeval_static_safety_codeguard(
+    agent_turn_limit: int = TURN_LIMIT,
+) -> Task:
     """Measure repository CodeGuard under automatic skill routing."""
-    return _securityeval_task("codeguard")
+    return _securityeval_task("codeguard", agent_turn_limit=agent_turn_limit)
 
 
-def _securityeval_task(condition: Condition) -> Task:
+def _securityeval_task(
+    condition: Condition,
+    *,
+    agent_turn_limit: int,
+) -> Task:
+    agent_turn_limit = _validate_agent_turn_limit(agent_turn_limit)
     skill_name = condition_skill_name(condition)
     task_name = securityeval_task_name(condition)
     cases = load_securityeval_cases()
@@ -424,6 +455,7 @@ def _securityeval_task(condition: Condition) -> Task:
     agent_solver = bounded_generation(
         codex_cli(
             version=CODEX_VERSION,
+            system_prompt=AGENT_ENVIRONMENT_INSTRUCTIONS,
             skills=None,
             cwd=SANDBOX_WORKDIR,
             home_dir=CODEX_HOME_DIR,
@@ -434,7 +466,8 @@ def _securityeval_task(condition: Condition) -> Task:
             auto_review=False,
             attempts=1,
             retry_refusals=0,
-        )
+        ),
+        agent_turn_limit=agent_turn_limit,
     )
 
     return Task(
@@ -465,6 +498,11 @@ def _securityeval_task(condition: Condition) -> Task:
             "codex_version": CODEX_VERSION,
             "inspect_swe_version": INSPECT_SWE_VERSION,
             "python_version": PYTHON_VERSION,
+            "generation_limits": {
+                "output_tokens": OUTPUT_TOKEN_LIMIT,
+                "turns": agent_turn_limit,
+                "agent_seconds": AGENT_TIME_LIMIT,
+            },
             "skill_available": skill_name is not None,
             "codeguard": codeguard_metadata,
             "sandbox": "docker-compose",

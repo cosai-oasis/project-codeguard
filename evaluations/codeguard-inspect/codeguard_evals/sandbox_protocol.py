@@ -14,7 +14,8 @@ SEMGREP_SANDBOX_USER: Final = "1000:1000"
 SANDBOX_WORKDIR: Final = "/workspace"
 SANDBOX_USER: Final = "nonroot"
 SANDBOX_ROOT_USER: Final = "0:0"
-CODEX_HOME_DIR: Final = f"{SANDBOX_WORKDIR}/.codex"
+SANDBOX_USER_HOME: Final = "/home/nonroot"
+CODEX_HOME_DIR: Final = f"{SANDBOX_USER_HOME}/.codex"
 CODEX_SKILLS_DIR: Final = f"{CODEX_HOME_DIR}/skills"
 
 MAX_PYTHON_SOURCE_BYTES: Final = 64 * 1024
