@@ -3,8 +3,6 @@ description: Privacy & data protection (minimization, classification, encryption
   rights, transparency)
 languages:
 - javascript
-- matlab
-- yaml
 tags:
 - privacy
 alwaysApply: false

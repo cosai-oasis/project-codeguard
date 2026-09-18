@@ -6,14 +6,11 @@ languages:
 - java
 - javascript
 - kotlin
-- matlab
 - php
 - python
 - ruby
 - swift
 - typescript
-- xml
-- yaml
 tags:
 - data-security
 - secrets

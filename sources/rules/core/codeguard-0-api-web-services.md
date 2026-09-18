@@ -2,7 +2,6 @@
 description: API & Web services security (REST/GraphQL/SOAP), schema validation, authn/z,
   SSRF
 languages:
-- c
 - go
 - java
 - javascript
@@ -11,7 +10,6 @@ languages:
 - ruby
 - typescript
 - xml
-- yaml
 tags:
 - web
 alwaysApply: false

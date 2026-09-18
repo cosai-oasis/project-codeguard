@@ -5,7 +5,6 @@ languages:
 - javascript
 - powershell
 - shell
-- xml
 - yaml
 alwaysApply: false
 tags:

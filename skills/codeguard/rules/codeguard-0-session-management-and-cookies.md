@@ -1,9 +1,7 @@
 ---
 description: Session management and secure cookies (rotation, fixation, timeouts, theft detection)
 languages:
-- c
 - go
-- html
 - java
 - javascript
 - php

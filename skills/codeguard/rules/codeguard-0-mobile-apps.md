@@ -4,8 +4,6 @@ languages:
 - java
 - javascript
 - kotlin
-- matlab
-- perl
 - swift
 - xml
 alwaysApply: false

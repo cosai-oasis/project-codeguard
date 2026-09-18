@@ -6,7 +6,6 @@ languages:
 - javascript
 - powershell
 - shell
-- xml
 - yaml
 tags:
 - infrastructure

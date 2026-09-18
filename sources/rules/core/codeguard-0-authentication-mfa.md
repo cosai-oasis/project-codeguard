@@ -7,7 +7,6 @@ languages:
 - java
 - javascript
 - kotlin
-- matlab
 - php
 - python
 - ruby
