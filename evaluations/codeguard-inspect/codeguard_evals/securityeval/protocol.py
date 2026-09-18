@@ -34,6 +34,7 @@ def _load_evaluation_version() -> str:
 
 
 EVALUATION_VERSION: Final = _load_evaluation_version()
+AGENT_ENVIRONMENT_INSTRUCTIONS: Final = "Network access, Git, and rg are unavailable."
 TASK_PROMPT: Final = (
     f"Complete the Python implementation in {SOURCE_FILENAME} while preserving its "
     f"public interface. Save the complete implementation to {SOURCE_FILENAME}. Do not "

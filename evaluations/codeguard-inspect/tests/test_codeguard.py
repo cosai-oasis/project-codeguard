@@ -13,52 +13,74 @@ from codeguard_evals.codeguard import (
     load_codeguard,
 )
 
-SKILL = b"# CodeGuard\n"
+SKILL = (
+    b"---\n"
+    b"name: codeguard\n"
+    b"description: Secure coding guidance.\n"
+    b"---\n"
+    b"# CodeGuard\n"
+)
 RULE = b"# Rule\n"
 
 
+@pytest.fixture(params=["rules/codeguard-test.md", "references/test-guidance.md"])
+def guidance_path(request: pytest.FixtureRequest) -> str:
+    return request.param
+
+
 @pytest.fixture
-def codeguard_source(tmp_path: Path) -> Path:
+def codeguard_source(tmp_path: Path, guidance_path: str) -> Path:
     source = tmp_path / "software-security"
-    rules = source / "rules"
-    rules.mkdir(parents=True)
+    guidance = source / guidance_path
+    guidance.parent.mkdir(parents=True)
     (source / "SKILL.md").write_bytes(SKILL)
-    (rules / "codeguard-test.md").write_bytes(RULE)
+    guidance.write_bytes(RULE)
     return source
 
 
-def test_codeguard_freezes_allowlisted_files(codeguard_source: Path) -> None:
+def test_codeguard_freezes_allowlisted_files(
+    codeguard_source: Path,
+    guidance_path: str,
+) -> None:
     assert load_codeguard(codeguard_source) == {
         "SKILL.md": SKILL,
-        "rules/codeguard-test.md": RULE,
+        guidance_path: RULE,
     }
 
 
 def test_frozen_files_do_not_change_with_source(
     codeguard_source: Path,
+    guidance_path: str,
 ) -> None:
     files = load_codeguard(codeguard_source)
     (codeguard_source / "SKILL.md").write_bytes(b"changed")
-    (codeguard_source / "rules/codeguard-test.md").unlink()
+    (codeguard_source / guidance_path).unlink()
 
     assert files == {
         "SKILL.md": SKILL,
-        "rules/codeguard-test.md": RULE,
+        guidance_path: RULE,
     }
 
 
-def test_codeguard_content_digest_is_canonical_and_sensitive() -> None:
+def test_codeguard_content_digest_is_canonical_and_sensitive(
+    guidance_path: str,
+) -> None:
     snapshot = {
         "SKILL.md": SKILL,
-        "rules/codeguard-test.md": RULE,
+        guidance_path: RULE,
     }
     reversed_snapshot = dict(reversed(snapshot.items()))
-    changed_snapshot = {**snapshot, "rules/codeguard-test.md": b"# Changed\n"}
+    changed_snapshot = {**snapshot, guidance_path: b"# Changed\n"}
+    renamed_snapshot = {
+        "SKILL.md": SKILL,
+        f"{guidance_path.rsplit('/', 1)[0]}/codeguard-renamed.md": RULE,
+    }
 
     digest = codeguard_content_sha256(snapshot)
     assert len(digest) == 64
     assert codeguard_content_sha256(reversed_snapshot) == digest
     assert codeguard_content_sha256(changed_snapshot) != digest
+    assert codeguard_content_sha256(renamed_snapshot) != digest
 
 
 @pytest.mark.parametrize(
@@ -72,7 +94,7 @@ def test_codeguard_content_digest_is_canonical_and_sensitive() -> None:
 def test_codeguard_content_digest_rejects_invalid_snapshots(
     snapshot: dict[str, bytes],
 ) -> None:
-    with pytest.raises(ValueError, match="no rules|unexpected path|invalid content"):
+    with pytest.raises(ValueError, match="no guidance|unexpected path|invalid content"):
         codeguard_content_sha256(snapshot)
 
 
@@ -93,37 +115,67 @@ def test_frozen_snapshot_enforces_the_total_size_limit(
         codeguard_content_sha256(snapshot)
 
 
-def test_repository_codeguard_folder_is_loadable() -> None:
-    files = load_codeguard()
-
-    assert files["SKILL.md"] == (CODEGUARD_SOURCE / "SKILL.md").read_bytes()
-    assert any(path.startswith("rules/codeguard-") for path in files)
-
-
 def test_repository_codeguard_is_validated_without_rewriting() -> None:
     frozen = load_codeguard()
     original = dict(frozen)
 
-    assert codeguard_version(frozen) == "1.4.0"
+    assert len(frozen) > 1
+    assert codeguard_version(frozen)
+    assert all(
+        content == (CODEGUARD_SOURCE / path).read_bytes()
+        for path, content in frozen.items()
+    )
     assert frozen == original
-    assert b"`rules/`" in frozen["SKILL.md"]
 
 
-def test_codeguard_validation_rejects_nonstandard_front_matter() -> None:
-    frozen = load_codeguard()
+def test_codeguard_does_not_infer_a_missing_version(codeguard_source: Path) -> None:
+    frozen = load_codeguard(codeguard_source)
+    original = dict(frozen)
+
+    assert codeguard_version(frozen) == "unspecified"
+    assert frozen == original
+
+
+@pytest.mark.parametrize("version", ["1.4.0", "9.8.7"])
+def test_codeguard_preserves_the_declared_version(
+    codeguard_source: Path,
+    version: str,
+) -> None:
+    frozen = load_codeguard(codeguard_source)
+    frozen["SKILL.md"] = SKILL.replace(
+        b"---\n# CodeGuard\n",
+        (
+            f'codeguard-version: "{version}"\n'
+            "framework: Project CodeGuard\n"
+            "purpose: Secure code generation guidance\n"
+            "---\n# CodeGuard\n"
+        ).encode(),
+    )
+    original = dict(frozen)
+
+    assert codeguard_version(frozen) == version
+    assert frozen == original
+
+
+def test_codeguard_validation_rejects_nonstandard_front_matter(
+    codeguard_source: Path,
+) -> None:
+    frozen = load_codeguard(codeguard_source)
     frozen["SKILL.md"] = frozen["SKILL.md"].replace(
-        b"framework:",
-        b"unexpected: value\nframework:",
+        b"name: codeguard\n",
+        b"name: codeguard\nunexpected: value\n",
     )
 
     with pytest.raises(ValueError, match="unexpected front matter"):
         codeguard_version(frozen)
 
 
-def test_codeguard_validation_rejects_non_utf8_rule() -> None:
-    frozen = load_codeguard()
-    rule_path = next(path for path in frozen if path.startswith("rules/"))
-    frozen[rule_path] = b"\xff"
+def test_codeguard_validation_rejects_non_utf8_guidance(
+    codeguard_source: Path,
+    guidance_path: str,
+) -> None:
+    frozen = load_codeguard(codeguard_source)
+    frozen[guidance_path] = b"\xff"
 
     with pytest.raises(ValueError, match="not valid UTF-8"):
         codeguard_version(frozen)
@@ -134,17 +186,20 @@ def test_codeguard_validation_rejects_non_utf8_rule() -> None:
     [
         ("SKILL.md", False, "missing SKILL"),
         ("SKILL.md", True, "file is empty"),
-        ("rules/codeguard-test.md", False, "no rules"),
-        ("rules/codeguard-test.md", True, "file is empty"),
+        ("guidance", False, "no guidance"),
+        ("guidance", True, "file is empty"),
     ],
 )
-def test_codeguard_requires_nonempty_skill_and_rule(
+def test_codeguard_requires_nonempty_skill_and_guidance(
     codeguard_source: Path,
+    guidance_path: str,
     relative_path: str,
     empty: bool,
     message: str,
 ) -> None:
-    path = codeguard_source / relative_path
+    path = codeguard_source / (
+        guidance_path if relative_path == "guidance" else relative_path
+    )
     if empty:
         path.write_bytes(b"")
     else:
@@ -154,11 +209,14 @@ def test_codeguard_requires_nonempty_skill_and_rule(
         load_codeguard(codeguard_source)
 
 
-def test_codeguard_rejects_unsafe_names(codeguard_source: Path) -> None:
-    rule = codeguard_source / "rules/codeguard-test.md"
-    rule.rename(codeguard_source / "rules/codeguard-bad:name.md")
+def test_codeguard_rejects_unsafe_names(
+    codeguard_source: Path,
+    guidance_path: str,
+) -> None:
+    rule = codeguard_source / guidance_path
+    rule.rename(rule.with_name("codeguard-bad:name.md"))
 
-    with pytest.raises(ValueError, match="unexpected rule"):
+    with pytest.raises(ValueError, match="unexpected guidance"):
         load_codeguard(codeguard_source)
 
 
@@ -169,10 +227,28 @@ def test_codeguard_rejects_unexpected_files(codeguard_source: Path) -> None:
         load_codeguard(codeguard_source)
 
 
+def test_codeguard_rejects_mixed_layouts(
+    codeguard_source: Path,
+    guidance_path: str,
+) -> None:
+    frozen = load_codeguard(codeguard_source)
+    other_dir = "references" if guidance_path.startswith("rules/") else "rules"
+    other_path = f"{other_dir}/codeguard-other.md"
+    frozen[other_path] = RULE
+    with pytest.raises(ValueError, match="mixes guidance layouts"):
+        codeguard_content_sha256(frozen)
+
+    (codeguard_source / other_dir).mkdir()
+    (codeguard_source / other_path).write_bytes(RULE)
+    with pytest.raises(ValueError, match="unexpected entries"):
+        load_codeguard(codeguard_source)
+
+
 @pytest.mark.parametrize("kind", ["root", "file", "directory", "broken"])
 def test_codeguard_rejects_symlinks(
     tmp_path: Path,
     codeguard_source: Path,
+    guidance_path: str,
     kind: str,
 ) -> None:
     source = codeguard_source
@@ -182,14 +258,14 @@ def test_codeguard_rejects_symlinks(
     elif kind == "file":
         skill = source / "SKILL.md"
         skill.unlink()
-        skill.symlink_to(source / "rules/codeguard-test.md")
+        skill.symlink_to(source / guidance_path)
     elif kind == "directory":
-        rules = source / "rules"
-        (rules / "codeguard-test.md").unlink()
-        rules.rmdir()
-        rules.symlink_to(tmp_path, target_is_directory=True)
+        guidance = source / guidance_path
+        guidance.unlink()
+        guidance.parent.rmdir()
+        guidance.parent.symlink_to(tmp_path, target_is_directory=True)
     else:
-        rule = source / "rules/codeguard-test.md"
+        rule = source / guidance_path
         rule.unlink()
         rule.symlink_to(source / "missing.md")
 
@@ -197,8 +273,11 @@ def test_codeguard_rejects_symlinks(
         load_codeguard(source)
 
 
-def test_codeguard_rejects_special_files(codeguard_source: Path) -> None:
-    rule = codeguard_source / "rules/codeguard-test.md"
+def test_codeguard_rejects_special_files(
+    codeguard_source: Path,
+    guidance_path: str,
+) -> None:
+    rule = codeguard_source / guidance_path
     rule.unlink()
     os.mkfifo(rule)
 

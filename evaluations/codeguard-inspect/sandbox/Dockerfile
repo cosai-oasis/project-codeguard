@@ -4,15 +4,16 @@ FROM python:3.13-slim@sha256:ffb752e139c0a19692a43af8d8523b274222dd68eebad5d583b
 # uses root as the service identity so Inspect's injected tooling is root-owned.
 RUN groupadd --gid 65532 nonroot \
     && useradd --uid 65532 --gid 65532 \
-        --home-dir /workspace \
+        --home-dir /home/nonroot \
         --no-create-home \
         --no-log-init \
         --shell /usr/sbin/nologin \
         nonroot \
     && install -d -m 0555 \
+        /home/nonroot \
         /usr/local/lib/python3.13/site-packages/codeguard_evals
 
-ENV HOME=/workspace \
+ENV HOME=/home/nonroot \
     LANG=C.UTF-8 \
     PATH=/usr/local/bin:/usr/bin:/bin \
     PYTHONDONTWRITEBYTECODE=1 \

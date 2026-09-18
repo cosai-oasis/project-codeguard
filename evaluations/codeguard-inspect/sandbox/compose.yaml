@@ -35,11 +35,13 @@ services:
         soft: 256
         hard: 256
     tmpfs:
-      # DAC_OVERRIDE is dropped, so these bits bind root as well: group 0 may
-      # write and traverse the agent's home without reading what it produced.
+      # Keep task files separate from Codex state so ordinary workspace
+      # discovery cannot traverse session databases or installed skills.
       - /workspace:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
-      - /workspace/.codex:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
-      - /workspace/.codex/skills:rw,nosuid,nodev,noexec,size=2m,uid=0,gid=0,mode=0755
+      # Group 0 can create and traverse entries here, but cannot list them.
+      # The trusted supervisor can still switch to the agent's identity.
+      - /home/nonroot/.codex:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
+      - /home/nonroot/.codex/skills:rw,nosuid,nodev,noexec,size=2m,uid=0,gid=0,mode=0755
       - /tmp:rw,nosuid,nodev,noexec,size=16m,uid=0,gid=0,mode=1777
       # Inspect executes its injected tooling here; keep this sole writable
       # executable mount bounded, container-local, and unavailable to the host.

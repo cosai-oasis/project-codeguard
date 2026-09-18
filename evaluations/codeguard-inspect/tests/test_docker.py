@@ -31,6 +31,7 @@ from codeguard_evals.sandbox_protocol import (
     SANDBOX_NAME,
     SANDBOX_ROOT_USER,
     SANDBOX_USER,
+    SANDBOX_USER_HOME,
     SANDBOX_WORKDIR,
     SOURCE_FILENAME,
 )
@@ -68,6 +69,18 @@ def _checked(command: list[str], *, timeout: int = 60) -> str:
     result = _run(command, timeout=timeout)
     assert result.returncode == 0, result.stderr
     return result.stdout
+
+
+def _harness_container_ids() -> set[str]:
+    # Other Docker workloads may start or stop while these tests are running.
+    return set(
+        _checked(
+            [
+                "docker", "ps", "--all", "--quiet", "--no-trunc", "--filter",
+                f"label=com.docker.compose.project.working_dir={SANDBOX_CONFIG.parent}",
+            ]
+        ).splitlines()
+    )
 
 
 def _compose(project_name: str, *arguments: str, timeout: int = 60) -> str:
@@ -192,6 +205,7 @@ def test_live_container_enforces_outer_sandbox_policy(
     assert details["Config"]["User"] == SANDBOX_ROOT_USER
     assert details["Config"]["Cmd"] == ["/usr/bin/tail", "-f", "/dev/null"]
     assert details["Config"]["WorkingDir"] == SANDBOX_WORKDIR
+    assert container in _harness_container_ids()
     assert image_details["Config"]["User"] == "nonroot"
     assert not image_details["Config"]["Entrypoint"]
     assert host["ReadonlyRootfs"] is True
@@ -305,6 +319,7 @@ def test_temp_mounts_protect_root_owned_entries(
     paths = ("/tmp/codeguard-root-state-test", "/var/tmp/codeguard-root-tools-test")
     paths_to_check = [
         SANDBOX_WORKDIR,
+        SANDBOX_USER_HOME,
         CODEX_HOME_DIR,
         CODEX_SKILLS_DIR,
         "/tmp",
@@ -328,10 +343,25 @@ def test_temp_mounts_protect_root_owned_entries(
     assert metadata.returncode == 0, metadata.stderr
     directories = json.loads(metadata.stdout)
     assert directories[SANDBOX_WORKDIR] == [65532, 0, 0o730]
+    assert directories[SANDBOX_USER_HOME] == [0, 0, 0o555]
     assert directories[CODEX_HOME_DIR] == [65532, 0, 0o730]
     assert directories[CODEX_SKILLS_DIR] == [0, 0, 0o755]
     assert directories["/tmp"] == [0, 0, 0o1777]
     assert directories["/var/tmp"] == [0, 0, 0o1777]
+
+    separated_home = _exec(
+        container,
+        "/usr/local/bin/python",
+        "-c",
+        (
+            "import os, sys; "
+            "sys.exit(os.environ.get('HOME') != sys.argv[1] or "
+            "os.path.exists(sys.argv[2]))"
+        ),
+        SANDBOX_USER_HOME,
+        f"{SANDBOX_WORKDIR}/.codex",
+    )
+    assert separated_home.returncode == 0, separated_home.stderr
 
     skill_mount_attack = _exec(
         container,
@@ -540,9 +570,7 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
         sandbox=("docker", str(SANDBOX_CONFIG)),
         version=EVALUATION_VERSION,
     )
-    containers_before = set(
-        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
-    )
+    containers_before = _harness_container_ids()
 
     log = eval(
         task,
@@ -554,15 +582,10 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
         max_subprocesses=1,
         sandbox_cleanup=True,
     )[0]
-    containers_after = set(
-        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
-    )
+    containers_after = _harness_container_ids()
 
     assert log.status == "success", log.error
     assert containers_after == containers_before
-    assert log.eval.task_display_name == "SecurityEval — CodeGuard"
-    assert log.eval.tags == ["securityeval", "static-safety", "codeguard"]
-    assert log.eval.viewer == task.viewer
     assert log.samples is not None and len(log.samples) == 1
     sample = log.samples[0]
     evidence = SemgrepEvidence.model_validate(
@@ -604,8 +627,7 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     )
     # The seventh model response crosses this limit after the sixth response
     # has written solution.py. This exercises Inspect's real bridge-cancel path.
-    monkeypatch.setattr(task_module, "TURN_LIMIT", 6)
-    rule_path = next(path for path in sorted(snapshot) if path.startswith("rules/"))
+    guidance_path = next(path for path in sorted(snapshot) if path != "SKILL.md")
     outputs = [
         ModelOutput.for_tool_call(
             "mockllm/model",
@@ -646,13 +668,13 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
                     "set -eu; "
                     f"test ! -w {CODEX_SKILLS_DIR}; "
                     f"test ! -w {CODEGUARD_SKILL_DIR}; "
-                    f"test ! -w {CODEGUARD_SKILL_DIR}/{rule_path}; "
+                    f"test ! -w {CODEGUARD_SKILL_DIR}/{guidance_path}; "
                     f"! printf 'tampered\\n' > "
-                    f"{CODEGUARD_SKILL_DIR}/{rule_path}; "
+                    f"{CODEGUARD_SKILL_DIR}/{guidance_path}; "
                     f"! mv {CODEGUARD_SKILL_DIR} "
                     f"{CODEGUARD_SKILL_DIR}-agent-moved; "
                     "sed -n '1,160p' "
-                    f"{CODEGUARD_SKILL_DIR}/{rule_path}"
+                    f"{CODEGUARD_SKILL_DIR}/{guidance_path}"
                 )
             },
             tool_call_id="read-rule",
@@ -715,10 +737,8 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     ]
     last_completed_output = outputs[-2].completion
     model = get_model("mockllm/model", custom_outputs=outputs)
-    task = task_module.securityeval_static_safety_codeguard()
-    containers_before = set(
-        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
-    )
+    task = task_module.securityeval_static_safety_codeguard(agent_turn_limit=6)
+    containers_before = _harness_container_ids()
 
     log = eval(
         task,
@@ -730,15 +750,16 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
         max_subprocesses=1,
         sandbox_cleanup=True,
     )[0]
-    containers_after = set(
-        _checked(["docker", "ps", "--all", "--quiet"]).splitlines()
-    )
+    containers_after = _harness_container_ids()
 
     assert log.status == "success", log.error
     assert containers_after == containers_before
     assert log.samples is not None and len(log.samples) == 1
     sample = log.samples[0]
     assert sample.input == TASK_PROMPT
+    assert log.eval.task_display_name == "SecurityEval — CodeGuard"
+    assert set(log.eval.tags or []) == {"securityeval", "static-safety", "codeguard"}
+    assert log.eval.viewer == task.viewer
     assert any(
         message.role == "system"
         and "### Available skills" in message.text
