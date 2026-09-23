@@ -1,0 +1,10 @@
+**
+!sandbox/
+sandbox/**
+!sandbox/Dockerfile
+!codeguard_evals/
+codeguard_evals/**
+!codeguard_evals/__init__.py
+!codeguard_evals/export_solution.py
+!codeguard_evals/safe_io.py
+!codeguard_evals/sandbox_protocol.py

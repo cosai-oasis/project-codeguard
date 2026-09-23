@@ -28,7 +28,7 @@ The CodeGuard rule files live at `{RULES_DIR}/codeguard-*{RULE_EXT}` (one per ru
    Exclude from every search:
    - Your own rule directory `{RULES_DIR}/` and any CodeGuard host
      directories (`.claude/`, `.cursor/`, `.codex/`, `.opencode/`,
-     `.agents/`, `.windsurf/`, `.github/instructions/`, `.github/agents/`,
+     `.agents/`, `.windsurf/`, `.devin/`, `.github/instructions/`, `.github/agents/`,
      `.openclaw/`, `.hermes/`). These contain CodeGuard-generated rules or
      agents (with example secrets and banned-API snippets) and must never be
      reported as findings.
