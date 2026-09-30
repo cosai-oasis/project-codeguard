@@ -14,13 +14,18 @@ This page helps you pick the right path for your situation. For step-by-step ins
 |:---|:---|:---|
 | **Solo developer, one repo** | Rule / instruction files | Glob-scoped — only rules matching the file you're editing load. Lowest token cost, simplest setup. |
 | **Team sharing via git** | Rule files or Agent Skills, **project-scoped** | Committed to the repo — every contributor gets CodeGuard automatically on clone. |
+| **Multi-IDE team already using APM** | [APM skill install](apm-install.md) | Optional path that deploys the CodeGuard Agent Skill across harnesses without duplicating rule formats |
 | **Want a host-managed install and updates** | Plugin marketplace (Claude Code or Codex) or remote instructions (OpenCode) | No copied rule files to maintain; the host manages the installed package. |
 | **Prefer a one-click install from your IDE's extension marketplace** | IDE marketplace extension (Cursor, Windsurf, Antigravity, VS Code host for Copilot) | Familiar "install extension" UX; auto-updates through the marketplace; one package covers all four VS Code-family IDEs. |
 | **Org admin enforcing policy** | Org-managed dashboard (Cursor Team Rules, Copilot org instructions) | Centrally enforced across every repo without per-project setup. |
 | **Already running MCP infrastructure** | MCP server (self-hosted) | Rules served dynamically; integrates with your existing MCP tooling. |
 
 !!! tip "Not sure? Start here"
-    Download the pre-built rule files for your tool from the [releases page](https://github.com/cosai-oasis/project-codeguard/releases) and drop them into your repo. You can switch routes later — the underlying rules are the same.
+    Download the pre-built rule files for your tool from the
+    [releases page](https://github.com/cosai-oasis/project-codeguard/releases).
+    If your team already uses APM, you can optionally add the
+    [CodeGuard skill](apm-install.md) as a complement.
+    You can switch routes later — the underlying rules are the same.
 
 ## Fast Decision Tree
 
@@ -110,6 +115,18 @@ Before picking a mechanism, decide **who** should end up with CodeGuard active. 
 ---
 
 ## How Each Route Works
+
+### APM (Agent Package Manager)
+
+Optional install path for the **CodeGuard Agent Skill** across harnesses.
+Does not deploy glob-scoped instruction files or duplicate rule content that
+already exists in release ZIPs.
+
+- **Supported by:** Cursor, GitHub Copilot, Claude Code, Windsurf, Codex, OpenCode, Antigravity, Gemini, Kiro, and others via the [APM targets matrix](https://microsoft.github.io/apm/reference/targets-matrix/)
+- **Best for:** Teams already standardizing on APM who want the CodeGuard skill in multiple harnesses with lockfile-pinned installs
+- **Tradeoffs:** Skill-only scope — use release ZIPs for always-on glob-scoped rules. Requires the APM CLI.
+- **Responsible CoSAI personas:** Application Developer (repo install), AI System Governance (org policy via `apm-policy.yml`)
+- **Guide:** [Installing with APM](apm-install.md)
 
 ### Rule / instruction files
 
