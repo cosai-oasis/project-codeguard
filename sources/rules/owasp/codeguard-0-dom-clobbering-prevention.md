@@ -10,9 +10,12 @@ languages:
 alwaysApply: false
 ---
 
+# DOM Clobbering Prevention Best Practices
+
 ## DOM Clobbering Prevention Security Rule
 
-**RULE ENFORCEMENT:** This rule prevents DOM clobbering attacks where malicious HTML elements with `id` or `name` attributes override JavaScript variables and browser APIs, potentially leading to XSS and security bypasses.
+**RULE ENFORCEMENT:** This rule prevents DOM clobbering attacks where malicious HTML elements with `id` or `name`
+attributes override JavaScript variables and browser APIs, potentially leading to XSS and security bypasses.
 
 ## Rule 1: HTML Sanitization Requirements
 
@@ -22,7 +25,7 @@ alwaysApply: false
 // REQUIRED: DOMPurify configuration
 const clean = DOMPurify.sanitize(userInput, {
   SANITIZE_DOM: true,           // Protects built-in APIs
-  SANITIZE_NAMED_PROPS: true,   // MANDATORY: Protects custom variables  
+  SANITIZE_NAMED_PROPS: true,   // MANDATORY: Protects custom variables
   FORBID_ATTR: ['id', 'name']   // REQUIRED: Remove clobbering attributes
 });
 
@@ -34,16 +37,17 @@ element.setHTML(userInput, {sanitizer});
 ```
 
 **YOU ARE PROHIBITED FROM:**
-* Using `innerHTML` with unsanitized user input
-* Allowing `id` or `name` attributes in user-generated content
-* Disabling `SANITIZE_NAMED_PROPS` in DOMPurify configuration
+
+- Using `innerHTML` with unsanitized user input
+- Allowing `id` or `name` attributes in user-generated content
+- Disabling `SANITIZE_NAMED_PROPS` in DOMPurify configuration
 
 ## Rule 2: Content Security Policy Requirements
 
 **YOU MUST implement strict CSP** to prevent DOM clobbering exploitation:
 
 ```http
-Content-Security-Policy: 
+Content-Security-Policy:
   script-src 'self' 'nonce-{random}';
   object-src 'none';
   base-uri 'self';
@@ -73,9 +77,10 @@ config = { isAdmin: false };        // WILL BE FLAGGED AS VIOLATION
 ```
 
 **YOU ARE PROHIBITED FROM:**
-* Storing sensitive data on `window` or `document` objects
-* Using implicit global variables without declaration keywords
-* Accessing user input on the left side of assignment expressions
+
+- Storing sensitive data on `window` or `document` objects
+- Using implicit global variables without declaration keywords
+- Accessing user input on the left side of assignment expressions
 
 ## Rule 4: Object Validation Requirements
 
@@ -111,9 +116,10 @@ function setElementAttribute(element, name, value) {
 ```
 
 **YOU ARE PROHIBITED FROM:**
-* Setting `id` or `name` attributes from user input
-* Using dynamic attribute assignment without validation
-* Bypassing sanitization for `data-` or `aria-` attributes
+
+- Setting `id` or `name` attributes from user input
+- Using dynamic attribute assignment without validation
+- Bypassing sanitization for `data-` or `aria-` attributes
 
 ## Rule 6: Framework Security Requirements
 
@@ -182,14 +188,12 @@ document.body.appendChild(htmlFromUser);
 
 The following checks MUST be performed:
 
-✅ **DOMPurify imported and configured with `SANITIZE_NAMED_PROPS: true`**
-✅ **No direct `innerHTML` usage without sanitization**
-✅ **Strict mode enabled in all JavaScript files**
-✅ **CSP headers implemented with `script-src 'self'`**
-✅ **No `id` or `name` attributes in user content**
-✅ **Runtime clobbering detection implemented**
-✅ **Type validation before property access**
+✅ **DOMPurify imported and configured with `SANITIZE_NAMED_PROPS: true`** ✅ **No direct `innerHTML` usage without
+sanitization** ✅ **Strict mode enabled in all JavaScript files** ✅ **CSP headers implemented with
+`script-src 'self'`** ✅ **No `id` or `name` attributes in user content** ✅ **Runtime clobbering detection
+implemented** ✅ **Type validation before property access**
 
-**NON-COMPLIANCE CONSEQUENCES:** Code that violates these rules creates DOM clobbering vulnerabilities that can lead to XSS attacks and privilege escalation.
+**NON-COMPLIANCE CONSEQUENCES:** Code that violates these rules creates DOM clobbering vulnerabilities that can lead to
+XSS attacks and privilege escalation.
 
 **TEST PAYLOAD:** `<a id=config><a id=config name=isAdmin href=true>` must be properly sanitized or blocked.

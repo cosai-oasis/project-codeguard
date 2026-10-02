@@ -5,17 +5,21 @@ tags:
 - secrets
 ---
 
+# No Hardcoded Credentials
+
 rule_id: codeguard-1-hardcoded-credentials
 
-# No Hardcoded Credentials
+## No Hardcoded Credentials
 
 NEVER store secrets, passwords, API keys, tokens or any other credentials directly in source code.
 
-Treat your codebase as public and untrusted. Any credential that appears in source code is compromised and must be handled through secure alternatives.
+Treat your codebase as public and untrusted. Any credential that appears in source code is compromised and must be
+handled through secure alternatives.
 
-#### NEVER hardcode these types of values:
+### NEVER hardcode these types of values
 
 Passwords and Authentication:
+
 - Database passwords, user passwords, admin passwords
 - API keys, secret keys, access tokens, refresh tokens
 - Private keys, certificates, signing keys
@@ -23,8 +27,7 @@ Passwords and Authentication:
 - OAuth client secrets, webhook secrets
 - Any other credentials that could be used to access external services
 
-
-#### Recognition Patterns - Learn to Spot These Formats
+### Recognition Patterns - Learn to Spot These Formats
 
 Common Secret Formats You Must NEVER Hardcode:
 
@@ -37,6 +40,7 @@ Common Secret Formats You Must NEVER Hardcode:
 - Connection Strings: URLs with credentials like `mongodb://user:pass@host`
 
 Warning Signs in Your Code:
+
 - Variable names containing: `password`, `secret`, `key`, `token`, `auth`
 - Long random-looking strings that are not clear what they are
 - Base64 encoded strings near authentication code

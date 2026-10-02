@@ -12,6 +12,8 @@ languages:
 alwaysApply: false
 ---
 
+# Legacy Application Management Security
+
 ## Legacy Application Management Guidelines
 
 Essential security practices for managing legacy applications that remain in active use despite being outdated.
@@ -19,6 +21,7 @@ Essential security practices for managing legacy applications that remain in act
 ### Understanding Legacy Application Risks
 
 Legacy applications introduce significant security risks because they:
+
 - May have reached End-of-Life (EoL) with no vendor support or patches
 - Use outdated technologies with limited expertise available
 - Produce data in custom formats incompatible with modern security tools
@@ -27,13 +30,16 @@ Legacy applications introduce significant security risks because they:
 ### Inventory and Asset Management
 
 **Inventory Management**: Compile comprehensive documentation identifying legacy applications including:
+
 - Version numbers, production dates, and configuration settings
 - Network hosts and infrastructure dependencies
 - Services running on hosting infrastructure
 - Physical location and access permissions for servers
 - Software Bill of Materials (SBOM) for applications with third-party dependencies
 
-**Risk Assessment**: Use industry standard frameworks like NIST Risk Management Framework for formal assessment. Consider these key questions:
+**Risk Assessment**: Use industry standard frameworks like NIST Risk Management Framework for formal assessment.
+Consider these key questions:
+
 - What information is handled/stored and what would be the impact if compromised?
 - Do the application/dependencies/infrastructure have known vulnerabilities?
 - How critical is application availability to business continuity?
@@ -44,6 +50,7 @@ Legacy applications introduce significant security risks because they:
 Apply the principle of least privilege with enhanced restrictions for legacy systems:
 
 **Network-Level Controls**:
+
 - Host applications within restricted subnets
 - Apply IP allow-listing to prevent arbitrary access
 - Consider air-gapped environments for high-risk applications
@@ -51,6 +58,7 @@ Apply the principle of least privilege with enhanced restrictions for legacy sys
 - Use firewall rules to restrict port access
 
 **Access Controls**:
+
 - Reduce feature sets available to end users
 - Disable high-risk administrative functionalities
 - Require authentication via Identity Provider (IdP) services
@@ -60,12 +68,14 @@ Apply the principle of least privilege with enhanced restrictions for legacy sys
 ### Vulnerability Management
 
 **Vulnerability Scanning**: Conduct regular automated scanning using industry standard tools:
+
 - Use tools like Nessus and Qualys on scheduled intervals
 - Apply Static Application Security Testing (SAST) for code vulnerabilities
 - Use Software Composition Analysis (SCA) for dependency vulnerabilities
 - Perform manual assessment when automated tools aren't viable
 
-**Patch Management**: 
+**Patch Management**:
+
 - Prioritize patches based on vulnerability severity and CVE status
 - Focus on vulnerabilities with publicly listed exploits
 - Apply additional access restrictions when patching isn't possible
@@ -73,6 +83,7 @@ Apply the principle of least privilege with enhanced restrictions for legacy sys
 ### Data Storage Security
 
 Ensure data protection through encryption:
+
 - Encrypt data at rest (database storage)
 - Encrypt data in transit with secure protocols
 - Apply most restrictive network access controls for applications limited to plain text protocols
@@ -81,6 +92,7 @@ Ensure data protection through encryption:
 ### Ensuring Maintainability
 
 Maintain institutional expertise for business continuity:
+
 - Train multiple staff members on legacy application troubleshooting
 - Document processes and troubleshooting guides for common failures
 - Develop expertise in legacy programming languages within the organization
@@ -89,11 +101,13 @@ Maintain institutional expertise for business continuity:
 ### Change Management
 
 Plan staged migration to modern solutions considering:
+
 - Budget allocation and timeline for upgrading solutions
 - Required expertise for migration (internal development or acquisition)
 - Migration urgency based on risk profile and organizational risk appetite
 
 Include in change management plans:
+
 - Granular steps toward migration with explicit completion dates
 - Clear business and security case for change
 - Extensive consultation with existing solution stakeholders
@@ -103,14 +117,17 @@ Include in change management plans:
 Implement enhanced security monitoring with rapid response capabilities:
 
 **Monitoring Solutions**:
+
 - Develop custom APIs to convert legacy application data for modern security tools
 - Use automation scripts for compromise indicator reports when APIs aren't possible
 - Monitor for anomalous network traffic and activity surges
 
 **Incident Response**:
+
 - Prioritize incident response for critical legacy systems
 - Document incident response playbooks with emergency procedures
 - Include escalation contacts and incident response leader details
 - Integrate incident response with broader business continuity planning
 
-Legacy applications require heightened security measures due to their inherent risks, but with proper controls and planning, organizations can manage these risks while working toward modernization.
+Legacy applications require heightened security measures due to their inherent risks, but with proper controls and
+planning, organizations can manage these risks while working toward modernization.

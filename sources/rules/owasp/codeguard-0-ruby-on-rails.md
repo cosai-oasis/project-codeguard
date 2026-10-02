@@ -9,6 +9,8 @@ languages:
 alwaysApply: false
 ---
 
+# Ruby on Rails Security Guidelines
+
 ## Ruby on Rails Security Guidelines
 
 Essential security practices for developing secure Ruby on Rails applications.

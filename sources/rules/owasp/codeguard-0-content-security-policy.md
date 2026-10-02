@@ -9,9 +9,13 @@ languages:
 alwaysApply: false
 ---
 
+# Content Security Policy (CSP) Best Practices
+
 ## Content Security Policy (CSP): A Defense-in-Depth Strategy
 
-Implementing a strong Content Security Policy (CSP) is one of the most effective ways to mitigate cross-site scripting (XSS), clickjacking, and other injection attacks. CSP works by declaring which dynamic resources are allowed to load, effectively creating an allowlist that the browser enforces.
+Implementing a strong Content Security Policy (CSP) is one of the most effective ways to mitigate cross-site scripting
+(XSS), clickjacking, and other injection attacks. CSP works by declaring which dynamic resources are allowed to load,
+effectively creating an allowlist that the browser enforces.
 
 ### Implementation
 
@@ -29,7 +33,8 @@ When testing a new policy, use the report-only mode to monitor without blocking:
 Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self';
 ```
 
-**Note:** Avoid using the meta tag approach (`<meta http-equiv="Content-Security-Policy"...>`) except when you cannot modify HTTP headers, as it provides less protection and doesn't support all directives.
+**Note:** Avoid using the meta tag approach (`<meta http-equiv="Content-Security-Policy"...>`) except when you cannot
+modify HTTP headers, as it provides less protection and doesn't support all directives.
 
 #### 2. Adopt a Strict CSP Strategy
 
@@ -47,7 +52,8 @@ With corresponding HTML:
 <script nonce="random123">alert('Hello');</script>
 ```
 
-**Important:** Generate a unique, cryptographically strong nonce for each page load. The nonce should be at least 128 bits of entropy encoded in base64.
+**Important:** Generate a unique, cryptographically strong nonce for each page load. The nonce should be at least 128
+bits of entropy encoded in base64.
 
 **Server-side nonce generation examples:**
 
@@ -57,17 +63,27 @@ With corresponding HTML:
 ```
 
 **Hash-based alternative:**
+
 ```http
 Content-Security-Policy: script-src 'sha256-hashOfYourScriptContent' 'strict-dynamic';
 ```
 
 #### 3. Baseline CSP for Getting Started
 
-```http
-Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'; form-action 'self'; object-src 'none'; base-uri 'none'; upgrade-insecure-requests;
+Combine these directives into a single `Content-Security-Policy` header when deploying:
+
+```text
+default-src 'self';
+style-src 'self' 'unsafe-inline';
+frame-ancestors 'self';
+form-action 'self';
+object-src 'none';
+base-uri 'none';
+upgrade-insecure-requests;
 ```
 
 This policy:
+
 - Restricts resources to the same origin
 - Allows inline styles (necessary for many applications initially)
 - Prevents clickjacking by controlling framing
@@ -81,6 +97,7 @@ This policy:
 To make CSP implementation easier:
 
 1. **Move inline code to external files:**
+
    ```html
    <!-- Instead of this -->
    <button onclick="doSomething()">
@@ -91,6 +108,7 @@ To make CSP implementation easier:
    ```
 
 2. **Eliminate inline styles:**
+
    ```html
    <!-- Instead of this -->
    <div style="color: red">
@@ -103,11 +121,13 @@ To make CSP implementation easier:
 
 - **`default-src`**: The fallback for other fetch directives
 - **`script-src`**: Controls JavaScript sources
-- **`style-src`**: Controls CSS sources - use `'self'` for external stylesheets, add `'unsafe-inline'` only if needed for inline styles
+- **`style-src`**: Controls CSS sources - use `'self'` for external stylesheets, add `'unsafe-inline'` only if needed
+  for inline styles
 - **`img-src`**: Controls image sources
 - **`connect-src`**: Controls fetch, XHR, WebSocket connections
 - **`object-src`**: Controls `<object>`, `<embed>`, and `<applet>` elements - set to `'none'` to block Flash/plugins
-- **`frame-ancestors`**: Controls which sites can embed your pages (replaces X-Frame-Options) - use `'none'` to prevent all framing
+- **`frame-ancestors`**: Controls which sites can embed your pages (replaces X-Frame-Options) - use `'none'` to prevent
+  all framing
 - **`form-action`**: Controls where forms can be submitted
 - **`upgrade-insecure-requests`**: Automatically upgrades HTTP requests to HTTPS
 
@@ -127,4 +147,5 @@ Content-Security-Policy: default-src 'self'; report-uri https://your-domain.com/
 4. Switch to enforcing mode
 5. Continue monitoring
 
-Remember that CSP is a defense-in-depth measure. It complements, but does not replace, proper input validation, output encoding, and other secure coding practices.
+Remember that CSP is a defense-in-depth measure. It complements, but does not replace, proper input validation, output
+encoding, and other secure coding practices.

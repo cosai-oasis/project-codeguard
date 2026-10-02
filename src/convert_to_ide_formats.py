@@ -9,24 +9,24 @@ directory.
 
 import re
 import shutil
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 
 from artifact_targets import SKILL_COPY_HOSTS
 from converter import RuleConverter
 from emit_agents import emit_agents
 from formats import (
-    CursorFormat,
-    WindsurfFormat,
-    DevinFormat,
-    CopilotFormat,
     AgentSkillsFormat,
     AntigravityFormat,
-    OpenCodeFormat,
-    CodexFormat,
-    OpenClawFormat,
-    HermesFormat,
     ClaudeFormat,
+    CodexFormat,
+    CopilotFormat,
+    CursorFormat,
+    DevinFormat,
+    HermesFormat,
+    OpenClawFormat,
+    OpenCodeFormat,
+    WindsurfFormat,
 )
 from utils import get_version_from_pyproject
 from validate_versions import (
@@ -72,21 +72,18 @@ def matches_tag_filter(rule_tags: list[str], filter_tags: list[str]) -> bool:
     return all(tag in rule_tags for tag in filter_tags)
 
 
-def _inject_mapping_table(
+def _inject_mapping_list(
     skill_path: Path,
     mapping: dict[str, list[str]],
     *,
-    key_header: str,
     marker_name: str,
 ) -> None:
-    """Replace ``<!-- {marker_name}_START/END -->`` in SKILL.md with a sorted
-    two-column markdown table built from ``mapping``. Missing markers raise."""
-    rules_col = "Rule Files to Apply"
-    sep = f"|{'-' * (len(key_header) + 2)}|{'-' * (len(rules_col) + 2)}|"
-    table_lines = [f"| {key_header} | {rules_col} |", sep]
+    """Replace mapping markers in SKILL.md with sorted, readable rule lists."""
+    list_lines = []
     for key in sorted(mapping):
-        table_lines.append(f"| {key} | {', '.join(sorted(mapping[key]))} |")
-    table = "\n".join(table_lines)
+        list_lines.append(f"- **{key}**:")
+        list_lines.extend(f"  - `{rule}`" for rule in sorted(mapping[key]))
+    rule_list = "\n".join(list_lines)
 
     start_marker = f"<!-- {marker_name}_START -->"
     end_marker = f"<!-- {marker_name}_END -->"
@@ -98,17 +95,17 @@ def _inject_mapping_table(
 
     start_idx = content.index(start_marker)
     end_idx = content.index(end_marker) + len(end_marker)
-    updated = content[:start_idx] + f"\n\n{table}\n\n" + content[end_idx:]
+    updated = content[:start_idx] + f"\n\n{rule_list}\n\n" + content[end_idx:]
     skill_path.write_text(updated, encoding="utf-8")
-    print(f"Updated SKILL.md with {marker_name} table")
+    print(f"Updated SKILL.md with {marker_name} list")
 
 
 def convert_rules(
     input_path: str,
     output_dir: str = "dist",
     include_agentskills: bool = True,
-    version: str = None,
-    filter_tags: list[str] = None,
+    version: str | None = None,
+    filter_tags: list[str] | None = None,
 ) -> dict[str, list[str]]:
     """
     Convert rule file(s) to all supported IDE formats using RuleConverter.
@@ -206,9 +203,7 @@ def convert_rules(
                 else:
                     base_dir = output_base
 
-                output_file = (
-                    base_dir / output.subpath / f"{result.basename}{output.extension}"
-                )
+                output_file = base_dir / output.subpath / f"{result.basename}{output.extension}"
 
                 # Create directory if it doesn't exist and write file
                 output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -245,9 +240,7 @@ def convert_rules(
             f"\nResults: {len(results['success'])} success, {len(results['skipped'])} skipped (tag filter), {len(results['errors'])} errors"
         )
     else:
-        print(
-            f"\nResults: {len(results['success'])} success, {len(results['errors'])} errors"
-        )
+        print(f"\nResults: {len(results['success'])} success, {len(results['errors'])} errors")
 
     # Generate SKILL.md with language mappings (only if Agent Skills is included)
     if include_agentskills and language_to_rules:
@@ -271,16 +264,14 @@ def convert_rules(
         )
         output_skill_path.write_text(template_content, encoding="utf-8")
 
-        _inject_mapping_table(
+        _inject_mapping_list(
             output_skill_path,
             language_to_rules,
-            key_header="Language",
             marker_name="LANGUAGE_MAPPINGS",
         )
-        _inject_mapping_table(
+        _inject_mapping_list(
             output_skill_path,
             tag_to_rules,
-            key_header="Security Context (Tag)",
             marker_name="TAG_MAPPINGS",
         )
 
@@ -325,16 +316,10 @@ def _find_duplicate_rule_filenames(rules_root: Path) -> dict[str, list[Path]]:
         for rule_file in sorted(source_dir.rglob("codeguard-*.md")):
             filename_to_paths[rule_file.name].append(rule_file)
 
-    return {
-        filename: paths
-        for filename, paths in filename_to_paths.items()
-        if len(paths) > 1
-    }
+    return {filename: paths for filename, paths in filename_to_paths.items() if len(paths) > 1}
 
 
-def _print_duplicate_rule_filenames(
-    duplicates: dict[str, list[Path]], rules_root: Path
-) -> None:
+def _print_duplicate_rule_filenames(duplicates: dict[str, list[Path]], rules_root: Path) -> None:
     print(f"❌ Found {len(duplicates)} duplicate rule filename(s) under {rules_root}:")
     for filename, paths in sorted(duplicates.items()):
         relative_paths = [str(path.relative_to(rules_root)) for path in sorted(paths)]
@@ -346,9 +331,7 @@ if __name__ == "__main__":
     import sys
     from argparse import ArgumentParser
 
-    parser = ArgumentParser(
-        description="Convert unified rule markdown into IDE-specific bundles."
-    )
+    parser = ArgumentParser(description="Convert unified rule markdown into IDE-specific bundles.")
     parser.add_argument(
         "--source",
         nargs="+",
@@ -404,14 +387,16 @@ if __name__ == "__main__":
         skills_rules_dir = PROJECT_ROOT / "skills" / "codeguard" / "rules"
         if skills_rules_dir.exists():
             shutil.rmtree(skills_rules_dir)
-            print(f"✅ Cleaned skills/ directory")
+            print("✅ Cleaned skills/ directory")
 
     # Print processing summary
     if len(source_paths) > 1:
         sources_list = ", ".join(p.name for p in source_paths)
         print(f"\nConverting {len(source_paths)} sources: {sources_list}")
         if has_core:
-            print("(Agent Skills, OpenCode, Codex, OpenClaw, and Hermes will include only core rules)")
+            print(
+                "(Agent Skills, OpenCode, Codex, OpenClaw, and Hermes will include only core rules)"
+            )
         print()
 
     # Convert all sources
@@ -419,9 +404,7 @@ if __name__ == "__main__":
     # Parse comma-separated tags and normalize to lowercase
     filter_tags = None
     if cli_args.tags:
-        filter_tags = [
-            tag.strip().lower() for tag in cli_args.tags.split(",") if tag.strip()
-        ]
+        filter_tags = [tag.strip().lower() for tag in cli_args.tags.split(",") if tag.strip()]
 
     # Print tag filter info if active
     if filter_tags:

@@ -67,7 +67,7 @@ LANGUAGE_TO_EXTENSIONS = {
     "wgsl": [".wgsl"],
     "html": [".html", ".htm"],
     "sql": [".sql", ".ddl", ".dml"],
-    "hcl": [".tf", ".tfvars", ".tf.json", ".hcl"]
+    "hcl": [".tf", ".tfvars", ".tf.json", ".hcl"],
 }
 
 # Reverse mapping: extension to language (for conversion from globs)
@@ -82,10 +82,10 @@ for lang, exts in LANGUAGE_TO_EXTENSIONS.items():
 def languages_to_globs(languages: list[str]) -> str:
     """
     Convert list of languages to glob patterns.
-    
+
     Args:
         languages: List of programming language names (e.g., ['python', 'javascript'])
-    
+
     Returns:
         Comma-separated glob patterns (e.g., '**/*.py,**/*.js')
         Empty string if no languages provided
@@ -108,10 +108,10 @@ def languages_to_globs(languages: list[str]) -> str:
 def globs_to_languages(globs: str) -> list[str]:
     """
     Convert glob patterns to list of languages.
-    
+
     Args:
         globs: Comma-separated glob patterns (e.g., '**/*.py,**/*.js')
-    
+
     Returns:
         Sorted list of language names that match the glob patterns
         Empty list if no patterns or universal glob provided

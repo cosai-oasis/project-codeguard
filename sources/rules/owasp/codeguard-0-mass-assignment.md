@@ -10,22 +10,29 @@ languages:
 alwaysApply: false
 ---
 
+# Mass Assignment Prevention
+
 ## Mass Assignment Prevention Guidelines
 
-Essential practices for preventing mass assignment vulnerabilities that allow attackers to modify unintended object properties.
+Essential practices for preventing mass assignment vulnerabilities that allow attackers to modify unintended object
+properties.
 
 ### Understanding Mass Assignment
 
-Mass assignment occurs when frameworks automatically bind HTTP request parameters to program variables or objects. Attackers can exploit this by creating new parameters to overwrite sensitive fields like `isAdmin` or other privilege-related properties.
+Mass assignment occurs when frameworks automatically bind HTTP request parameters to program variables or objects.
+Attackers can exploit this by creating new parameters to overwrite sensitive fields like `isAdmin` or other
+privilege-related properties.
 
 **Alternative Names by Framework:**
+
 - Mass Assignment: Ruby on Rails, NodeJS
-- Autobinding: Spring MVC, ASP NET MVC  
+- Autobinding: Spring MVC, ASP NET MVC
 - Object injection: PHP
 
 ### Vulnerable Example
 
 User form with typical fields:
+
 ```html
 <form>
      <input name="userid" type="text">
@@ -36,6 +43,7 @@ User form with typical fields:
 ```
 
 User object with sensitive field:
+
 ```java
 public class User {
    private String userid;
@@ -47,6 +55,7 @@ public class User {
 ```
 
 Vulnerable controller with automatic binding:
+
 ```java
 @RequestMapping(value = "/addUser", method = RequestMethod.POST)
 public String submit(User user) {
@@ -56,6 +65,7 @@ public String submit(User user) {
 ```
 
 Attack payload:
+
 ```text
 POST /addUser
 userid=bobbytables&password=hashedpass&email=bobby@tables.com&isAdmin=true
@@ -63,8 +73,7 @@ userid=bobbytables&password=hashedpass&email=bobby@tables.com&isAdmin=true
 
 ### Primary Defense Strategies
 
-**1. Use Data Transfer Objects (DTOs)**
-Create objects exposing only safe, editable fields:
+**1. Use Data Transfer Objects (DTOs)** Create objects exposing only safe, editable fields:
 
 ```java
 public class UserRegistrationFormDTO {
@@ -76,8 +85,7 @@ public class UserRegistrationFormDTO {
 }
 ```
 
-**2. Allow-list Approach**
-Explicitly define permitted fields for binding.
+**2. Allow-list Approach** Explicitly define permitted fields for binding.
 
 **3. Block-list Approach**  
 Explicitly exclude sensitive fields from binding.
@@ -87,6 +95,7 @@ Explicitly exclude sensitive fields from binding.
 #### Spring MVC
 
 Allow-listing permitted fields:
+
 ```java
 @Controller
 public class UserController {
@@ -98,6 +107,7 @@ public class UserController {
 ```
 
 Block-listing sensitive fields:
+
 ```java
 @Controller
 public class UserController {
@@ -111,6 +121,7 @@ public class UserController {
 #### NodeJS + Mongoose
 
 Allow-listing with underscore.js:
+
 ```javascript
 var UserSchema = new mongoose.Schema({
     userid: String,
@@ -130,6 +141,7 @@ var user = new User(_.pick(req.body, User.userCreateSafeFields));
 ```
 
 Block-listing with mongoose-mass-assign plugin:
+
 ```javascript
 var massAssign = require('mongoose-mass-assign');
 
@@ -149,6 +161,7 @@ var user = User.massAssign(req.body);
 #### PHP Laravel + Eloquent
 
 Allow-listing with $fillable:
+
 ```php
 <?php
 namespace App;
@@ -165,6 +178,7 @@ class User extends Model {
 ```
 
 Block-listing with $guarded:
+
 ```php
 <?php
 namespace App;
@@ -183,6 +197,7 @@ class User extends Model {
 ### Exploitability Conditions
 
 Mass assignment becomes exploitable when:
+
 - Attacker can guess common sensitive fields
 - Attacker has access to source code to review models
 - The target object has an empty constructor

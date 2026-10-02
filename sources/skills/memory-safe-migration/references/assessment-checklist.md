@@ -1,7 +1,7 @@
 # Migration assessment checklist
 
-Use this checklist to evaluate whether a component should be migrated, its priority,
-and its feasibility. Score each category and sum for an overall migration priority.
+Use this checklist to evaluate whether a component should be migrated, its priority, and its feasibility. Score each
+category and sum for an overall migration priority.
 
 ## Priority scoring
 
@@ -27,10 +27,9 @@ and its feasibility. Score each category and sum for an overall migration priori
 
 ### Risk acceleration from AI (0-5 points)
 
-- [ ] Component uses patterns known to be easily discoverable by AI fuzzing
-  (simple parsers, flat buffer handling): +3 points
-- [ ] Component has limited exploit mitigations (no ASLR, no stack canaries,
-  no CFI): +2 points
+- [ ] Component uses patterns known to be easily discoverable by AI fuzzing (simple parsers, flat buffer handling): +3
+      points
+- [ ] Component has limited exploit mitigations (no ASLR, no stack canaries, no CFI): +2 points
 
 ### Total priority score
 
@@ -80,7 +79,7 @@ and its feasibility. Score each category and sum for an overall migration priori
 
 After assessment, produce a migration recommendation:
 
-```
+```text
 Component: [name]
 Priority score: [X] / 25
 Feasibility: [Go / Go with caveats / Blocked]

@@ -6,13 +6,18 @@ languages:
 alwaysApply: false
 ---
 
-Using a declarative, centralized approach to validation is crucial for security and maintainability. The Java Bean Validation standard (now Jakarta Validation) and its primary implementation, Hibernate Validator, provide a powerful way to handle this.
+# Bean Validation Security Best Practices
 
-### Why Use Bean Validation?
+Using a declarative, centralized approach to validation is crucial for security and maintainability. The Java Bean
+Validation standard (now Jakarta Validation) and its primary implementation, Hibernate Validator, provide a powerful way
+to handle this.
 
-Instead of scattering validation logic throughout your business layer, you define validation rules directly on your domain models (your "beans"). This keeps your validation logic in one place, making it consistent and easy to manage.
+## Why Use Bean Validation?
 
-### 1. Setting Up Your Project
+Instead of scattering validation logic throughout your business layer, you define validation rules directly on your
+domain models (your "beans"). This keeps your validation logic in one place, making it consistent and easy to manage.
+
+## 1. Setting Up Your Project
 
 Add Hibernate Validator to your `pom.xml`:
 
@@ -26,11 +31,13 @@ Add Hibernate Validator to your `pom.xml`:
 
 If you're using Spring Boot, the `spring-boot-starter-web` dependency includes Hibernate Validator automatically.
 
-### 2. Annotating Your Beans
+## 2. Annotating Your Beans
 
-Apply standard validation annotations directly to the fields of your model classes. **Always combine @NotNull/@NotBlank with @Size constraints for sensitive fields.**
+Apply standard validation annotations directly to the fields of your model classes. **Always combine @NotNull/@NotBlank
+with @Size constraints for sensitive fields.**
 
 **Example (`UserForm.java`):**
+
 ```java
 public class UserForm {
 
@@ -48,11 +55,13 @@ public class UserForm {
 }
 ```
 
-### 3. Triggering Validation
+## 3. Triggering Validation
 
-In a web context (like a Spring MVC controller), use the `@Valid` annotation on your model attribute to trigger the validation process automatically.
+In a web context (like a Spring MVC controller), use the `@Valid` annotation on your model attribute to trigger the
+validation process automatically.
 
 **Example (Spring Controller):**
+
 ```java
 @RestController
 public class UserController {
@@ -70,11 +79,12 @@ public class UserController {
 }
 ```
 
-### 4. Validating Nested Objects
+## 4. Validating Nested Objects
 
 If your model contains other objects that also need validation, just annotate them with `@Valid`.
 
 **Example:**
+
 ```java
 public class Order {
     @Valid @NotNull
@@ -82,10 +92,13 @@ public class Order {
 }
 ```
 
-### Best Practices Summary
+## Best Practices Summary
 
-*   **Centralize Rules:** Define validation constraints on your domain models.
-*   **Use Standard Annotations:** Leverage the rich set of built-in annotations (`@NotNull`, `@Size`, `@Pattern`, `@Min`, `@Max`, `@Email`, etc.).
-*   **Automate with `@Valid`:** Let your framework trigger validation automatically in your controllers.
-*   **Handle Errors Gracefully:** Use `BindingResult` to capture validation errors and return a meaningful `400 Bad Request` response. Never expose sensitive system information in error messages.
-*   **Create Custom Constraints:** For complex business rules that aren't covered by standard annotations, create your own custom validation constraints.
+- **Centralize Rules:** Define validation constraints on your domain models.
+- **Use Standard Annotations:** Leverage the rich set of built-in annotations (`@NotNull`, `@Size`, `@Pattern`, `@Min`,
+  `@Max`, `@Email`, etc.).
+- **Automate with `@Valid`:** Let your framework trigger validation automatically in your controllers.
+- **Handle Errors Gracefully:** Use `BindingResult` to capture validation errors and return a meaningful
+  `400 Bad Request` response. Never expose sensitive system information in error messages.
+- **Create Custom Constraints:** For complex business rules that aren't covered by standard annotations, create your own
+  custom validation constraints.

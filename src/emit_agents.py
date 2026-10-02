@@ -22,11 +22,7 @@ _PLACEHOLDERS = ("{RULES_DIR}", "{RULE_EXT}")
 
 def _parse_agent_md(path: Path) -> tuple[dict[str, object], str]:
     """Read AGENT.md and return (frontmatter, body); raise on authoring errors."""
-    text = (
-        path.read_text(encoding="utf-8")
-        .replace("\r\n", "\n")
-        .replace("\r", "\n")
-    )
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n").replace("\r", "\n")
     frontmatter, body = parse_frontmatter_and_content(text)
     if not isinstance(frontmatter, dict):
         raise ValueError(f"{path}: missing or non-mapping YAML frontmatter")
@@ -38,15 +34,12 @@ def _parse_agent_md(path: Path) -> tuple[dict[str, object], str]:
     missing = [p for p in _PLACEHOLDERS if p not in body]
     if missing:
         raise ValueError(
-            f"{path}: body must reference {', '.join(missing)} so per-host "
-            f"paths can be substituted"
+            f"{path}: body must reference {', '.join(missing)} so per-host paths can be substituted"
         )
     return frontmatter, body
 
 
-def _frontmatter_string(
-    frontmatter: dict[str, object], key: str, agent: str
-) -> str:
+def _frontmatter_string(frontmatter: dict[str, object], key: str, agent: str) -> str:
     value = frontmatter[key]
     if not isinstance(value, str):
         raise ValueError(f"agent '{agent}' frontmatter key '{key}' must be a string")
@@ -70,9 +63,7 @@ def _render_body(body: str, *, rules_dir: str, rule_ext: str) -> str:
     return body.replace("{RULES_DIR}", rules_dir).replace("{RULE_EXT}", rule_ext)
 
 
-def _require_rules_dir(
-    *, output_base: Path, host_name: str, relative_path: str
-) -> None:
+def _require_rules_dir(*, output_base: Path, host_name: str, relative_path: str) -> None:
     rules_dir = output_base / relative_path
     if not rules_dir.is_dir():
         raise FileNotFoundError(
@@ -118,9 +109,7 @@ def _toml_string(value: str) -> str:
 
 def _toml_multiline_literal(value: str, *, agent: str) -> str:
     if "'''" in value:
-        raise ValueError(
-            f"agent '{agent}' body contains TOML multiline literal terminator"
-        )
+        raise ValueError(f"agent '{agent}' body contains TOML multiline literal terminator")
     return f"'''\n{value.rstrip()}\n'''"
 
 

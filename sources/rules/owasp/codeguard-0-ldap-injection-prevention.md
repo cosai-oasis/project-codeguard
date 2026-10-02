@@ -14,15 +14,19 @@ languages:
 alwaysApply: false
 ---
 
+# LDAP Injection Prevention
+
 ## LDAP Injection Prevention Guidelines
 
 Essential practices for preventing LDAP injection vulnerabilities in applications that use directory services.
 
 ### Understanding LDAP Injection
 
-LDAP injection occurs when untrusted user input is improperly incorporated into LDAP queries, potentially allowing attackers to bypass authentication, access unauthorized data, or modify directory information.
+LDAP injection occurs when untrusted user input is improperly incorporated into LDAP queries, potentially allowing
+attackers to bypass authentication, access unauthorized data, or modify directory information.
 
 Two main components vulnerable to injection:
+
 - **Distinguished Names (DNs)**: Unique identifiers like `cn=Richard Feynman, ou=Physics Department, dc=Caltech, dc=edu`
 - **Search Filters**: Query criteria using boolean logic in Polish notation
 
@@ -32,7 +36,7 @@ Two main components vulnerable to injection:
 
 Characters that must be escaped in DNs: `\ # + < > , ; " =` and leading or trailing spaces.
 
-Characters allowed in DNs (no escaping needed): `* ( ) . & - _ [ ] ` ~ | @ $ % ^ ? : { } ! '`
+Characters allowed in DNs (no escaping needed): `* ( ) . & - _ [ ]` ~ | @ $ % ^ ? : { } ! '`
 
 #### Search Filter Escaping
 
@@ -54,12 +58,13 @@ if (!userSN.matches("[\\w\\s]*") || !userPassword.matches("[\\w]*")) {
 }
 
 String filter = "(&(sn = " + userSN + ")(userPassword=" + userPassword + "))";
-// ... remainder of LDAPInjection.searchRecord()... 
+// ... remainder of LDAPInjection.searchRecord()...
 ```
 
 ### Safe .NET Encoding
 
 Use .NET AntiXSS (now the Encoder class) LDAP encoding functions:
+
 - `Encoder.LdapFilterEncode(string)` - encodes according to RFC4515
 - `Encoder.LdapDistinguishedNameEncode(string)` - encodes according to RFC2253
 - `LdapDistinguishedNameEncode(string, bool, bool)` - with optional initial/final character escaping
@@ -67,21 +72,25 @@ Use .NET AntiXSS (now the Encoder class) LDAP encoding functions:
 ### Framework-Based Protection
 
 Use frameworks that automatically protect from LDAP injection:
+
 - **Java**: OWASP ESAPI with `encodeForLDAP(String)` and `encodeForDN(String)`
 - **.NET**: LINQ to LDAP (for .NET Framework 4.5 or lower) provides automatic LDAP encoding
 
 ### Additional Defenses
 
 #### Least Privilege
+
 - Minimize privileges assigned to LDAP binding accounts
 - Use read-only accounts where possible
 - Avoid administrative accounts for application connections
 
 #### Bind Authentication
+
 - Configure LDAP with bind authentication to add verification and authorization checks
 - Prevent anonymous connections and unauthenticated binds
 
 #### Allow-List Input Validation
+
 - Validate input against known-safe characters before LDAP query construction
 - Normalize user input before validation
 - Store sensitive data in sanitized form

@@ -11,6 +11,8 @@ languages:
 alwaysApply: false
 ---
 
+# XML External Entity Prevention
+
 ## XML External Entity Prevention
 
 Prevent XXE attacks by disabling DTDs and external entities in XML parsers. Safest approach: disable DTDs completely.
@@ -21,7 +23,8 @@ Prevent XXE attacks by disabling DTDs and external entities in XML parsers. Safe
 factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 ```
 
-Disabling DTDs protects against XXE and Billion Laughs attacks. If DTDs cannot be disabled, disable external entities using parser-specific methods.
+Disabling DTDs protects against XXE and Billion Laughs attacks. If DTDs cannot be disabled, disable external entities
+using parser-specific methods.
 
 ### Java
 
@@ -54,8 +57,8 @@ String[] featuresToDisable = {
 };
 
 for (String feature : featuresToDisable) {
-    try {    
-        dbf.setFeature(feature, false); 
+    try {
+        dbf.setFeature(feature, false);
     } catch (ParserConfigurationException e) {
         logger.info("ParserConfigurationException was thrown. The feature '" + feature
         + "' is probably not supported by your XML processor.");
@@ -67,6 +70,7 @@ dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 ```
 
 XMLInputFactory (StAX):
+
 ```java
 xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 // Or if DTDs needed:
@@ -75,6 +79,7 @@ xmlInputFactory.setProperty("javax.xml.stream.isSupportingExternalEntities", fal
 ```
 
 TransformerFactory:
+
 ```java
 TransformerFactory tf = TransformerFactory.newInstance();
 tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
@@ -82,6 +87,7 @@ tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 ```
 
 XMLReader:
+
 ```java
 XMLReader reader = XMLReaderFactory.createXMLReader();
 reader.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
@@ -91,6 +97,7 @@ reader.setFeature("http://xml.org/sax/features/external-parameter-entities", fal
 ```
 
 SAXBuilder:
+
 ```java
 SAXBuilder builder = new SAXBuilder();
 builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
@@ -98,6 +105,7 @@ Document doc = builder.build(new File(fileName));
 ```
 
 No-op EntityResolver:
+
 ```java
 public final class NoOpEntityResolver implements EntityResolver {
     public InputSource resolveEntity(String publicId, String systemId) {
@@ -113,6 +121,7 @@ Never use java.beans.XMLDecoder on untrusted content - it can execute arbitrary 
 ### .NET
 
 XmlReader (.NET 4.5.2+ safe by default):
+
 ```csharp
 XmlReaderSettings settings = new XmlReaderSettings();
 settings.DtdProcessing = DtdProcessing.Prohibit;
@@ -121,18 +130,21 @@ XmlReader reader = XmlReader.Create(stream, settings);
 ```
 
 XmlTextReader (prior to .NET 4.0):
+
 ```csharp
 XmlTextReader reader = new XmlTextReader(stream);
-reader.ProhibitDtd = true;  
+reader.ProhibitDtd = true;
 ```
 
 XmlTextReader (.NET 4.0 - 4.5.2):
+
 ```csharp
 XmlTextReader reader = new XmlTextReader(stream);
-reader.DtdProcessing = DtdProcessing.Prohibit;  
+reader.DtdProcessing = DtdProcessing.Prohibit;
 ```
 
 XmlDocument (prior to 4.5.2):
+
 ```csharp
 XmlDocument xmlDoc = new XmlDocument();
 xmlDoc.XmlResolver = null;
@@ -140,6 +152,7 @@ xmlDoc.LoadXml(xml);
 ```
 
 XPathNavigator (prior to 4.5.2):
+
 ```csharp
 XmlReader reader = XmlReader.Create("example.xml");
 XPathDocument doc = new XPathDocument(reader);
@@ -152,6 +165,7 @@ string xml = nav.InnerXml.ToString();
 libxml2: Avoid XML_PARSE_NOENT and XML_PARSE_DTDLOAD options.
 
 libxerces-c:
+
 ```cpp
 XercesDOMParser *parser = new XercesDOMParser;
 parser->setCreateEntityReferenceNodes(true);
@@ -167,6 +181,7 @@ parser->setFeature(XMLUni::fgXercesDisableDefaultEntityResolution, true);
 ### PHP
 
 PHP 8.0+ prevents XXE by default. Earlier versions:
+
 ```php
 libxml_set_external_entity_loader(null);
 ```
@@ -193,7 +208,8 @@ let xmlDoc = try NSXMLDocument(data: data, options: options.union(.nodeLoadExter
 ### ColdFusion
 
 Adobe ColdFusion:
-```
+
+```cfm
 <cfset parseroptions = structnew()>
 <cfset parseroptions.ALLOWEXTERNALENTITIES = false>
 <cfscript>
@@ -202,7 +218,8 @@ a = XmlParse("xml.xml", false, parseroptions);
 ```
 
 Lucee (Application.cfc):
-```
+
+```cfm
 this.xmlFeatures = {
      externalGeneralEntities: false,
      secure: true,
@@ -220,6 +237,7 @@ this.xmlFeatures = {
 ### When DTDs Required
 
 If DTDs absolutely necessary:
+
 - Use custom EntityResolver with restricted entities
 - Implement strict entity allowlisting
 - Preprocess XML to remove dangerous DOCTYPE declarations

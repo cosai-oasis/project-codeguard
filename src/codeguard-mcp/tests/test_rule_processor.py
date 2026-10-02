@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from codeguard_mcp.rule_processor import RuleProcessor
 
 RULES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "sources" / "rules" / "core"
@@ -38,9 +36,7 @@ class TestRuleProcessor:
     def test_context_rules_have_languages(self):
         for rule in self.processor.get_all_rules():
             if not rule.always_apply:
-                assert len(rule.languages) > 0, (
-                    f"{rule.rule_id}: context rules must list languages"
-                )
+                assert len(rule.languages) > 0, f"{rule.rule_id}: context rules must list languages"
 
     def test_codeguard_1_rules_are_always_apply(self):
         rules = self.processor.get_all_rules()

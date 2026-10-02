@@ -1,20 +1,28 @@
 # Project CodeGuard: Security Skills and Rules for AI Coding Agents
+
 ![Securing](https://img.shields.io/badge/Securing%20AI%20Generated%20Code-green)
 ![Open Source](https://img.shields.io/badge/Now-Open%20Source-brightgreen)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 
-This repository is for the work of the **Coalition for Secure AI (CoSAI)**. CoSAI is an [OASIS Open Project](https://www.oasis-open.org/open-projects/) and an open ecosystem of AI and security experts from industry-leading organizations. We are dedicated to sharing best practices for secure AI deployment and collaborating on AI security research and tool development.
+This repository is for the work of the **Coalition for Secure AI (CoSAI)**. CoSAI is an
+[OASIS Open Project](https://www.oasis-open.org/open-projects/) and an open ecosystem of AI and security experts from
+industry-leading organizations. We are dedicated to sharing best practices for secure AI deployment and collaborating on
+AI security research and tool development.
 
-For more information on CoSAI, please visit the [CoSAI website](https://www.coalitionforsecureai.org) and the [Open Project repository](https://github.com/cosai-oasis/oasis-open-project), which contains our governance information and project charter.
-
+For more information on CoSAI, please visit the [CoSAI website](https://www.coalitionforsecureai.org) and the
+[Open Project repository](https://github.com/cosai-oasis/oasis-open-project), which contains our governance information
+and project charter.
 
 ## What is Project CodeGuard?
-[Project CodeGuard](https://project-codeguard.org/) is an AI model-agnostic security coding agent skills framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security skills and rules, translators for popular coding agents, and validators to test skills and rule compliance.
 
+[Project CodeGuard](https://project-codeguard.org/) is an AI model-agnostic security coding agent skills framework and
+ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security
+skills and rules, translators for popular coding agents, and validators to test skills and rule compliance.
 
 ## Why Project CodeGuard?
 
-AI coding agents are transforming software engineering, but this speed can introduce security vulnerabilities. Is your AI coding agent implementation introducing security vulnerabilities?
+AI coding agents are transforming software engineering, but this speed can introduce security vulnerabilities. Is your
+AI coding agent implementation introducing security vulnerabilities?
 
 - Skipping input validation
 - Hardcoding secrets and credentials
@@ -23,15 +31,18 @@ AI coding agents are transforming software engineering, but this speed can intro
 - Missing authentication/authorization checks
 - Missing any other security best practice
 
-Project CodeGuard solves this by embedding security best practices directly into AI coding agent workflows. 
+Project CodeGuard solves this by embedding security best practices directly into AI coding agent workflows.
 
 **During and After Code Generation.**
 
-Project CodeGuard is designed to integrate seamlessly across the entire AI coding lifecycle. 
-- **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development. You can use the skills and rules in the “planning phase” of an AI coding agent to steer models toward secure patterns from the start.
-- **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
-- **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, Devin, and Claude Code can use the rules for code review.
+Project CodeGuard is designed to integrate seamlessly across the entire AI coding lifecycle.
 
+- **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development.
+  You can use the skills and rules in the “planning phase” of an AI coding agent to steer models toward secure patterns
+  from the start.
+- **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
+- **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, Devin, and Claude Code can use the
+  rules for code review.
 
 ## Security Coverage
 
@@ -56,11 +67,12 @@ Get started in minutes:
 
 - Additional details in the [Get Started →](https://project-codeguard.org/getting-started/)
 
-
 ## CodeGuard MCP Server
 
-This repository also includes an [MCP](https://modelcontextprotocol.io/) server that exposes all CodeGuard security rules as tools over streamable HTTP. Organizations can deploy it on their infrastructure and connect every developer's AI coding assistant to a single, centrally managed instance. See the [CodeGuard MCP Server README](src/codeguard-mcp/README.md) for setup instructions.
-
+This repository also includes an [MCP](https://modelcontextprotocol.io/) server that exposes all CodeGuard security
+rules as tools over streamable HTTP. Organizations can deploy it on their infrastructure and connect every developer's
+AI coding assistant to a single, centrally managed instance. See the
+[CodeGuard MCP Server README](src/codeguard-mcp/README.md) for setup instructions.
 
 ## How It Works
 

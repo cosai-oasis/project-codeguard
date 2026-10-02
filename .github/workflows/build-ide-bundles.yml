@@ -30,6 +30,32 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
 
+      - name: Check Python formatting and lint
+        run: |
+          uv run --with ruff==0.16.9 ruff format --check src tests
+          uv run --with ruff==0.16.9 ruff check src tests
+          uv run --with ruff==0.16.9 ruff check tests --select C901
+          PYTHONPATH=src uv run --with pylint==4.0.9 pylint --errors-only src/*.py src/formats/*.py
+          PYTHONPATH=src uv run --with pylint==4.0.9 pylint tests/*.py
+
+      - name: Test each Python script with 95% coverage
+        run: uv run --with coverage==7.16.1 python tests/check_python_coverage.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Markdown tools
+        run: npm ci
+
+      - name: Check Python types with Pyright
+        run: uv run --with pyright==1.1.414 --with coverage==7.16.1 pyright --project pyproject.toml
+
+      - name: Check source Markdown formatting and lint
+        run: npm run format:check && npm run lint
+
       - name: Get version from release
         id: get_version
         env:
@@ -50,6 +76,9 @@ jobs:
 
       - name: Generate IDE bundles
         run: uv run python src/convert_to_ide_formats.py
+
+      - name: Format and lint release Markdown
+        run: npm run prepare:release
 
       - name: Create release archives
         shell: bash

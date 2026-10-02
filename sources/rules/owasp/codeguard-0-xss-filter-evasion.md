@@ -8,18 +8,21 @@ languages:
 alwaysApply: false
 ---
 
-Relying solely on input filtering or blacklists is insufficient because attackers use numerous techniques to bypass these defenses:
+# XSS Filter Evasion Prevention - Advanced techniques attackers use to bypass input filtering and blacklists
+
+Relying solely on input filtering or blacklists is insufficient because attackers use numerous techniques to bypass
+these defenses:
 
 - Mixed encoding schemes: Combining HTML, URL, and Unicode encodings
 - Whitespace manipulation: Using tabs, newlines, and other whitespace characters to confuse parsers
 - Malformed tags: Creating deliberately broken HTML that browsers will "fix" during rendering
 - Obfuscation: Using JavaScript encoding functions like `String.fromCharCode()` to hide malicious code
 
-### Context-Aware Output Encoding
+## Context-Aware Output Encoding
 
 The most effective defense is to apply the appropriate encoding based on where the data will be used:
 
-#### HTML Context (Content between tags)
+### HTML Context (Content between tags)
 
 ```javascript
 // VULNERABLE
@@ -32,22 +35,22 @@ const userName = request.getParameter("user");
 document.getElementById("welcome").innerHTML = "Hello, " + encodeForHTML(userName);
 ```
 
-#### HTML Attribute Context
+### HTML Attribute Context
 
 ```javascript
 // VULNERABLE
 const userColor = request.getParameter("color");
-document.getElementById("profile").innerHTML = 
+document.getElementById("profile").innerHTML =
   `<div class="profile" style="background-color:${userColor}">Profile</div>`;
 
 // SECURE
 import { encodeForHTMLAttribute } from 'your-encoding-library';
 const userColor = request.getParameter("color");
-document.getElementById("profile").innerHTML = 
+document.getElementById("profile").innerHTML =
   `<div class="profile" style="background-color:${encodeForHTMLAttribute(userColor)}">Profile</div>`;
 ```
 
-#### JavaScript Context
+### JavaScript Context
 
 ```javascript
 // VULNERABLE
@@ -62,7 +65,7 @@ const script = document.createElement("script");
 script.textContent = `const userValue = "${encodeForJavaScript(userInput)}";`;
 ```
 
-#### URL Context
+### URL Context
 
 ```javascript
 // VULNERABLE
@@ -78,7 +81,7 @@ if (isValidRedirectURL(redirectUrl)) {
 }
 ```
 
-#### CSS Context
+### CSS Context
 
 ```javascript
 // VULNERABLE
@@ -91,11 +94,11 @@ const userTheme = request.getParameter("theme");
 document.getElementById("custom").style = encodeForCSS(userTheme);
 ```
 
-### Using Established Sanitization Libraries
+## Using Established Sanitization Libraries
 
 Avoid creating your own sanitization logic. Use well-maintained libraries instead:
 
-#### JavaScript/DOM
+### JavaScript/DOM
 
 ```javascript
 // Using DOMPurify
@@ -107,13 +110,13 @@ function displayUserContent(content) {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'ul', 'ol', 'li'],
     ALLOWED_ATTR: ['href', 'target']
   };
-  
+
   const sanitized = DOMPurify.sanitize(content, config);
   document.getElementById('user-content').innerHTML = sanitized;
 }
 ```
 
-#### Java
+### Java
 
 ```java
 // Using OWASP Java Encoder
@@ -132,7 +135,7 @@ public class UserController {
 // <div th:text="${encodedUsername}">Username</div>
 ```
 
-#### PHP
+### PHP
 
 ```php
 // Using HTMLPurifier
@@ -147,11 +150,11 @@ $cleanBio = $purifier->purify($userBio);
 echo '<div class="bio">' . $cleanBio . '</div>';
 ```
 
-### Avoiding Dangerous Patterns
+## Avoiding Dangerous Patterns
 
 Certain coding patterns are particularly vulnerable to XSS attacks:
 
-#### Avoid Unsafe JavaScript APIs
+### Avoid Unsafe JavaScript APIs
 
 ```javascript
 // DANGEROUS - Never do this with user input
@@ -175,7 +178,7 @@ div.textContent = userInput;
 parentElement.appendChild(div);
 ```
 
-#### Avoid Inline Scripts and Event Handlers
+### Avoid Inline Scripts and Event Handlers
 
 ```html
 <!-- DANGEROUS - Inline event handlers are vulnerable to XSS -->
@@ -190,11 +193,11 @@ parentElement.appendChild(div);
 </script>
 ```
 
-### Defense in Depth Strategy
+## Defense in Depth Strategy
 
 Implement multiple layers of protection:
 
-#### Content Security Policy (CSP)
+### Content Security Policy (CSP)
 
 ```http
 # Strong CSP header that blocks inline scripts and restricts sources
@@ -215,13 +218,13 @@ app.use(helmet.contentSecurityPolicy({
 }));
 ```
 
-#### Secure Cookie Configuration
+### Secure Cookie Configuration
 
 ```http
 Set-Cookie: sessionId=abc123; HttpOnly; Secure; SameSite=Strict
 ```
 
-#### Input Validation
+### Input Validation
 
 ```javascript
 // Validate input format before processing

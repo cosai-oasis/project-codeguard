@@ -12,9 +12,12 @@ tags:
 alwaysApply: false
 ---
 
+# Data & storage security (DB isolation, TLS, least privilege, RLS/CLS, backups, auditing)
+
 ## Database Security Guidelines
 
-This rule advises on securely configuring SQL and NoSQL databases to protect against data breaches and unauthorized access:
+This rule advises on securely configuring SQL and NoSQL databases to protect against data breaches and unauthorized
+access:
 
 - Backend Database Protection
   - Isolate database servers from other systems and limit host connections.
@@ -75,4 +78,6 @@ This rule advises on securely configuring SQL and NoSQL databases to protect aga
   - Redis: Follow Redis security guide recommendations.
 
 Summary:  
-Isolate database systems, enforce encrypted connections, implement strong authentication, store credentials securely using secrets management, apply least privilege permissions, harden database configurations, and maintain regular security updates and monitoring.
+Isolate database systems, enforce encrypted connections, implement strong authentication, store credentials securely
+using secrets management, apply least privilege permissions, harden database configurations, and maintain regular
+security updates and monitoring.

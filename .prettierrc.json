@@ -1,0 +1,16 @@
+{
+  "embeddedLanguageFormatting": "off",
+  "endOfLine": "lf",
+  "printWidth": 120,
+  "proseWrap": "always",
+  "tabWidth": 2,
+  "useTabs": false,
+  "overrides": [
+    {
+      "files": ["*.mdc", "*.md.template", "*.md.example"],
+      "options": {
+        "parser": "markdown"
+      }
+    }
+  ]
+}

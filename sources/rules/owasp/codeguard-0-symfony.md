@@ -6,13 +6,17 @@ languages:
 alwaysApply: false
 ---
 
+# Symfony Security Best Practices
+
 ## Symfony Security Best Practices
 
-Essential security practices for developing secure Symfony applications, covering common vulnerabilities and framework-specific protections.
+Essential security practices for developing secure Symfony applications, covering common vulnerabilities and
+framework-specific protections.
 
 ### Cross-Site Scripting (XSS) Prevention
 
-Use Twig's default `{{ }}` output escaping for all variables. Only use `|raw` filter for trusted content requiring HTML rendering.
+Use Twig's default `{{ }}` output escaping for all variables. Only use `|raw` filter for trusted content requiring HTML
+rendering.
 
 ```twig
 <p>Hello {{name}}</p>
@@ -34,7 +38,7 @@ class PostForm extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            // ... 
+            // ...
             'csrf_protection' => true,  // enable/disable csrf protection for this form
             'csrf_field_name' => '_csrf_token',
             'csrf_token_id'   => 'post_item', // change arbitrary string used to generate
@@ -44,6 +48,7 @@ class PostForm extends AbstractType
 ```
 
 Manual CSRF token handling:
+
 ```twig
 <form action="{{ url('delete_post', { id: post.id }) }}" method="post">
     <input type="hidden" name="token" value="{{ csrf_token('delete-post') }}">
@@ -55,8 +60,8 @@ Manual CSRF token handling:
 class ExampleController extends AbstractController
 {
     #[Route('/posts/{id}', methods: ['DELETE'], name: 'delete_post')]
-    public function delete(Post $post, Request $request): Response 
-    { 
+    public function delete(Post $post, Request $request): Response
+    {
         $token = $request->request->get('token');
         if($this->isCsrfTokenValid($token)) {
             // ...

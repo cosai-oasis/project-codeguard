@@ -1,14 +1,13 @@
 # FFI boundary security rules
 
-The interface between memory-safe and memory-unsafe code is a critical attack surface.
-Treat every FFI boundary with the same rigor as a network API at a trust boundary.
+The interface between memory-safe and memory-unsafe code is a critical attack surface. Treat every FFI boundary with the
+same rigor as a network API at a trust boundary.
 
 ## Mandatory rules
 
 ### 1. Validate all inputs from the unsafe side
 
-Every pointer, length, and value crossing from C/C++ into MSL code must be validated
-before use.
+Every pointer, length, and value crossing from C/C++ into MSL code must be validated before use.
 
 ```rust
 // CORRECT: Full validation at the boundary
@@ -125,6 +124,7 @@ pub extern "C" fn destroy_resource(ptr: *mut Resource) {
 ```
 
 Rules:
+
 - Document who owns every pointer in every FFI function signature
 - Provide paired allocate/free functions when exposing MSL allocations to C
 - Never `free()` Rust-allocated memory or `drop()` C-allocated memory
@@ -151,8 +151,8 @@ pub extern "C" fn safe_entry_point(input: *const u8, len: usize) -> i32 {
 }
 ```
 
-In Go, panics do not cross cgo boundaries by default, but exported functions
-should still use `defer/recover` for robustness:
+In Go, panics do not cross cgo boundaries by default, but exported functions should still use `defer/recover` for
+robustness:
 
 ```go
 //export SafeEntryPoint
@@ -171,18 +171,18 @@ func SafeEntryPoint(input *C.char, length C.int) C.int {
 
 - Document thread safety guarantees for every FFI function
 - If the C side uses global state, protect it with synchronization on the MSL side
-- In Rust, FFI functions are `unsafe` by default because the compiler cannot
-  verify thread safety across language boundaries — the developer must ensure it
-- In Go, be aware that goroutines may call C code concurrently; the C code must
-  be thread-safe or protected by a mutex on the Go side
+- In Rust, FFI functions are `unsafe` by default because the compiler cannot verify thread safety across language
+  boundaries — the developer must ensure it
+- In Go, be aware that goroutines may call C code concurrently; the C code must be thread-safe or protected by a mutex
+  on the Go side
 
 ### 6. String encoding across FFI
 
 - C strings are null-terminated byte sequences with no encoding guarantee
 - Rust strings are UTF-8, Go strings are UTF-8, Java strings are UTF-16 internally
 - Always validate encoding at the boundary
-- Never assume a C string is valid UTF-8 — use fallible conversion functions
-  (`CStr::to_str()` in Rust, explicit encoding conversion in Go/Java)
+- Never assume a C string is valid UTF-8 — use fallible conversion functions (`CStr::to_str()` in Rust, explicit
+  encoding conversion in Go/Java)
 
 ## Testing FFI boundaries
 

@@ -14,6 +14,8 @@ languages:
 alwaysApply: false
 ---
 
+# HTML5 Security Best Practices
+
 ## HTML5 Security Guidelines
 
 This rule advises on secure HTML5 development practices to prevent vulnerabilities in modern web applications:
@@ -70,7 +72,7 @@ This rule advises on secure HTML5 development practices to prevent vulnerabiliti
   - Set HttpOnly flag on session cookies to prevent JavaScript access.
   - Use Secure flag to ensure cookies are only sent over HTTPS connections.
   - Implement SameSite=Strict or SameSite=Lax to prevent CSRF attacks.
-  - Use __Secure- or __Host- cookie prefixes for additional security.
+  - Use __Secure- or__Host- cookie prefixes for additional security.
   - Set appropriate cookie expiration and path restrictions.
 
 - Web Workers and Service Workers Security
@@ -93,4 +95,6 @@ This rule advises on secure HTML5 development practices to prevent vulnerabiliti
   - Implement proper cache invalidation mechanisms for security updates.
 
 Summary:  
-Implement comprehensive HTML5 security controls through proper origin validation, secure storage practices, CSRF protection, secure cookie configuration, safe DOM manipulation, and robust authentication mechanisms to prevent XSS, CSRF, clickjacking, and data leakage vulnerabilities.
+Implement comprehensive HTML5 security controls through proper origin validation, secure storage practices, CSRF
+protection, secure cookie configuration, safe DOM manipulation, and robust authentication mechanisms to prevent XSS,
+CSRF, clickjacking, and data leakage vulnerabilities.

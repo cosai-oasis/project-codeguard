@@ -13,15 +13,19 @@ languages:
 alwaysApply: false
 ---
 
+# RESTful Web Service Security Assessment Guidelines
+
 ## RESTful Web Service Security Assessment Guidelines
 
-Essential practices for security testing and assessment of RESTful web services, focusing on identifying attack surfaces and testing methodologies.
+Essential practices for security testing and assessment of RESTful web services, focusing on identifying attack surfaces
+and testing methodologies.
 
 ### Understanding REST Security Challenges
 
 RESTful web services present unique security testing challenges:
 
-- Attack surface is not visible through application inspection since client applications often don't utilize all available service functions
+- Attack surface is not visible through application inspection since client applications often don't utilize all
+  available service functions
 - Parameters may be embedded in URL paths, custom headers, or structured data rather than standard query strings
 - Large parameter sets in JSON/XML structures significantly increase testing complexity
 - Custom authentication mechanisms require reverse engineering and may not work with standard testing tools
@@ -123,4 +127,5 @@ Ensure comprehensive security assessment:
 - Assess rate limiting and denial-of-service protections
 - Verify proper error handling and information disclosure prevention
 
-This assessment methodology helps identify security vulnerabilities in RESTful web services by addressing the unique challenges they present compared to traditional web applications.
+This assessment methodology helps identify security vulnerabilities in RESTful web services by addressing the unique
+challenges they present compared to traditional web applications.

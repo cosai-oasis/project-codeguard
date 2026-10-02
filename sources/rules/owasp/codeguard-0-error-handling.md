@@ -10,6 +10,8 @@ languages:
 alwaysApply: false
 ---
 
+# Error Handling Security Best Practices
+
 ## Error Handling Security Guidelines
 
 This rule advises on secure error handling practices to prevent information leakage and ensure proper logging:
@@ -41,6 +43,7 @@ This rule advises on secure error handling practices to prevent information leak
 Code Examples (from OWASP):
 
 Standard Java Web Application:
+
 ```xml
 <!-- web.xml configuration -->
 <error-page>
@@ -67,6 +70,7 @@ response.setStatus(500);
 ```
 
 Spring Boot Global Error Handler:
+
 ```java
 
 @RestControllerAdvice
@@ -85,6 +89,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 ```
 
 ASP.NET Core Error Controller:
+
 ```csharp
 [Route("api/[controller]")]
 [ApiController]
@@ -121,6 +126,7 @@ public class ErrorController : ControllerBase
 ```
 
 ASP.NET Web.config Security Configuration:
+
 ```xml
 <configuration>
     <system.web>
@@ -131,4 +137,5 @@ ASP.NET Web.config Security Configuration:
 ```
 
 Summary:  
-Implement centralized error handling with generic user messages while logging detailed error information securely. Disable debug information in production and ensure error responses don't leak sensitive system details.
+Implement centralized error handling with generic user messages while logging detailed error information securely.
+Disable debug information in production and ensure error responses don't leak sensitive system details.

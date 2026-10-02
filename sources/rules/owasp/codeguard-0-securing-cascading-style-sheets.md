@@ -7,27 +7,36 @@ languages:
 alwaysApply: false
 ---
 
+# Securing Cascading Style Sheets
+
 ## Securing Cascading Style Sheets
 
-Prevent CSS files from exposing application features, user roles, and sensitive functionality to attackers performing reconnaissance.
+Prevent CSS files from exposing application features, user roles, and sensitive functionality to attackers performing
+reconnaissance.
 
 ### Security Risks
 
 #### Risk 1: Information Disclosure Through CSS Selectors
-Motivated attackers examine CSS files to learn application features before attempting attacks. Global CSS files containing role-based selectors reveal:
+
+Motivated attackers examine CSS files to learn application features before attempting attacks. Global CSS files
+containing role-based selectors reveal:
+
 - Different user roles and permissions
 - Available features and functionality
 - Application structure and sensitive endpoints
 
 Example problematic selectors:
+
 - `.profileSettings`
 - `.addUsers`
-- `.deleteUsers` 
+- `.deleteUsers`
 - `.exportUserData`
 - `.addNewAdmin`
 
 #### Risk 2: Descriptive Selector Names
+
 Readable selector names help attackers map CSS classes to actual application features:
+
 - `.changePassword`
 - `.oldPassword`
 - `.newPassword`
@@ -36,6 +45,7 @@ Readable selector names help attackers map CSS classes to actual application fea
 ### Defensive Mechanisms
 
 #### Defense 1: Isolate CSS by Access Control Level
+
 - Create separate CSS files per role (StudentStyling.CSS, AdministratorStyling.CSS)
 - Restrict CSS file access to users with proper access control level only
 - Implement server-side validation before serving CSS files
@@ -43,12 +53,14 @@ Readable selector names help attackers map CSS classes to actual application fea
 - Ensure authenticated users cannot access CSS files for other roles
 
 #### Defense 2: Remove Identifying Information
+
 - Use consistent styling across pages to reduce need for specific selectors
 - Write general CSS rules that apply across multiple pages
 - Create CSS selectors targeting HTML elements without revealing functionality
 
 Transform descriptive selectors:
-```
+
+```text
 // Instead of this revealing selector:
 #UserPage .Toolbar .addUserButton
 
@@ -57,12 +69,14 @@ Transform descriptive selectors:
 ```
 
 Build-time and runtime obfuscation tools:
+
 - JSS (CSS in JS) with minify option generates class names like `.c001`, `.c002`
 - CSS Modules with modules and localIdentName options for obfuscation
 - .Net Blazor CSS Isolation creates scoped selectors like `button.add[b-3xxtam6d07]`
 - CSS libraries (Bootstrap, Tailwind) reduce need for specific selectors
 
 #### Defense 3: Prevent Malicious CSS in User Content
+
 - Validate and sanitize user-authored HTML content
 - Restrict CSS styles allowed in user-generated content
 - Prevent uploaded HTML from using styles for unintended purposes

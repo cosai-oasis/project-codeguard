@@ -10,6 +10,8 @@ languages:
 alwaysApply: false
 ---
 
+# JSON Web Token Security for Java
+
 ## JSON Web Token Security for Java
 
 Key security practices for implementing JWT in Java applications.
@@ -28,7 +30,7 @@ DecodedJWT decodedToken = verifier.verify(token);
 
 Code to create the token after successful authentication.
 
-``` java
+```java
 // HMAC key - Block serialization and storage as String in JVM memory
 private transient byte[] keyHMAC = ...;
 // Random data generator
@@ -74,7 +76,7 @@ String token = JWT.create().withSubject(login)
 
 Code to validate the token.
 
-``` java
+```java
 // HMAC key - Block serialization and storage as String in JVM memory
 private transient byte[] keyHMAC = ...;
 
@@ -107,15 +109,13 @@ JWTVerifier verifier = JWT.require(Algorithm.HMAC256(keyHMAC))
 DecodedJWT decodedToken = verifier.verify(token);
 ```
 
-
 ### Token Revocation
 
 Implement token blacklist for logout functionality:
 
-
 Code in charge of adding a token to the denylist and checking if a token is revoked.
 
-``` java
+````java
 /**
 * Handle the revocation of the token (logout).
 * Use a DB in order to allow multiple instances to check for revoked token
@@ -172,11 +172,12 @@ sessionStorage.setItem("token", data.token);
 
 // Send as Bearer token
 xhr.setRequestHeader("Authorization", "bearer " + token);
-```
+````
 
 ### Strong Secrets
 
 Use strong HMAC secrets or RSA keys:
+
 - HMAC secrets: minimum 64 characters, cryptographically random
 - Prefer RSA or ECDSA over HMAC for better security
 - Never hardcode secrets in source code

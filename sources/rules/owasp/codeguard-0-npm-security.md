@@ -5,6 +5,8 @@ languages:
 alwaysApply: false
 ---
 
+# NPM Security Best Practices
+
 ## NPM Security Guidelines
 
 Essential security practices for managing NPM packages and dependencies in JavaScript projects.
@@ -12,6 +14,7 @@ Essential security practices for managing NPM packages and dependencies in JavaS
 ### Prevent Secret Leakage
 
 Avoid publishing sensitive data to the npm registry:
+
 - Use the `files` property in package.json as an allowlist to control what gets published
 - Be cautious with `.gitignore` and `.npmignore` - if both exist, `.npmignore` takes precedence
 - Run `npm publish --dry-run` to review the tarball contents before actual publishing
@@ -20,6 +23,7 @@ Avoid publishing sensitive data to the npm registry:
 ### Enforce Deterministic Builds
 
 Ensure consistent dependency installation across environments:
+
 - Use `npm ci` instead of `npm install` in CI/CD and production builds
 - Use `yarn install --frozen-lockfile` if using Yarn
 - Never commit changes to package.json without updating the corresponding lockfile
@@ -28,6 +32,7 @@ Ensure consistent dependency installation across environments:
 ### Minimize Script Execution Risks
 
 Reduce attack surface from package installation scripts:
+
 - Add `--ignore-scripts` when installing packages: `npm install --ignore-scripts`
 - Consider adding `ignore-scripts=true` to your `.npmrc` configuration
 - Always vet third-party packages for credibility before installation
@@ -37,6 +42,7 @@ Reduce attack surface from package installation scripts:
 ### Monitor Package Health
 
 Regularly assess the state of your dependencies:
+
 - Use `npm outdated` to identify packages that need updates
 - Run `npm doctor` to verify healthy npm installation and environment
 - Monitor for known vulnerabilities in dependencies using `npm audit`
@@ -46,6 +52,7 @@ Regularly assess the state of your dependencies:
 ### Use Private Registry Solutions
 
 Consider using local npm proxies for enhanced control:
+
 - Verdaccio provides a lightweight private registry solution
 - Private registries offer package access control and authenticated users
 - Proxy capabilities reduce duplicate downloads and save bandwidth
@@ -55,6 +62,7 @@ Consider using local npm proxies for enhanced control:
 ### Enable Account Security
 
 Protect your npm publishing capabilities:
+
 - Enable two-factor authentication with `npm profile enable-2fa auth-and-writes`
 - Use auth-and-writes mode for comprehensive protection of profile, login, and package management
 - Auth-only mode provides protection for login and profile changes only
@@ -63,6 +71,7 @@ Protect your npm publishing capabilities:
 ### Manage Access Tokens Securely
 
 Control programmatic access to npm registry:
+
 - Create tokens with minimal required permissions using `npm token create`
 - Use read-only tokens when write access is not needed
 - Restrict tokens to specific IP ranges with `--cidr` option
@@ -73,6 +82,7 @@ Control programmatic access to npm registry:
 ### Defend Against Typosquatting
 
 Protect against malicious package substitution:
+
 - Verify package names and metadata with `npm info <package>` before installation
 - Be extra careful when copy-pasting installation commands from untrusted sources
 - Check source code repositories and npm registry to confirm package legitimacy
@@ -82,6 +92,7 @@ Protect against malicious package substitution:
 ### Follow Responsible Disclosure
 
 Handle security vulnerabilities appropriately:
+
 - Follow responsible disclosure programs when reporting vulnerabilities
 - Coordinate with package maintainers before public disclosure
 - Allow time for fixes and upgrade paths before publicizing security issues
@@ -90,6 +101,7 @@ Handle security vulnerabilities appropriately:
 ### Package Naming Best Practices
 
 Understand npm naming rules and security implications:
+
 - Package names limited to 214 characters, lowercase only
 - Cannot start with dot, underscore, or contain special characters like "~\'!()*"
 - Be aware that typosquatting attacks target popular package names

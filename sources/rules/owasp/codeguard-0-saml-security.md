@@ -8,33 +8,43 @@ languages:
 alwaysApply: false
 ---
 
+# SAML Security Guidelines
+
 ## SAML Security Guidelines
 
-Essential security practices for implementing Security Assertion Markup Language (SAML) integrations to prevent common vulnerabilities and attacks.
+Essential security practices for implementing Security Assertion Markup Language (SAML) integrations to prevent common
+vulnerabilities and attacks.
 
 ### Transport Security
 
-Use TLS 1.2 or higher for all SAML message transport to guarantee confidentiality and integrity. This protects against eavesdropping, theft of authentication information, bearer token theft, message deletion/modification, and man-in-the-middle attacks.
+Use TLS 1.2 or higher for all SAML message transport to guarantee confidentiality and integrity. This protects against
+eavesdropping, theft of authentication information, bearer token theft, message deletion/modification, and
+man-in-the-middle attacks.
 
 ### Message Integrity and Authentication
 
-Digitally sign SAML messages using certified keys to guarantee message integrity and authentication. This prevents man-in-the-middle attacks, forged assertions, and message modifications.
+Digitally sign SAML messages using certified keys to guarantee message integrity and authentication. This prevents
+man-in-the-middle attacks, forged assertions, and message modifications.
 
-Encrypt assertions via XMLEnc to prevent disclosure of sensitive attributes after transportation, protecting against theft of user authentication information.
+Encrypt assertions via XMLEnc to prevent disclosure of sensitive attributes after transportation, protecting against
+theft of user authentication information.
 
 ### Protocol Usage Validation
 
 Follow SAML Profile requirements strictly. The AVANTSSAR team identified these required elements:
 
 AuthnRequest Requirements:
+
 - Must contain unique ID and SP (Service Provider) identifier
 - Request ID must be returned in response via InResponseTo attribute
 
 Response Requirements:
+
 - Must contain unique ID, SP identifier, IdP identifier, and digitally signed assertion
 - InResponseTo must match previously sent request ID
 
 Authentication Assertion Requirements:
+
 - Must contain ID, client identifier, IdP identifier, and SP identifier
 
 ### XML Signature Security
@@ -42,18 +52,21 @@ Authentication Assertion Requirements:
 Prevent XML Signature Wrapping attacks:
 
 Schema Validation:
+
 - Always perform schema validation before using XML for security purposes
 - Use local, trusted copies of schemas for validation
 - Never allow automatic schema downloads from third parties
 - Inspect and harden schemas to disable wildcard or relaxed processing
 
 Digital Signature Validation:
+
 - For single signing key: use StaticKeySelector with key obtained directly from IdP
 - For multiple signing keys: use X509KeySelector with keys stored in local JKS
 - Ignore KeyInfo elements in documents
 - For heterogeneous documents: implement full PKIX trust model with trusted root certificates
 
 XML Processing Security:
+
 - Never use getElementsByTagName to select security elements without validation
 - Always use absolute XPath expressions to select elements
 - Use hardened schemas for validation
@@ -63,20 +76,24 @@ XML Processing Security:
 Validate all required processing steps:
 
 AuthnRequest Processing:
+
 - Follow all SAML Core (3.4.1.4) processing rules
 - Prevents man-in-the-middle attacks
 
 Response Processing:
+
 - Follow all SAML Profiles (4.1.4.3) processing rules
 - Prevents stolen assertions, man-in-the-middle, forged assertions, and browser state exposure
 
 ### Binding Implementation Security
 
 HTTP Redirect Binding:
+
 - Follow SAML Binding (3.4) specifications
 - Properly encode/decode messages
 
 HTTP POST Binding:
+
 - Follow SAML Binding (3.5) specifications
 - Prevent caching of SAML messages to avoid stolen assertion and replay attacks
 
@@ -85,15 +102,18 @@ HTTP POST Binding:
 Additional protection measures:
 
 IP Filtering:
+
 - Filter by IP address when appropriate
 - Provide separate endpoints for trusted partners
 - Prevents stolen assertions and man-in-the-middle attacks
 
 Response Lifetimes:
+
 - Use short lifetimes on SAML responses
 - Prevents stolen assertions and browser state exposure
 
 OneTimeUse:
+
 - Mark responses as OneTimeUse
 - Prevents browser state exposure and replay attacks
 
@@ -131,6 +151,7 @@ Unsolicited responses are inherently less secure due to lack of CSRF protection.
 ### Input Validation
 
 Treat all SAML input as untrusted external data:
+
 - Perform proper input validation on all SAML providers and consumers
 - Validate all elements and attributes in SAML messages
 - Sanitize any data extracted from SAML assertions before use
@@ -145,6 +166,7 @@ Treat all SAML input as untrusted external data:
 ### Summary
 
 Secure SAML implementation requires:
+
 - TLS 1.2+ transport security with message signing and encryption
 - Strict validation of all protocol elements and processing rules
 - Protection against XML signature wrapping via schema validation and secure XML processing

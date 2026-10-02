@@ -14,23 +14,30 @@ languages:
 alwaysApply: false
 ---
 
+# Insecure Direct Object Reference Prevention
+
 ## Insecure Direct Object Reference Prevention Guidelines
 
-This rule provides actionable guidance for preventing IDOR vulnerabilities by implementing proper access control checks around direct object references.
+This rule provides actionable guidance for preventing IDOR vulnerabilities by implementing proper access control checks
+around direct object references.
 
 ### Introduction
 
-Insecure Direct Object Reference (IDOR) is a vulnerability that arises when attackers can access or modify objects by manipulating identifiers used in a web application's URLs or parameters. It occurs due to missing access control checks, which fail to verify whether a user should be allowed to access specific data.
+Insecure Direct Object Reference (IDOR) is a vulnerability that arises when attackers can access or modify objects by
+manipulating identifiers used in a web application's URLs or parameters. It occurs due to missing access control checks,
+which fail to verify whether a user should be allowed to access specific data.
 
 ### Examples
 
 For instance, when a user accesses their profile, the application might generate a URL like this:
 
-```
+```text
 https://example.org/users/123
 ```
 
-The 123 in the URL is a direct reference to the user's record in the database, often represented by the primary key. If an attacker changes this number to 124 and gains access to another user's information, the application is vulnerable to Insecure Direct Object Reference.
+The 123 in the URL is a direct reference to the user's record in the database, often represented by the primary key. If
+an attacker changes this number to 124 and gains access to another user's information, the application is vulnerable to
+Insecure Direct Object Reference.
 
 In some cases, the identifier may not be in the URL, but rather in the POST body:
 
@@ -45,13 +52,18 @@ In this example, attackers can manipulate the "user_id" field to modify profiles
 
 ### Identifier Complexity
 
-In some cases, using more complex identifiers like GUIDs can make it practically impossible for attackers to guess valid values. However, even with complex identifiers, access control checks are essential. If attackers obtain URLs for unauthorized objects, the application should still block their access attempts.
+In some cases, using more complex identifiers like GUIDs can make it practically impossible for attackers to guess valid
+values. However, even with complex identifiers, access control checks are essential. If attackers obtain URLs for
+unauthorized objects, the application should still block their access attempts.
 
 ### Mitigation
 
-To mitigate IDOR, implement access control checks for each object that users try to access. Web frameworks often provide ways to facilitate this. Additionally, use complex identifiers as a defense-in-depth measure, but remember that access control is crucial even with these identifiers.
+To mitigate IDOR, implement access control checks for each object that users try to access. Web frameworks often provide
+ways to facilitate this. Additionally, use complex identifiers as a defense-in-depth measure, but remember that access
+control is crucial even with these identifiers.
 
-Avoid exposing identifiers in URLs and POST bodies if possible. Instead, determine the currently authenticated user from session information. When using multi-step flows, pass identifiers in the session to prevent tampering.
+Avoid exposing identifiers in URLs and POST bodies if possible. Instead, determine the currently authenticated user from
+session information. When using multi-step flows, pass identifiers in the session to prevent tampering.
 
 When looking up objects based on primary keys, use datasets that users have access to. For example, in Ruby on Rails:
 
@@ -62,6 +74,10 @@ When looking up objects based on primary keys, use datasets that users have acce
 @project = @current_user.projects.find(params[:id])
 ```
 
-Verify the user's permission every time an access attempt is made. Implement this structurally using the recommended approach for your web framework.
+Verify the user's permission every time an access attempt is made. Implement this structurally using the recommended
+approach for your web framework.
 
-As an additional defense-in-depth measure, replace enumerable numeric identifiers with more complex, random identifiers. You can achieve this by adding a column with random strings in the database table and using those strings in the URLs instead of numeric primary keys. Another option is to use UUIDs or other long random values as primary keys. Avoid encrypting identifiers as it can be challenging to do so securely.
+As an additional defense-in-depth measure, replace enumerable numeric identifiers with more complex, random identifiers.
+You can achieve this by adding a column with random strings in the database table and using those strings in the URLs
+instead of numeric primary keys. Another option is to use UUIDs or other long random values as primary keys. Avoid
+encrypting identifiers as it can be challenging to do so securely.

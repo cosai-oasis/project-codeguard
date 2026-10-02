@@ -12,6 +12,8 @@ languages:
 alwaysApply: false
 ---
 
+# Microservices Security Best Practices
+
 ## Microservices Security Guidelines
 
 Essential security practices for implementing authentication, authorization, and logging in microservices-based systems.
@@ -19,6 +21,7 @@ Essential security practices for implementing authentication, authorization, and
 ### Edge-Level Authorization
 
 API gateways can centralize authorization enforcement for downstream microservices, but have limitations:
+
 - Pushing all authorization decisions to the gateway becomes hard to manage in complex ecosystems
 - The API gateway may become a single point of decision violating "defense in depth"
 - Operation teams typically own gateways, slowing development velocity
@@ -28,6 +31,7 @@ API gateways can centralize authorization enforcement for downstream microservic
 ### Service-Level Authorization Patterns
 
 **NIST Components**:
+
 - Policy Administration Point (PAP): User interface for creating and managing access control rules
 - Policy Decision Point (PDP): Computes access decisions by evaluating access control policy
 - Policy Enforcement Point (PEP): Enforces policy decisions for protected objects
@@ -38,7 +42,7 @@ API gateways can centralize authorization enforcement for downstream microservic
 **Recommended approach**: Access control rules defined centrally but stored and evaluated at microservice level.
 
 1. Access control rules defined using PAP and delivered to embedded PDP with required attributes
-2. When subject invokes microservice endpoint, microservice code invokes the PDP 
+2. When subject invokes microservice endpoint, microservice code invokes the PDP
 3. PDP generates access control policy decision by evaluating input against rules and attributes
 4. Microservice enforces authorization based on PDP decision
 
@@ -63,9 +67,11 @@ API gateways can centralize authorization enforcement for downstream microservic
 
 #### Recommended Pattern: Signed Data Structure by Trusted Issuer
 
-After edge authentication, generate data structure representing external entity identity (user ID, roles, permissions), signed or encrypted by trusted issuer and propagated to internal microservices.
+After edge authentication, generate data structure representing external entity identity (user ID, roles, permissions),
+signed or encrypted by trusted issuer and propagated to internal microservices.
 
 **Implementation Recommendations**:
+
 1. Decouple external access tokens from internal representation
 2. Use single data structure to represent and propagate external entity identity
 3. Sign internal entity representation structure (symmetric or asymmetric encryption)
@@ -77,6 +83,7 @@ After edge authentication, generate data structure representing external entity 
 #### Mutual Transport Layer Security (mTLS)
 
 Each microservice carries public/private key pair for authentication via mTLS. Provides:
+
 - Legitimate service identification
 - Confidentiality and integrity of transmitted data
 
@@ -85,16 +92,19 @@ Each microservice carries public/private key pair for authentication via mTLS. P
 #### Token-Based Authentication
 
 Token contains caller ID (microservice ID) and permissions (scopes). Process:
+
 1. Caller microservice obtains signed token from security token service using service ID and password
 2. Token attached to outgoing requests via HTTP headers
 3. Called microservice extracts and validates token online or offline
 
 **Online validation**: Network call to centralized service (detects revoked tokens, high latency, for critical requests)
-**Offline validation**: Uses downloaded public key (may not detect revoked tokens, low latency, for non-critical requests)
+**Offline validation**: Uses downloaded public key (may not detect revoked tokens, low latency, for non-critical
+requests)
 
 ### Logging Architecture
 
 **Principles**:
+
 - Each microservice writes log messages to local file using standard output
 - Logging agent periodically pulls log messages and publishes to message broker
 - Central logging service subscribes to message broker messages
@@ -117,25 +127,31 @@ Token contains caller ID (microservice ID) and permissions (scopes). Process:
 Essential documentation to support threat modeling, attack surface analysis, and least privilege enforcement:
 
 #### Service and Infrastructure Inventory
-- Document all application services and infrastructure components with unique IDs, business functions, API definitions including security schemes (scopes, API keys), source repositories, and team ownership
+
+- Document all application services and infrastructure components with unique IDs, business functions, API definitions
+  including security schemes (scopes, API keys), source repositories, and team ownership
 - Include authentication, authorization, logging, monitoring, and discovery services
 - Document data storages (databases, caches) and message queues with software types
 
 #### Data Classification and Flow Mapping
+
 - Identify and classify all data assets by protection level (PII, confidential, public)
 - Map service-to-storage relationships with access types (read, read/write)
 - Document service-to-service communications (synchronous HTTP/gRPC, asynchronous messaging) with data exchanged
 - Track which assets are stored in which systems (golden source vs cache)
 
 #### Architecture Visualization
+
 - Create graphical representations using service call graphs or data flow diagrams
 - Use tools like DOT language to visualize component relationships and trust boundaries
 - Maintain current architecture diagrams showing all connections and data flows
 
 #### Security Applications
+
 This documentation enables:
+
 - Attack surface enumeration from API definitions for focused security testing
-- Data leakage analysis by tracking sensitive data movement across service boundaries  
+- Data leakage analysis by tracking sensitive data movement across service boundaries
 - Least privilege implementation by defining minimal permissions based on documented interactions
 - Trust boundary validation and justification of all service communications
 - Centralized security control verification to avoid duplicate or missing protections

@@ -14,4 +14,3 @@ KNOWN_TAGS = {
     "secrets",
     "web",
 }
-

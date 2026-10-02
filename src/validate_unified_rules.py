@@ -58,7 +58,9 @@ def validate_rule(file_path: Path) -> dict[str, list[str]]:
                 # Error on tags not in known list
                 unknown_tags = [tag for tag in normalized_tags if tag not in KNOWN_TAGS]
                 if unknown_tags:
-                    errors.append(f"Unknown tags (add to KNOWN_TAGS): {', '.join(sorted(unknown_tags))}")
+                    errors.append(
+                        f"Unknown tags (add to KNOWN_TAGS): {', '.join(sorted(unknown_tags))}"
+                    )
             except ValueError as e:
                 errors.append(str(e))
 
@@ -82,10 +84,7 @@ def main():
 
     # Only validate codeguard rule files (codeguard-*.md), skipping READMEs,
     # templates, skill manifests, and reference docs
-    md_files = [
-        f for f in rules_dir.rglob("codeguard-*.md")
-        if not f.name.endswith(".template")
-    ]
+    md_files = [f for f in rules_dir.rglob("codeguard-*.md") if not f.name.endswith(".template")]
 
     if not md_files:
         print(f"❌ No rule files found in {rules_dir}")

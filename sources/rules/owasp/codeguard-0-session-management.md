@@ -15,19 +15,24 @@ languages:
 alwaysApply: false
 ---
 
+# Session Management Security
+
 ## Session Management Security
 
-Implement secure session handling to prevent session hijacking, fixation, and unauthorized access through proper ID generation, cookie security, and lifecycle management.
+Implement secure session handling to prevent session hijacking, fixation, and unauthorized access through proper ID
+generation, cookie security, and lifecycle management.
 
 ### Session ID Properties
 
 #### Secure Generation
+
 - Use cryptographically secure pseudorandom number generator (CSPRNG) for session IDs
 - Ensure minimum 64 bits of entropy (16 hexadecimal characters minimum)
 - Generate completely random, opaque session IDs with no meaningful content
 - Change default session ID names (PHPSESSID, JSESSIONID) to generic names like "id"
 
 #### Session ID Content
+
 - Session IDs must be meaningless identifiers on client side
 - Never include sensitive information or PII in session ID values
 - Store all session data (user details, permissions, state) server-side only
@@ -36,18 +41,21 @@ Implement secure session handling to prevent session hijacking, fixation, and un
 ### Cookie Security Configuration
 
 #### Essential Cookie Attributes
+
 - Secure: Only transmit over HTTPS connections
 - HttpOnly: Prevent JavaScript access to protect against XSS
 - SameSite: Use Strict or Lax to mitigate CSRF attacks
 - Domain/Path: Scope cookies narrowly to minimize exposure
 
 #### Cookie Persistence
+
 - Use non-persistent session cookies (no Expires or Max-Age attributes)
 - Session should disappear when browser instance closes
 - Avoid persistent cookies for session management
 
 Example secure cookie configuration:
-```
+
+```http
 Set-Cookie: id=<session-id>; Secure; HttpOnly; SameSite=Strict; Path=/app
 ```
 
@@ -61,12 +69,14 @@ Set-Cookie: id=<session-id>; Secure; HttpOnly; SameSite=Strict; Path=/app
 ### Session Lifecycle Management
 
 #### Session ID Generation and Verification
+
 - Use strict session management - only accept server-generated session IDs
 - Reject any session ID not previously created by the application
 - Treat session IDs as untrusted user input requiring validation
 - Detect and alert on unknown session IDs as suspicious activity
 
 #### Session ID Regeneration
+
 - Regenerate session ID after any privilege level change
 - Mandatory regeneration during authentication process
 - Regenerate on password changes, permission changes, role changes
@@ -74,6 +84,7 @@ Set-Cookie: id=<session-id>; Secure; HttpOnly; SameSite=Strict; Path=/app
 - Invalidate previous session IDs when generating new ones
 
 Framework examples for regeneration:
+
 - J2EE: `request.getSession(true)` & `HttpSession.invalidate()`
 - ASP.NET: `Session.Abandon()` & `Response.Cookies.Add(new...)`
 - PHP: `session_start()` & `session_regenerate_id(true)`
@@ -81,17 +92,20 @@ Framework examples for regeneration:
 ### Session Expiration
 
 #### Automatic Expiration
+
 - Implement idle timeout (2-5 minutes for high-value, 15-30 minutes for low-risk)
 - Implement absolute timeout (4-8 hours based on application usage)
 - Enforce timeouts server-side, never rely solely on client-side controls
 - Optionally implement renewal timeout to periodically regenerate session IDs
 
 #### Manual Expiration
+
 - Provide visible, accessible logout button on every page
 - Fully invalidate sessions server-side on logout
 - Clear session cookies client-side with empty value and past expiration
 
 Server-side invalidation examples:
+
 - J2EE: `HttpSession.invalidate()`
 - ASP.NET: `Session.Abandon()`
 - PHP: `session_destroy()/unset()`
@@ -106,12 +120,14 @@ Server-side invalidation examples:
 ### Attack Detection and Monitoring
 
 #### Session Attack Detection
+
 - Monitor for session ID brute force attempts from single IP addresses
 - Detect session ID anomalies and manipulation attempts
 - Log session lifecycle events (creation, renewal, destruction)
 - Bind sessions to client properties (IP, User-Agent) for anomaly detection
 
 #### Logging Best Practices
+
 - Log session events using salted hash of session ID (not actual ID)
 - Include timestamps, IP addresses, User-Agent, and operation details
 - Monitor for simultaneous sessions and enforce business policies
@@ -120,12 +136,14 @@ Server-side invalidation examples:
 ### Client-Side Storage Security
 
 #### Avoid Insecure Storage
+
 - Never store session tokens in localStorage or sessionStorage
 - Avoid any JavaScript-accessible session storage due to XSS risk
 - If JavaScript access required, use Web Workers to isolate secrets
 - Prefer HttpOnly cookies for session token exchange
 
 #### Web Workers Alternative
+
 - Use Web Workers for browser storage when persistence not required
 - Keep secrets within Web Worker context, never transmit to main window
 - Provides similar security guarantees as HttpOnly cookies
@@ -133,12 +151,14 @@ Server-side invalidation examples:
 ### Framework and Implementation
 
 #### Built-in Session Management
+
 - Prefer established framework session mechanisms over custom solutions
 - Keep frameworks updated to latest versions with security fixes
 - Review and harden default framework configurations
 - Ensure secure session storage repository protection
 
 #### Multiple Cookie Considerations
+
 - Verify all cookies for sessions using multiple cookies
 - Enforce relationships between pre/post authentication cookies
 - Avoid same cookie names for different paths or domains
@@ -147,6 +167,7 @@ Server-side invalidation examples:
 ### Reauthentication Requirements
 
 Require reauthentication for high-risk events:
+
 - Password changes
 - Login from new/suspicious IP addresses or devices
 - Account recovery completion
@@ -155,12 +176,14 @@ Require reauthentication for high-risk events:
 ### Additional Security Measures
 
 #### Client-Side Defenses (Defense-in-Depth)
+
 - Implement login timeouts to force session ID renewal
 - Force logout on browser window close events
 - Disable cross-tab session sharing where feasible
 - Automatic client logout with countdown warnings
 
 #### WAF Protection
+
 - Use Web Application Firewalls to enforce cookie security attributes
 - Implement WAF-based session fixation protection
 - Apply sticky session enforcement via WAF rules

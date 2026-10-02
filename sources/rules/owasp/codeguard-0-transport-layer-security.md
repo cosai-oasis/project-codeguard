@@ -13,14 +13,17 @@ languages:
 alwaysApply: false
 ---
 
+# Transport Layer Security
+
 ## Transport Layer Security
 
-Secure implementation of TLS to protect client-server communications with confidentiality, integrity, and authentication through proper protocol, cipher, and certificate configuration.
-
+Secure implementation of TLS to protect client-server communications with confidentiality, integrity, and authentication
+through proper protocol, cipher, and certificate configuration.
 
 ### TLS Security Benefits
 
 When correctly implemented, TLS provides:
+
 - Confidentiality: Protection against attackers reading traffic contents
 - Integrity: Protection against traffic modification and replay attacks
 - Authentication: Client confirmation of legitimate server connection
@@ -28,9 +31,11 @@ When correctly implemented, TLS provides:
 ### Protocol Security
 
 #### Use Strong TLS Protocols Only
+
 General purpose web applications should default to TLS 1.3 with TLS 1.2 support if necessary.
 
 Protocol requirements:
+
 - Enable TLS 1.3 by default
 - Support TLS 1.2 only if legacy client compatibility required
 - Disable TLS 1.0, TLS 1.1, SSL v2, and SSL v3 completely
@@ -38,14 +43,17 @@ Protocol requirements:
 - Note: PCI DSS forbids legacy protocols such as TLS 1.0
 
 #### Configure Strong Cipher Suites
+
 Use only strong ciphers that provide adequate security levels.
 
 Cipher requirements:
+
 - Prefer GCM ciphers where possible
 - Always disable null ciphers, anonymous ciphers, and EXPORT ciphers
 - Use Mozilla Foundation secure configuration generator for balanced security and compatibility
 
 #### Set Appropriate Diffie-Hellman Groups
+
 Configure secure Diffie-Hellman parameters for key exchange.
 
 TLS 1.3 groups: ffdhe2048, ffdhe3072, ffdhe4096, ffdhe6144, ffdhe8192
@@ -74,40 +82,53 @@ ssl_ecdh_curve x25519:secp256r1:ffdhe3072;
 ```
 
 #### Disable TLS Compression
+
 Disable TLS compression to protect against CRIME attacks that could recover sensitive information like session cookies.
 
 #### Keep Cryptographic Libraries Updated
+
 Maintain current versions of SSL/TLS libraries to protect against vulnerabilities like Heartbleed.
 
 ### Certificate Management
 
 #### Use Strong Keys and Protection
-Generate certificates with minimum 2048-bit key size and protect private keys from unauthorized access using filesystem permissions and access controls.
+
+Generate certificates with minimum 2048-bit key size and protect private keys from unauthorized access using filesystem
+permissions and access controls.
 
 #### Use Strong Cryptographic Hashing
+
 Certificates should use SHA-256 for hashing algorithm rather than deprecated MD5 and SHA-1 algorithms.
 
 #### Use Correct Domain Names
+
 Certificate domain names must match server's FQDN in both commonName (CN) and subjectAlternativeName (SAN) attributes.
 
 #### Consider Wildcard Certificate Risks
-Wildcard certificates violate principle of least privilege. Use only when genuine need exists and never for systems at different trust levels.
+
+Wildcard certificates violate principle of least privilege. Use only when genuine need exists and never for systems at
+different trust levels.
 
 #### Use Appropriate Certificate Authority
+
 Choose trusted CAs for Internet-facing applications. Consider LetsEncrypt for free domain validated certificates.
 
 ### Application Implementation
 
 #### Use TLS for All Pages
+
 Implement TLS for entire application with HTTP 301 redirects and HSTS header support.
 
 #### Prevent Mixed Content
+
 Load all JavaScript, CSS, and resources over HTTPS to prevent session cookie sniffing and malicious code injection.
 
 #### Use Secure Cookie Flag
+
 Mark all cookies with "Secure" attribute to restrict transmission to encrypted HTTPS connections only.
 
 #### Prevent Sensitive Data Caching
+
 Use cache prevention headers:
 
 ```text
@@ -117,17 +138,22 @@ Expires: 0
 ```
 
 #### Implement HTTP Strict Transport Security
+
 HSTS instructs browsers to always request site over HTTPS and prevents bypassing certificate warnings.
 
 #### Consider Client Certificates and Mutual TLS
-mTLS provides mutual authentication but involves significant administrative overhead. Recommended for high-value applications with technically sophisticated users.
+
+mTLS provides mutual authentication but involves significant administrative overhead. Recommended for high-value
+applications with technically sophisticated users.
 
 #### Avoid Public Key Pinning in Browsers
+
 HPKP deprecated and no longer supported by modern browsers. Consider pinning only in controlled environments.
 
 ### Testing and Validation
 
-Test TLS configuration using tools like SSL Labs Server Test, testssl.sh, SSLyze, and other recommended online and offline testing tools.
+Test TLS configuration using tools like SSL Labs Server Test, testssl.sh, SSLyze, and other recommended online and
+offline testing tools.
 
 ### Implementation Guidelines
 

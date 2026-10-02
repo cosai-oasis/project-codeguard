@@ -87,8 +87,7 @@ class RuleProcessor:
             tool_desc += "\nApplies to all programming languages."
         elif languages:
             tool_desc += (
-                f"\nApplicable to the following programming languages: "
-                f"{', '.join(languages)}."
+                f"\nApplicable to the following programming languages: {', '.join(languages)}."
             )
 
         return ProcessedRule(

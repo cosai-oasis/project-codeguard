@@ -141,14 +141,18 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# VSCode
-.vscode/
+# VS Code workspace settings remain local; share extension recommendations.
+.vscode/*
+!.vscode/extensions.json
 
 # JetBrains
 .idea/
 
 # Log files
 *.log
+.coverage
+.coverage.*
+.ruff_cache/
 
 # Environment variables
 .env

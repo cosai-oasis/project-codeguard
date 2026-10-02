@@ -14,19 +14,24 @@ languages:
 alwaysApply: false
 ---
 
+# REST API Security Guidelines
+
 ## REST API Security Guidelines
 
-Essential security practices for developing secure RESTful web services, covering transport security, authentication, input validation, and proper error handling.
+Essential security practices for developing secure RESTful web services, covering transport security, authentication,
+input validation, and proper error handling.
 
 ### Core REST Security Principles
 
-REST APIs are stateless - each request must contain all necessary information for processing. State refers to resource state, not session state. Avoid passing client state to backend as this creates replay and impersonation attack vectors.
+REST APIs are stateless - each request must contain all necessary information for processing. State refers to resource
+state, not session state. Avoid passing client state to backend as this creates replay and impersonation attack vectors.
 
 Each REST endpoint must independently verify authorization for the requested operation on the specific resource.
 
 ### HTTPS Requirements
 
 Secure REST services must only provide HTTPS endpoints to protect:
+
 - Authentication credentials (passwords, API keys, JSON Web Tokens)
 - Data integrity and confidentiality
 - Client authentication of the service
@@ -36,6 +41,7 @@ Consider mutually authenticated client-side certificates for highly privileged w
 ### Access Control
 
 Non-public REST services must perform access control at each API endpoint:
+
 - Take access control decisions locally at REST endpoints to minimize latency
 - Use centralized Identity Provider (IdP) for user authentication that issues access tokens
 - Avoid relying on global session state across distributed services
@@ -45,24 +51,28 @@ Non-public REST services must perform access control at each API endpoint:
 When using JSON Web Tokens for security tokens:
 
 Essential Requirements:
+
 - Ensure JWTs are integrity protected by signature or MAC
 - Never allow unsecured JWTs with `{"alg":"none"}`
 - Prefer signatures over MACs for integrity protection
 - Verify JWT integrity based on local configuration, not JWT header information
 
 Standard Claims Validation:
+
 - `iss` (issuer): Verify trusted issuer and signing key ownership
 - `aud` (audience): Confirm relying party is in target audience
 - `exp` (expiration): Validate current time is before token expiration
 - `nbf` (not before): Validate current time is after token validity start
 
 Token Revocation:
+
 - Implement JWT denylist for explicit session termination
 - Submit hash of revoked JWTs to denylist until natural expiration
 
 ### API Keys
 
 For public REST services requiring access control:
+
 - Require API keys for every request to protected endpoints
 - Return `429 Too Many Requests` for rate limit violations
 - Revoke API keys for usage agreement violations
@@ -78,6 +88,7 @@ For public REST services requiring access control:
 ### Input Validation
 
 Never trust input parameters or objects:
+
 - Validate input length, range, format, and type
 - Use strong types (numbers, booleans, dates) for implicit validation
 - Constrain string inputs with regular expressions
@@ -89,12 +100,14 @@ Never trust input parameters or objects:
 ### Content Type Validation
 
 Request Validation:
+
 - Reject requests with unexpected or missing Content-Type headers (`406 Unacceptable` or `415 Unsupported Media Type`)
 - Allow missing Content-Type only for Content-Length: 0 requests
 - Explicitly define supported content types in framework configurations
 - Ensure XML parser hardening against XXE attacks
 
 Response Security:
+
 - Never copy Accept header directly to Content-Type response header
 - Reject requests with unsupported Accept headers (`406 Not Acceptable`)
 - Send intended content type headers matching response body content
@@ -123,6 +136,7 @@ Response Security:
 Include these headers in all API responses:
 
 Required Headers:
+
 - `Cache-Control: no-store`: Prevents sensitive information caching
 - `Content-Security-Policy: frame-ancestors 'none'`: Prevents clickjacking
 - `Content-Type`: Specify correct content type to prevent MIME sniffing
@@ -139,6 +153,7 @@ Required Headers:
 ### Sensitive Information Protection
 
 Never include sensitive data in URLs:
+
 - Use request body or headers for POST/PUT sensitive data
 - Use HTTP headers for GET request sensitive data
 - Avoid query parameters for passwords, tokens, or API keys
@@ -147,6 +162,7 @@ Never include sensitive data in URLs:
 ### HTTP Status Codes
 
 Use semantically appropriate status codes:
+
 - `200 OK`: Successful operations
 - `201 Created`: Resource creation with Location header
 - `400 Bad Request`: Malformed requests
@@ -163,6 +179,7 @@ Use semantically appropriate status codes:
 ### Implementation Summary
 
 Secure REST API development requires:
+
 - HTTPS-only endpoints with proper certificate validation
 - Stateless design with per-endpoint authorization
 - Secure JWT handling with proper validation and revocation

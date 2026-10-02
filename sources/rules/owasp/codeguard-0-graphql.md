@@ -6,9 +6,12 @@ languages:
 alwaysApply: false
 ---
 
+# GraphQL Security Best Practices
+
 ## GraphQL Security Guidelines
 
-This rule advises on secure GraphQL API development to prevent injection, DoS, unauthorized access, and information leakage:
+This rule advises on secure GraphQL API development to prevent injection, DoS, unauthorized access, and information
+leakage:
 
 - Input Validation and Injection Prevention
   - Use specific GraphQL data types (scalars, enums) for all input validation.
@@ -20,7 +23,8 @@ This rule advises on secure GraphQL API development to prevent injection, DoS, u
   - Gracefully reject invalid input without revealing internal API details.
 
 - DoS Prevention and Query Limiting
-  - Implement query depth limiting using libraries like graphql-depth-limit (JavaScript) or MaxQueryDepthInstrumentation (Java).
+  - Implement query depth limiting using libraries like graphql-depth-limit (JavaScript) or MaxQueryDepthInstrumentation
+    (Java).
   - Add query complexity analysis using graphql-cost-analysis or MaxQueryComplexityInstrumentation.
   - Enforce query amount limiting with libraries like graphql-input-number.
   - Implement pagination to limit data returned in single responses.
@@ -45,7 +49,8 @@ This rule advises on secure GraphQL API development to prevent injection, DoS, u
   - Monitor and log batching attempts for security analysis.
 
 - Secure Configuration Management
-  - Disable GraphQL introspection in production environments using NoIntrospectionGraphqlFieldVisibility (Java) or validation rules (JavaScript).
+  - Disable GraphQL introspection in production environments using NoIntrospectionGraphqlFieldVisibility (Java) or
+    validation rules (JavaScript).
   - Disable GraphiQL and similar exploration tools in production.
   - Configure error masking to prevent stack traces and debug information exposure.
   - Set NODE_ENV to 'production' or use debug: false in Apollo Server configuration.
@@ -61,6 +66,7 @@ This rule advises on secure GraphQL API development to prevent injection, DoS, u
 Code Examples (from OWASP):
 
 Disable Introspection - Java:
+
 ```java
 GraphQLSchema schema = GraphQLSchema.newSchema()
     .query(StarWarsSchema.queryType)
@@ -69,6 +75,7 @@ GraphQLSchema schema = GraphQLSchema.newSchema()
 ```
 
 Disable Introspection & GraphiQL - JavaScript:
+
 ```javascript
 app.use('/graphql', graphqlHTTP({
   schema: MySessionAwareGraphQLSchema,
@@ -78,6 +85,7 @@ app.use('/graphql', graphqlHTTP({
 ```
 
 Query Depth Example:
+
 ```javascript
 query evil {            # Depth: 0
   album(id: 42) {       # Depth: 1
@@ -93,6 +101,7 @@ query evil {            # Depth: 0
 ```
 
 Excessive Amount Request Example:
+
 ```javascript
 query {
   author(id: "abc") {
@@ -104,6 +113,7 @@ query {
 ```
 
 Batching Attack Example:
+
 ```javascript
 [
   {
@@ -122,4 +132,6 @@ Batching Attack Example:
 ```
 
 Summary:  
-Secure GraphQL APIs through comprehensive input validation, query limiting, proper access controls, batching attack prevention, secure configuration management, and robust authentication mechanisms while preventing common attack vectors like injection, DoS, and unauthorized data access.
+Secure GraphQL APIs through comprehensive input validation, query limiting, proper access controls, batching attack
+prevention, secure configuration management, and robust authentication mechanisms while preventing common attack vectors
+like injection, DoS, and unauthorized data access.

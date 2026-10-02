@@ -13,18 +13,26 @@ languages:
 alwaysApply: false
 ---
 
-Implementing robust authorization is critical to ensure users can only access the data and features they are permitted to. While authentication confirms who a user is, authorization determines what they can do.
+# Authorization Security Best Practices
 
-### Core Principles of Secure Authorization
+Implementing robust authorization is critical to ensure users can only access the data and features they are permitted
+to. While authentication confirms who a user is, authorization determines what they can do.
 
-1.  **Deny by Default:** The default for any access request should be 'deny'. Explicitly grant permissions to roles or users rather than explicitly denying them. When no allow rule matches, return HTTP 403 Forbidden.
-2.  **Principle of Least Privilege:** Grant users the minimum level of access required to perform their job functions. Regularly audit permissions to ensure they are not excessive.
-3.  **Validate Permissions on Every Request:** Check authorization for every single request, regardless of source (AJAX, API, direct). Use middleware/filters to ensure consistent enforcement.
-4.  **Prefer ABAC/ReBAC over RBAC:** Use Attribute-Based Access Control (ABAC) or Relationship-Based Access Control (ReBAC) for fine-grained permissions instead of simple role-based access control.
+## Core Principles of Secure Authorization
 
-### Server-Side Enforcement is Non-Negotiable
+1. **Deny by Default:** The default for any access request should be 'deny'. Explicitly grant permissions to roles or
+   users rather than explicitly denying them. When no allow rule matches, return HTTP 403 Forbidden.
+2. **Principle of Least Privilege:** Grant users the minimum level of access required to perform their job functions.
+   Regularly audit permissions to ensure they are not excessive.
+3. **Validate Permissions on Every Request:** Check authorization for every single request, regardless of source (AJAX,
+   API, direct). Use middleware/filters to ensure consistent enforcement.
+4. **Prefer ABAC/ReBAC over RBAC:** Use Attribute-Based Access Control (ABAC) or Relationship-Based Access Control
+   (ReBAC) for fine-grained permissions instead of simple role-based access control.
 
-All authorization decisions must be enforced on the server-side for every request. Client-side checks are for user experience only and can be easily bypassed.
+## Server-Side Enforcement is Non-Negotiable
+
+All authorization decisions must be enforced on the server-side for every request. Client-side checks are for user
+experience only and can be easily bypassed.
 
 **What to Avoid (Anti-Pattern):**
 
@@ -37,7 +45,8 @@ if (currentUser.isAdmin) {
 
 **Best Practice:**
 
-Use centralized middleware or decorators in your backend framework to enforce authorization checks consistently across all relevant endpoints.
+Use centralized middleware or decorators in your backend framework to enforce authorization checks consistently across
+all relevant endpoints.
 
 **Example (Express.js middleware showing deny-by-default):**
 
@@ -68,9 +77,10 @@ app.get('/projects/:id', isAuthenticated, canViewProject, (req, res) => {
 });
 ```
 
-### Prevent Insecure Direct Object References (IDOR)
+## Prevent Insecure Direct Object References (IDOR)
 
-An IDOR vulnerability occurs when an application uses a user-supplied identifier (like a database ID) to access an object directly, without verifying the user has permission to access *that specific object*.
+An IDOR vulnerability occurs when an application uses a user-supplied identifier (like a database ID) to access an
+object directly, without verifying the user has permission to access _that specific object_.
 
 **What to Avoid (Anti-Pattern):**
 
@@ -87,10 +97,15 @@ app.get('/invoices/:id', isAuthenticated, (req, res) => {
 
 Always verify that the authenticated user has the necessary permissions for the specific object they are requesting.
 
-### Additional Best Practices
+## Additional Best Practices
 
-*   **Token Lifecycle Management:** Implement token revocation for logout/role changes and session invalidation when permissions change.
-*   **Centralized Error Handling:** Return generic error messages (403 Forbidden or 404 Not Found) when authorization fails to avoid information leakage.
-*   **Comprehensive Logging:** Log all authorization failures with user ID, resource, action, and timestamp for security monitoring.
-*   **Testing:** Write unit and integration tests for authorization logic. Test both positive (should have access) and negative (should be denied) cases.
-*   **Static Resources:** Apply authorization checks to static files, cloud storage, and other resources, not just API endpoints.
+- **Token Lifecycle Management:** Implement token revocation for logout/role changes and session invalidation when
+  permissions change.
+- **Centralized Error Handling:** Return generic error messages (403 Forbidden or 404 Not Found) when authorization
+  fails to avoid information leakage.
+- **Comprehensive Logging:** Log all authorization failures with user ID, resource, action, and timestamp for security
+  monitoring.
+- **Testing:** Write unit and integration tests for authorization logic. Test both positive (should have access) and
+  negative (should be denied) cases.
+- **Static Resources:** Apply authorization checks to static files, cloud storage, and other resources, not just API
+  endpoints.

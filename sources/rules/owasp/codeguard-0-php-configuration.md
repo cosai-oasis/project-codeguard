@@ -5,13 +5,16 @@ languages:
 alwaysApply: false
 ---
 
+# PHP Secure Configuration
+
 ## PHP Secure Configuration Guidelines
 
 Essential security settings for PHP configuration to harden PHP applications against common vulnerabilities.
 
 ### PHP Version Management
 
-Run a supported version of PHP. As of this writing, 8.1 is the oldest version receiving security support from PHP, though distribution vendors often provide extended support.
+Run a supported version of PHP. As of this writing, 8.1 is the oldest version receiving security support from PHP,
+though distribution vendors often provide extended support.
 
 ### Error Handling Configuration
 
@@ -61,7 +64,7 @@ If your application is not using file uploads, `file_uploads` should be turned `
 
 ```ini
 enable_dl               = Off
-disable_functions       = system, exec, shell_exec, passthru, phpinfo, show_source, highlight_file, popen, proc_open, fopen_with_path, dbmopen, dbase_open, putenv, move_uploaded_file, chdir, mkdir, rmdir, chmod, rename, filepro, filepro_rowcount, filepro_retrieve, posix_mkfifo
+disable_functions       = system, exec, shell_exec, passthru, popen, proc_open
 disable_classes         =
 ```
 
@@ -69,7 +72,8 @@ These are dangerous PHP functions. Disable all functions that you don't use.
 
 ### Session Handling
 
-Session settings are some of the most important values to concentrate on in configuring. It is a good practice to change `session.name` to something new.
+Session settings are some of the most important values to concentrate on in configuring. It is a good practice to change
+`session.name` to something new.
 
 ```ini
 session.save_path                = /path/PHP-session/
@@ -104,11 +108,13 @@ zend.exception_ignore_args = On
 
 ### Advanced Protection with Snuffleupagus
 
-Snuffleupagus is the spiritual descendant of Suhosin for PHP 7 and onwards, with modern features. It's considered stable and is usable in production.
+Snuffleupagus is the spiritual descendant of Suhosin for PHP 7 and onwards, with modern features. It's considered stable
+and is usable in production.
 
 ### Implementation Summary
 
 Secure PHP configuration requires:
+
 - Hiding PHP version information (expose_php = Off)
 - Proper error handling with logging enabled but display disabled in production
 - Disabling remote file access (allow_url_fopen/include = Off)
@@ -117,4 +123,5 @@ Secure PHP configuration requires:
 - Setting appropriate resource limits to prevent DoS
 - Using modern security extensions like Snuffleupagus
 
-Following these configuration practices significantly reduces the attack surface of PHP applications and protects against common vulnerabilities.
+Following these configuration practices significantly reduces the attack surface of PHP applications and protects
+against common vulnerabilities.

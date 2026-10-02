@@ -5,6 +5,7 @@ Side-by-side patterns for migrating C/C++ code to memory-safe languages.
 ## Buffer operations
 
 ### C (vulnerable)
+
 ```c
 void process(const char *input, size_t len) {
     char buffer[256];
@@ -13,6 +14,7 @@ void process(const char *input, size_t len) {
 ```
 
 ### Rust (safe)
+
 ```rust
 fn process(input: &[u8]) {
     let mut buffer = vec![0u8; input.len()];
@@ -21,6 +23,7 @@ fn process(input: &[u8]) {
 ```
 
 ### Go (safe)
+
 ```go
 func process(input []byte) {
     buffer := make([]byte, len(input))
@@ -31,6 +34,7 @@ func process(input []byte) {
 ## String handling
 
 ### C (vulnerable)
+
 ```c
 char *concat(const char *a, const char *b) {
     char *result = malloc(strlen(a) + strlen(b) + 1);
@@ -42,6 +46,7 @@ char *concat(const char *a, const char *b) {
 ```
 
 ### Rust (safe)
+
 ```rust
 fn concat(a: &str, b: &str) -> String {
     format!("{}{}", a, b) // Allocation, sizing, UTF-8 all handled
@@ -49,6 +54,7 @@ fn concat(a: &str, b: &str) -> String {
 ```
 
 ### Go (safe)
+
 ```go
 func concat(a, b string) string {
     return a + b // Strings are immutable, concatenation allocates safely
@@ -57,6 +63,7 @@ func concat(a, b string) string {
 ```
 
 ### Java (safe)
+
 ```java
 String concat(String a, String b) {
     return a + b; // Or use StringBuilder for loops
@@ -66,6 +73,7 @@ String concat(String a, String b) {
 ## Linked data structures
 
 ### C (vulnerable)
+
 ```c
 struct Node {
     int value;
@@ -75,6 +83,7 @@ struct Node {
 ```
 
 ### Rust (safe)
+
 ```rust
 // Option 1: Ownership-based
 enum List {
@@ -87,6 +96,7 @@ use std::collections::VecDeque; // or LinkedList, but VecDeque is usually better
 ```
 
 ### Go (safe)
+
 ```go
 // Use the standard library
 import "container/list"
@@ -99,6 +109,7 @@ l.PushBack(42)
 ## Concurrency
 
 ### C (vulnerable — data race)
+
 ```c
 static int counter = 0;
 // Multiple threads increment — undefined behavior without locks
@@ -106,6 +117,7 @@ void increment() { counter++; }
 ```
 
 ### Rust (safe — compiler-enforced)
+
 ```rust
 use std::sync::atomic::{AtomicI32, Ordering};
 
@@ -125,6 +137,7 @@ let shared = Mutex::new(vec![1, 2, 3]);
 ```
 
 ### Go (safe — channels or sync)
+
 ```go
 import "sync/atomic"
 
@@ -143,12 +156,14 @@ result := <-ch
 ## Error handling
 
 ### C (easy to ignore)
+
 ```c
 int result = do_something();
 // Return code often unchecked — errors silently ignored
 ```
 
 ### Rust (compiler-enforced)
+
 ```rust
 // Result<T, E> must be handled — compiler warns on unused Result
 fn do_something() -> Result<Value, Error> {
@@ -159,6 +174,7 @@ fn do_something() -> Result<Value, Error> {
 ```
 
 ### Go (explicit but not enforced)
+
 ```go
 result, err := doSomething()
 if err != nil {
@@ -170,6 +186,7 @@ if err != nil {
 ## File and resource handling
 
 ### C (easy to leak)
+
 ```c
 FILE *f = fopen("data.txt", "r");
 // ... processing that might return early or throw
@@ -177,6 +194,7 @@ FILE *f = fopen("data.txt", "r");
 ```
 
 ### Rust (automatic via RAII)
+
 ```rust
 // File is automatically closed when it goes out of scope
 let contents = std::fs::read_to_string("data.txt")?;
@@ -188,6 +206,7 @@ let contents = std::fs::read_to_string("data.txt")?;
 ```
 
 ### Go (defer pattern)
+
 ```go
 f, err := os.Open("data.txt")
 if err != nil {
@@ -198,6 +217,7 @@ defer f.Close() // Guaranteed to run when function returns
 ```
 
 ### Java (try-with-resources)
+
 ```java
 try (var reader = new BufferedReader(new FileReader("data.txt"))) {
     // use reader
@@ -207,12 +227,14 @@ try (var reader = new BufferedReader(new FileReader("data.txt"))) {
 ## Array/slice operations
 
 ### C (no bounds checking)
+
 ```c
 int arr[10];
 arr[15] = 42;  // Buffer overflow — undefined behavior, no error
 ```
 
 ### Rust (bounds checked)
+
 ```rust
 let mut arr = [0i32; 10];
 arr[15] = 42; // Panics at runtime with clear error message
@@ -225,6 +247,7 @@ if let Some(val) = arr.get_mut(15) {
 ```
 
 ### Go (bounds checked)
+
 ```go
 arr := make([]int, 10)
 arr[15] = 42 // Panics with "index out of range [15] with length 10"
@@ -233,6 +256,7 @@ arr[15] = 42 // Panics with "index out of range [15] with length 10"
 ## Dynamic memory
 
 ### C (manual, error-prone)
+
 ```c
 int *data = malloc(n * sizeof(int));
 if (!data) { /* handle OOM — often forgotten */ }
@@ -243,6 +267,7 @@ free(data);
 ```
 
 ### Rust (ownership system)
+
 ```rust
 let data: Vec<i32> = vec![0; n]; // Allocation checked, zeroed
 // ... use data
@@ -251,6 +276,7 @@ let data: Vec<i32> = vec![0; n]; // Allocation checked, zeroed
 ```
 
 ### Go (garbage collected)
+
 ```go
 data := make([]int, n) // Allocation and zeroing handled
 // ... use data
@@ -260,6 +286,7 @@ data := make([]int, n) // Allocation and zeroing handled
 ## Network server pattern
 
 ### C (manual socket management)
+
 ```c
 int server_fd = socket(AF_INET, SOCK_STREAM, 0);
 struct sockaddr_in addr = { .sin_family = AF_INET, .sin_port = htons(8080) };
@@ -270,6 +297,7 @@ listen(server_fd, SOMAXCONN);
 ```
 
 ### Rust (safe, async)
+
 ```rust
 use tokio::net::TcpListener;
 
@@ -286,6 +314,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 ### Go (safe, concurrent)
+
 ```go
 func main() {
     listener, err := net.Listen("tcp", ":8080")
