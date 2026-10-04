@@ -36,5 +36,5 @@ establish a causal benefit or compare delivery paths.
 Assisted-by: AI Assistant (OpenAI Codex) for experiment tooling and assessment;
 Qwen2.5-Coder for experimental outputs.
 
-<!-- Draft only: human contributor must review the results and confirm the right
-to donate the material before submission under CoSAI's AI Usage Guidelines. -->
+Human contributor: `shrey-bagga`; approved for PR submission on 2026-10-04.
+This issue-comment draft has not been posted separately.
