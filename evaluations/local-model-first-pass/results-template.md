@@ -46,4 +46,4 @@ Next useful test: [one bounded follow-up justified by these observations].
 These are observations from one model and two small tasks. They do not establish
 a causal improvement, complete security, or a comparison across delivery routes.
 
-Assisted-by: Codex. Human review: [named contributor and review completed].
+Assisted-by: AI Assistant. Human review: [named contributor and review completed].

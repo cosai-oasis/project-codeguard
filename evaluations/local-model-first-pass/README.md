@@ -1,7 +1,9 @@
 # Local-model first pass
 
-Draft protocol for [issue #73](https://github.com/cosai-oasis/project-codeguard/issues/73).
-The task definitions are prepared; no local-model results have been recorded.
+Protocol for [issue #73](https://github.com/cosai-oasis/project-codeguard/issues/73).
+The [2026-10-04 first pass](results/2026-10-04-qwen25-coder-7b.md) captured eight
+responses and records an AI-assisted assessment. Human review and submission
+are pending. Maintainer assignment has been requested and is still pending.
 
 ## Question and scope
 
@@ -155,3 +157,9 @@ alongside token counts, stop reasons, effective context where available, and
 latency. An infrastructure failure preserves available captures and marks the
 run failed. A successful capture still requires manual review against the rubric.
 Keep source-control revisions and the manifest together when publishing results.
+
+The recorded first pass includes a curated [evidence capsule](results/2026-10-04-qwen25-coder-7b-evidence.json)
+and a self-contained [issue-comment draft](results/issue-73-comment-draft.md).
+The capsule contains exact request and response content, identities, hashes,
+and timing, without the runtime's machine-local model paths. See the report for
+how to reconstruct the captured JSON bytes and verify their hashes.
