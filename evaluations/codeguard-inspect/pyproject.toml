@@ -18,6 +18,9 @@ dependencies = [
 dev = [
     "pytest>=8.0",
 ]
+reporting = [
+    "matplotlib==3.11.2",
+]
 
 [tool.uv]
 constraint-dependencies = ["aiohttp>=3.14.3", "soupsieve>=2.9.0"]

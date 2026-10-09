@@ -41,10 +41,10 @@ jobs:
           version: "0.12.5"
 
       - name: Install locked dependencies
-        run: uv sync --locked --managed-python
+        run: uv sync --locked --managed-python --group reporting
 
       - name: Run non-Docker tests
-        run: uv run --locked pytest
+        run: uv run --locked --group reporting pytest
 
       - name: Discover Inspect tasks
         run: uv run --locked inspect list tasks codeguard_evals/securityeval
