@@ -54,6 +54,7 @@ nav:
   - CodeGuard Reviewer: codeguard-reviewer.md
   - Skills: skills.md
   - Custom Rules: custom-rules.md
+  - Evaluation Results: results/index.md
   - Project Decisions: adr/index.md
   - FAQ: faq.md
 markdown_extensions:
