@@ -1,0 +1,7 @@
+run,epoch,model,condition,codeguard_version,agent_turn_limit,agent_seconds,sample_seconds_limit,agent_output_tokens,cases,shared_cases,findings,likely_vulnerabilities,tokens_per_case,unfinished,recorded_cost_usd,estimated_cost_usd,cost_per_case_usd,cost_change_pct,confidence_high,confidence_medium,confidence_low
+gpt-5.6-sol-baseline,1,GPT-5.6 Sol,baseline,,16,600,1200,32768,121,111,42,15,42673.57024793389,1,,10.546194,0.08715862809917355,0.0,3,14,25
+gpt-5.6-sol-secure-prompt,1,GPT-5.6 Sol,secure_prompt,,16,600,1200,32768,121,111,22,3,44888.33884297521,1,,12.5871242,0.10402581983471074,19.352291452252814,0,4,18
+gpt-5.6-sol-codeguard-1.4.0,1,GPT-5.6 Sol,codeguard,1.4.0,16,600,1200,32768,121,111,26,6,162380.4958677686,9,,30.327536600000002,0.25064079834710745,187.56854463325823,2,4,20
+gpt-5.6-luna-baseline,1,GPT-5.6 Luna,baseline,,16,600,1200,32768,121,116,47,15,35251.818181818184,0,,0.52378927,0.00432883694214876,0.0,3,15,29
+gpt-5.6-luna-secure-prompt,1,GPT-5.6 Luna,secure_prompt,,16,600,1200,32768,121,116,30,8,39152.89256198347,3,,0.65134714,0.005383034214876034,24.35289863803436,1,7,22
+gpt-5.6-luna-codeguard-1.4.0,1,GPT-5.6 Luna,codeguard,1.4.0,16,600,1200,32768,121,116,35,9,70086.76859504133,2,,0.86474549,0.00714665694214876,65.09415895442075,2,9,24
