@@ -10,6 +10,8 @@ languages:
 alwaysApply: false
 ---
 
+# Java Security Best Practices
+
 ## Java Security Guidelines
 
 Key security practices for secure Java application development.

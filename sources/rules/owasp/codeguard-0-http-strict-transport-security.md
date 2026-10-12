@@ -12,19 +12,27 @@ languages:
 alwaysApply: false
 ---
 
+# HTTP Strict Transport Security Best Practices
+
 ## HTTP Strict Transport Security Guidelines
 
-This rule enforces secure configuration of HTTP Strict Transport Security (HSTS) headers to protect users by ensuring all communications occur over HTTPS.
+This rule enforces secure configuration of HTTP Strict Transport Security (HSTS) headers to protect users by ensuring
+all communications occur over HTTPS.
 
 ### Introduction
 
-HTTP Strict Transport Security (HSTS) is an opt-in security enhancement specified by a web application through a special response header. Once a supported browser receives this header, it prevents any communications from being sent over HTTP to the specified domain and instead sends all communications over HTTPS. It also prevents HTTPS click through prompts on browsers.
+HTTP Strict Transport Security (HSTS) is an opt-in security enhancement specified by a web application through a special
+response header. Once a supported browser receives this header, it prevents any communications from being sent over HTTP
+to the specified domain and instead sends all communications over HTTPS. It also prevents HTTPS click through prompts on
+browsers.
 
-Critical Requirement: The Strict-Transport-Security header is only honored over HTTPS connections and is completely ignored when sent over HTTP, per RFC 6797.
+Critical Requirement: The Strict-Transport-Security header is only honored over HTTPS connections and is completely
+ignored when sent over HTTP, per RFC 6797.
 
 ### Threats Addressed
 
 HSTS protects against:
+
 - Man-in-the-middle attacks when users bookmark or manually type `http://example.com`
 - Web applications inadvertently containing HTTP links or serving content over HTTP
 - Man-in-the-middle attackers using invalid certificates (HSTS prevents users from accepting bad certificates)
@@ -32,17 +40,20 @@ HSTS protects against:
 ### Required Configuration
 
 1. Basic HSTS Header (testing phase):
-   ```
+
+   ```http
    Strict-Transport-Security: max-age=86400; includeSubDomains
    ```
 
 2. Production HSTS Header (1 year minimum):
-   ```
+
+   ```http
    Strict-Transport-Security: max-age=31536000; includeSubDomains
    ```
 
 3. Preload-Ready HSTS Header:
-   ```
+
+   ```http
    Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
    ```
 
@@ -64,23 +75,27 @@ HSTS protects against:
 ### Implementation Examples
 
 Simple example using 1 year max-age (dangerous without includeSubDomains):
-```
+
+```http
 Strict-Transport-Security: max-age=31536000
 ```
 
 Secure example with subdomain protection:
-```
+
+```http
 Strict-Transport-Security: max-age=31536000; includeSubDomains
 ```
 
 Short max-age for initial rollout testing:
-```
+
+```http
 Strict-Transport-Security: max-age=86400; includeSubDomains
 ```
 
 ### Monitoring and Validation
 
 Required post-deployment actions:
+
 - Verify HSTS header presence in all HTTPS responses
 - Monitor browser console for mixed content warnings
 - Audit all internal links and redirects for HTTP references

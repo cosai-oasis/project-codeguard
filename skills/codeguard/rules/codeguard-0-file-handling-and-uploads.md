@@ -12,6 +12,8 @@ languages:
 alwaysApply: false
 ---
 
+# Secure file handling & uploads (validation, storage isolation, scanning, safe delivery)
+
 rule_id: codeguard-0-file-handling-and-uploads
 
 ## File Upload Security Guidelines
@@ -72,4 +74,6 @@ This rule advises on secure file upload practices to prevent malicious file atta
   - Use secure extraction methods for compressed files.
 
 Summary:  
-Implement defense-in-depth for file uploads through multi-layered validation, secure storage practices, proper access controls, and comprehensive monitoring. Never rely on single validation methods and always generate safe filenames to prevent attacks.
+Implement defense-in-depth for file uploads through multi-layered validation, secure storage practices, proper access
+controls, and comprehensive monitoring. Never rely on single validation methods and always generate safe filenames to
+prevent attacks.

@@ -7,6 +7,8 @@ languages:
 alwaysApply: false
 ---
 
+# DotNet Security Best Practices
+
 ## .NET Security Guidelines
 
 This rule advises on critical .NET security practices to prevent common web vulnerabilities:
@@ -98,4 +100,6 @@ Secure Headers Configuration (from OWASP):
 ```
 
 Summary:  
-Secure .NET applications by implementing proper authorization controls, using secure authentication and session management, applying strong cryptography, preventing injection attacks, configuring security headers, implementing CSRF protection, maintaining secure configurations, logging security events properly, and handling serialization safely.
+Secure .NET applications by implementing proper authorization controls, using secure authentication and session
+management, applying strong cryptography, preventing injection attacks, configuring security headers, implementing CSRF
+protection, maintaining secure configurations, logging security events properly, and handling serialization safely.

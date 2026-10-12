@@ -6,6 +6,8 @@ languages:
 alwaysApply: false
 ---
 
+# Django Security Best Practices
+
 ## Django Security Guidelines
 
 This rule advises on critical Django security practices to prevent common web vulnerabilities:
@@ -99,4 +101,6 @@ response.set_cookie('my_cookie', 'cookie_value', secure=True)
 ```
 
 Summary:  
-Configure Django securely by disabling debug mode in production, using proper authentication settings, securing secret keys, enabling security middleware, setting secure cookie attributes, implementing CSRF protection, preventing XSS, enforcing HTTPS, and securing admin access.
+Configure Django securely by disabling debug mode in production, using proper authentication settings, securing secret
+keys, enabling security middleware, setting secure cookie attributes, implementing CSRF protection, preventing XSS,
+enforcing HTTPS, and securing admin access.

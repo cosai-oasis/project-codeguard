@@ -116,9 +116,7 @@ def get_skill_codeguard_version(root: Path) -> str:
     return _read_front_matter_value(skill_path, "codeguard-version")
 
 
-def validate_versions(
-    expected_version: str, root: Path | None = None
-) -> list[VersionCheck]:
+def validate_versions(expected_version: str, root: Path | None = None) -> list[VersionCheck]:
     """
     Validate all versions match the expected version.
 
@@ -133,9 +131,7 @@ def validate_versions(
         root = Path(__file__).parent.parent
 
     checks = [
-        VersionCheck(
-            "pyproject.toml", expected_version, get_pyproject_version(root), False
-        ),
+        VersionCheck("pyproject.toml", expected_version, get_pyproject_version(root), False),
         VersionCheck(
             ".claude-plugin/plugin.json",
             expected_version,
@@ -163,9 +159,7 @@ def validate_versions(
     ]
 
     # Update matches field
-    return [
-        VersionCheck(c.file, c.expected, c.found, c.expected == c.found) for c in checks
-    ]
+    return [VersionCheck(c.file, c.expected, c.found, c.expected == c.found) for c in checks]
 
 
 def main() -> int:
@@ -191,7 +185,7 @@ def main() -> int:
         print(f"\n✅ All versions match: {expected_version}")
         return 0
     else:
-        print(f"\n❌ Version mismatch detected!")
+        print("\n❌ Version mismatch detected!")
         return 1
 
 

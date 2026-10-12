@@ -7,6 +7,8 @@ languages:
 alwaysApply: false
 ---
 
+# Node.js Security Best Practices
+
 ## Node.js Security Guidelines
 
 Essential security practices for developing secure Node.js applications to prevent common vulnerabilities and attacks.
@@ -35,6 +37,7 @@ func1("input1")
 ```
 
 Using async/await:
+
 ```javascript
 (async() => {
   try {
@@ -58,6 +61,7 @@ app.use(express.json({ limit: "1kb" }));
 ```
 
 For custom limits using raw-body:
+
 ```JavaScript
 const contentType = require('content-type')
 const express = require('express')
@@ -85,7 +89,8 @@ app.use(function (req, res, next) {
 
 #### Perform Input Validation
 
-Use allowlists and sanitize all inputs to prevent injection attacks. Consider modules like validator and express-mongo-sanitize for input validation.
+Use allowlists and sanitize all inputs to prevent injection attacks. Consider modules like validator and
+express-mongo-sanitize for input validation.
 
 #### Perform Output Escaping
 
@@ -125,7 +130,8 @@ app.post("/login", bouncer.block, function(req, res) {
 
 #### Use Anti-CSRF Protection
 
-Protect state-changing requests against Cross-Site Request Forgery. Note: csurf package is deprecated; use alternative CSRF protection packages.
+Protect state-changing requests against Cross-Site Request Forgery. Note: csurf package is deprecated; use alternative
+CSRF protection packages.
 
 #### Prevent HTTP Parameter Pollution
 
@@ -201,6 +207,7 @@ app.use(helmet()); // Add various HTTP headers
 ```
 
 Key headers include:
+
 - HSTS: `app.use(helmet.hsts());`
 - Frame protection: `app.use(helmet.frameguard());`
 - XSS protection: `app.use(helmet.xssFilter());`
@@ -224,6 +231,7 @@ Use tools like OWASP Dependency-Check and Retire.js to identify vulnerable packa
 #### Avoid Dangerous Functions
 
 Exercise caution with potentially dangerous functions:
+
 - Avoid `eval()` with user input (remote code execution risk)
 - Be careful with `child_process.exec` (command injection risk)
 - Sanitize inputs when using `fs` module (directory traversal risk)
@@ -264,4 +272,5 @@ const logger = new (Winston.Logger) ({
 });
 ```
 
-By following these practices, you can significantly improve the security posture of your Node.js applications and protect against common web application vulnerabilities.
+By following these practices, you can significantly improve the security posture of your Node.js applications and
+protect against common web application vulnerabilities.

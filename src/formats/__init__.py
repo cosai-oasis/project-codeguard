@@ -35,18 +35,18 @@ Usage:
     ]
 """
 
-from formats.base import BaseFormat, ProcessedRule
-from formats.cursor import CursorFormat
-from formats.windsurf import WindsurfFormat
-from formats.devin import DevinFormat
-from formats.copilot import CopilotFormat
 from formats.agentskills import AgentSkillsFormat
 from formats.antigravity import AntigravityFormat
-from formats.opencode import OpenCodeFormat
-from formats.codex import CodexFormat
-from formats.openclaw import OpenClawFormat
-from formats.hermes import HermesFormat
+from formats.base import BaseFormat, ProcessedRule
 from formats.claude import ClaudeFormat
+from formats.codex import CodexFormat
+from formats.copilot import CopilotFormat
+from formats.cursor import CursorFormat
+from formats.devin import DevinFormat
+from formats.hermes import HermesFormat
+from formats.openclaw import OpenClawFormat
+from formats.opencode import OpenCodeFormat
+from formats.windsurf import WindsurfFormat
 
 __all__ = [
     "BaseFormat",

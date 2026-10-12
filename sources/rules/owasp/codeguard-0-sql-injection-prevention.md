@@ -14,21 +14,29 @@ languages:
 alwaysApply: false
 ---
 
+# SQL Injection Prevention Guidelines
+
 ## SQL Injection Prevention Guidelines
 
-Essential practices for preventing SQL injection attacks by using secure database query construction methods instead of string concatenation.
+Essential practices for preventing SQL injection attacks by using secure database query construction methods instead of
+string concatenation.
 
 ### Understanding SQL Injection
 
-SQL injection occurs when applications use dynamic database queries that concatenate user input directly into SQL strings. Attackers can exploit this to execute malicious SQL code. To prevent SQL injection, developers must either stop writing dynamic queries with string concatenation or prevent malicious SQL input from being included in executed queries.
+SQL injection occurs when applications use dynamic database queries that concatenate user input directly into SQL
+strings. Attackers can exploit this to execute malicious SQL code. To prevent SQL injection, developers must either stop
+writing dynamic queries with string concatenation or prevent malicious SQL input from being included in executed
+queries.
 
 ### Primary Defense Options
 
 #### Option 1: Prepared Statements (Parameterized Queries) - Preferred
 
-Use prepared statements with variable binding to separate SQL code from data. The database will always distinguish between code and data, preventing attackers from changing query intent.
+Use prepared statements with variable binding to separate SQL code from data. The database will always distinguish
+between code and data, preventing attackers from changing query intent.
 
 Safe Java example:
+
 ```java
 // This should REALLY be validated too
 String custname = request.getParameter("customerName");
@@ -40,6 +48,7 @@ ResultSet results = pstmt.executeQuery( );
 ```
 
 Safe C# .NET example:
+
 ```csharp
 String query = "SELECT account_balance FROM user_data WHERE user_name = ?";
 try {
@@ -53,6 +62,7 @@ try {
 ```
 
 Safe HQL example:
+
 ```java
 // This is an unsafe HQL statement
 Query unsafeHQLQuery = session.createQuery("from Inventory where productID='"+userSuppliedParameter+"'");
@@ -66,6 +76,7 @@ safeHQLQuery.setParameter("productid", userSuppliedParameter);
 Use stored procedures only if inputs are parameterized and no dynamic SQL generation occurs within them.
 
 Safe Java stored procedure example:
+
 ```java
 // This should REALLY be validated
 String custname = request.getParameter("customerName");
@@ -80,6 +91,7 @@ try {
 ```
 
 Safe VB .NET stored procedure example:
+
 ```vbnet
  Try
    Dim command As SqlCommand = new SqlCommand("sp_getAccountBalance", connection)
@@ -97,6 +109,7 @@ Safe VB .NET stored procedure example:
 For SQL elements that cannot use bind variables (table names, column names, sort indicators), use strict allow-listing.
 
 Safe table name validation:
+
 ```text
 String tableName;
 switch(PARAM):
@@ -110,6 +123,7 @@ switch(PARAM):
 ```
 
 Safe dynamic query for sort order:
+
 ```java
 public String someMethod(boolean sortOrder) {
  String SQLquery = "some SQL ... order by Salary " + (sortOrder ? "ASC" : "DESC");`
@@ -118,13 +132,15 @@ public String someMethod(boolean sortOrder) {
 
 #### Option 4: Escaping (Strongly Discouraged)
 
-Escaping user input is database-specific, error-prone, and cannot guarantee prevention of all SQL injections. Use parameterized queries instead.
+Escaping user input is database-specific, error-prone, and cannot guarantee prevention of all SQL injections. Use
+parameterized queries instead.
 
 ### Additional Defenses
 
 #### Least Privilege
 
 Minimize privileges for all database accounts:
+
 - Grant only necessary access rights (read vs. write)
 - Avoid DBA or admin access for application accounts
 - Use separate database users for different applications
@@ -132,7 +148,8 @@ Minimize privileges for all database accounts:
 
 #### Input Validation
 
-Use input validation as a secondary defense to detect unauthorized input before SQL execution. Validated data is not necessarily safe for string concatenation - always use parameterized queries.
+Use input validation as a secondary defense to detect unauthorized input before SQL execution. Validated data is not
+necessarily safe for string concatenation - always use parameterized queries.
 
 ### Key Principles
 

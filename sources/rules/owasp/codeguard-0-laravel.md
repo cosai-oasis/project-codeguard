@@ -9,6 +9,8 @@ languages:
 alwaysApply: false
 ---
 
+# Laravel Security Best Practices
+
 ## Laravel Security Guidelines
 
 Essential security practices for building secure Laravel applications.

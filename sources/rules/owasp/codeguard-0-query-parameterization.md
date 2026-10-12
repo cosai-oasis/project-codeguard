@@ -11,28 +11,34 @@ languages:
 alwaysApply: false
 ---
 
+# SQL Injection Prevention via Query Parameterization
+
 ## Query Parameterization Guidelines
 
-Essential practices for preventing SQL injection attacks by using parameterized queries instead of string concatenation when building database queries.
+Essential practices for preventing SQL injection attacks by using parameterized queries instead of string concatenation
+when building database queries.
 
 ### Core Principle
 
-SQL injection is prevented through parameterized queries that separate SQL structure from data. User input is treated as data parameters, not executable SQL code, preventing attackers from altering query structure.
+SQL injection is prevented through parameterized queries that separate SQL structure from data. User input is treated as
+data parameters, not executable SQL code, preventing attackers from altering query structure.
 
 ### Implementation Requirements
 
 Always use language-specific parameterized queries or prepared statements:
 
 #### Java with PreparedStatement
+
 ```java
 String custname = request.getParameter("customerName");
-String query = "SELECT account_balance FROM user_data WHERE user_name = ? ";  
+String query = "SELECT account_balance FROM user_data WHERE user_name = ? ";
 PreparedStatement pstmt = connection.prepareStatement( query );
 pstmt.setString( 1, custname);
 ResultSet results = pstmt.executeQuery( );
 ```
 
 #### Java with Hibernate
+
 ```java
 // HQL
 @Entity // declare as entity;
@@ -63,6 +69,7 @@ Inventory inv = (Inventory) session.createCriteria(Inventory.class).add
 ```
 
 #### .NET with OleDbCommand
+
 ```csharp
 String query = "SELECT account_balance FROM user_data WHERE user_name = ?";
 try {
@@ -76,6 +83,7 @@ try {
 ```
 
 #### ASP.NET with SqlCommand
+
 ```csharp
 string sql = "SELECT * FROM Customers WHERE CustomerId = @CustomerId";
 SqlCommand command = new SqlCommand(sql);
@@ -84,6 +92,7 @@ command.Parameters["@CustomerId"].Value = 1;
 ```
 
 #### Ruby with ActiveRecord
+
 ```ruby
 ## Create
 Project.create!(:name => 'owasp')
@@ -98,12 +107,14 @@ Project.delete(:name => 'name')
 ```
 
 #### Ruby Built-in
+
 ```ruby
 insert_new_user = db.prepare "INSERT INTO users (name, age, gender) VALUES (?, ? ,?)"
 insert_new_user.execute 'aizatto', '20', 'male'
 ```
 
 #### PHP with PDO
+
 ```php
 $stmt = $dbh->prepare("INSERT INTO REGISTRY (name, value) VALUES (:name, :value)");
 $stmt->bindParam(':name', $name);
@@ -111,6 +122,7 @@ $stmt->bindParam(':value', $value);
 ```
 
 #### Cold Fusion
+
 ```coldfusion
 <cfquery name = "getFirst" dataSource = "cfsnippets">
     SELECT * FROM #strDatabasePrefix#_courses WHERE intCourseID =
@@ -119,6 +131,7 @@ $stmt->bindParam(':value', $value);
 ```
 
 #### Perl with DBI
+
 ```perl
 my $sql = "INSERT INTO foo (bar, baz) VALUES ( ?, ? )";
 my $sth = $dbh->prepare( $sql );
@@ -126,6 +139,7 @@ $sth->execute( $bar, $baz );
 ```
 
 #### Rust with SQLx
+
 ```rust
 // Input from CLI args but could be anything
 let username = std::env::args().last().unwrap();
@@ -137,7 +151,7 @@ let users = sqlx::query_as!(
         username
     )
     .fetch_all(&pool)
-    .await 
+    .await
     .unwrap();
 
 // Using built-in functions
@@ -153,9 +167,11 @@ let users: Vec<User> = sqlx::query_as::<_, User>(
 ### Stored Procedure Security
 
 #### Normal Stored Procedures
+
 Parameters are naturally bound without special requirements:
 
 ##### Oracle PL/SQL
+
 ```sql
 PROCEDURE SafeGetBalanceQuery(UserID varchar, Dept varchar) AS BEGIN
    SELECT balance FROM accounts_table WHERE user_ID = UserID AND department = Dept;
@@ -163,6 +179,7 @@ END;
 ```
 
 ##### SQL Server T-SQL
+
 ```sql
 PROCEDURE SafeGetBalanceQuery(@UserID varchar(20), @Dept varchar(10)) AS BEGIN
    SELECT balance FROM accounts_table WHERE user_ID = @UserID AND department = @Dept
@@ -170,9 +187,11 @@ END
 ```
 
 #### Dynamic SQL in Stored Procedures
+
 Use bind variables to ensure dynamic SQL treats inputs as data, not code:
 
 ##### Oracle with EXECUTE IMMEDIATE
+
 ```sql
 PROCEDURE AnotherSafeGetBalanceQuery(UserID varchar, Dept varchar)
           AS stmt VARCHAR(400); result NUMBER;
@@ -185,6 +204,7 @@ END;
 ```
 
 ##### SQL Server with sp_executesql
+
 ```sql
 PROCEDURE SafeGetBalanceQuery(@UserID varchar(20), @Dept varchar(10)) AS BEGIN
    DECLARE @sql VARCHAR(200)
@@ -198,7 +218,8 @@ END
 
 ### Critical Security Notes
 
-- Ensure parameterization occurs server-side; client-side parameterization libraries may still build unsafe queries through string concatenation
+- Ensure parameterization occurs server-side; client-side parameterization libraries may still build unsafe queries
+  through string concatenation
 - Parameterized queries are the primary defense against SQL injection
 - Input validation should focus on business logic requirements, not SQL injection prevention
 - Never concatenate user input directly into SQL query strings

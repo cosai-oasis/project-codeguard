@@ -5,9 +5,10 @@ Abstract base class for all IDE rule formats.
 Defines the interface that all format implementations must follow.
 """
 
-import yaml
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+
+import yaml
 
 
 @dataclass
@@ -126,7 +127,7 @@ class BaseFormat(ABC):
                 {field_name: value},
                 default_flow_style=False,
                 allow_unicode=True,
-                width=float("inf")
+                width=float("inf"),
             )
             return yaml_dump.strip()
         return ""

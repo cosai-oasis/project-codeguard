@@ -7,6 +7,8 @@ languages:
 alwaysApply: false
 ---
 
+# Third Party JavaScript Management Security
+
 ## Third Party JavaScript Management Security
 
 Secure third-party JavaScript tags to prevent arbitrary code execution, data leakage, and loss of application control.
@@ -14,6 +16,7 @@ Secure third-party JavaScript tags to prevent arbitrary code execution, data lea
 ### Major Risks
 
 Third-party JavaScript poses three critical risks:
+
 1. Loss of control over client application changes
 2. Execution of arbitrary code on client systems
 3. Disclosure of sensitive information to third parties
@@ -21,19 +24,23 @@ Third-party JavaScript poses three critical risks:
 ### Security Strategies
 
 #### Server Direct Data Layer (Recommended)
+
 Create controlled data layer that third-party scripts can access instead of direct DOM access.
 
 Key principles:
+
 - Only first-party code populates the data layer
 - Third-party scripts read exclusively from sanitized data layer
 - Tag JavaScript can only access host data layer values, never URL parameters
 
 Benefits:
+
 - Only your JavaScript executes on user browsers
 - Only validated data sent to vendors
 - Scalable for large sites with multiple vendor tags
 
 #### Subresource Integrity (SRI)
+
 Ensure only reviewed code executes by adding integrity metadata.
 
 ```html
@@ -44,11 +51,13 @@ Ensure only reviewed code executes by adding integrity metadata.
 ```
 
 Requirements:
+
 - Vendor host must have CORS enabled
 - Monitor vendor JavaScript for changes regularly
 - Update integrity hashes when vendor updates scripts
 
 #### Sandboxing with iframe
+
 Isolate vendor JavaScript to prevent direct DOM and cookie access.
 
 ```html
@@ -88,17 +97,22 @@ Isolate vendor JavaScript to prevent direct DOM and cookie access.
 ```
 
 Communication requirements:
+
 - Use postMessage mechanism for secure data exchange
 - Validate event origins before processing messages
 - Consider Content Security Policy (CSP) for additional protection
 
 #### Content Sanitization
+
 Clean DOM data before sending to third parties using:
+
 - DOMPurify: XSS sanitizer for HTML, MathML and SVG
 - MentalJS: JavaScript parser and sandbox
 
 #### Tag Manager Controls
+
 For tag management systems:
+
 - Restrict JavaScript access to data layer values only
 - Disable custom HTML tags and JavaScript code where possible
 - Verify tag manager security practices and access controls
@@ -107,17 +121,22 @@ For tag management systems:
 ### Operational Security
 
 #### Keep Libraries Updated
+
 - Regularly update JavaScript libraries to address vulnerabilities
 - Use tools like RetireJS to identify vulnerable libraries
 
 #### Vendor Agreements
+
 Contractual controls:
+
 - Require evidence of secure coding practices and code integrity monitoring
 - Include penalties for serving malicious JavaScript
 - Mandate source code monitoring and change detection
 
 #### Complete Prevention Strategy
+
 Most effective controls:
+
 1. Data layer architecture with API calls to marketing servers
 2. Subresource Integrity implementation
 3. Virtual frame containment deployment

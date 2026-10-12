@@ -10,6 +10,8 @@ languages:
 alwaysApply: false
 ---
 
+# Cookie Theft Mitigation Best Practices
+
 ## Cookie Theft Mitigation Guidelines
 
 This rule advises on detecting and mitigating session cookie theft through server-side monitoring:
@@ -43,6 +45,7 @@ This rule advises on detecting and mitigating session cookie theft through serve
   - Ensure session data is properly encrypted and protected.
 
 Code Example (from OWASP):
+
 ```js
 const session = SessionStorage.create()
 session.save({
@@ -69,4 +72,6 @@ function cookieTheftDetectionMiddleware(req, res) {
 ```
 
 Summary:  
-Implement server-side session fingerprinting to detect cookie theft, monitor environment changes across requests, apply risk-based responses to suspicious activity, and maintain secure session storage. Consider future standards like Device Bound Session Credentials for enhanced protection.
+Implement server-side session fingerprinting to detect cookie theft, monitor environment changes across requests, apply
+risk-based responses to suspicious activity, and maintain secure session storage. Consider future standards like Device
+Bound Session Credentials for enhanced protection.

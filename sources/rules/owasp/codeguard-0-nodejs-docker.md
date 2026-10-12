@@ -6,6 +6,8 @@ languages:
 alwaysApply: false
 ---
 
+# Node.js Docker Security Best Practices
+
 ## Node.js Docker Security Guidelines
 
 Essential security practices for building optimized and secure Node.js Docker images for production deployment.
@@ -13,11 +15,13 @@ Essential security practices for building optimized and secure Node.js Docker im
 ### Use Explicit and Deterministic Base Images
 
 Always use specific, pinned base image tags to ensure deterministic builds:
+
 - Avoid `FROM node` or `FROM node:latest` which introduces non-deterministic behavior
 - Use minimal base images to reduce attack surface and image size
 - Pin images with both tag and SHA256 digest for maximum security
 
 Recommended pattern:
+
 ```dockerfile
 FROM node:lts-alpine@sha256:b2da3316acdc2bec442190a1fe10dc094e7ba4121d029cb32075ff59bb27390a
 ```
@@ -25,11 +29,13 @@ FROM node:lts-alpine@sha256:b2da3316acdc2bec442190a1fe10dc094e7ba4121d029cb32075
 ### Install Only Production Dependencies
 
 Use deterministic dependency installation that excludes development packages:
+
 ```dockerfile
 RUN npm ci --omit=dev
 ```
 
 This approach:
+
 - Prevents surprises in CI by halting if lockfile deviations exist
 - Reduces security risk from development dependencies
 - Decreases image size by excluding unnecessary packages
@@ -37,41 +43,48 @@ This approach:
 ### Optimize for Production Environment
 
 Set the production environment variable to enable framework optimizations:
+
 ```dockerfile
 ENV NODE_ENV production
 ```
 
-Many frameworks like Express only enable performance and security optimizations when this variable is set to "production".
+Many frameworks like Express only enable performance and security optimizations when this variable is set to
+"production".
 
 ### Run as Non-Root User
 
 Follow the principle of least privilege to minimize security risks:
+
 ```dockerfile
 COPY --chown=node:node . /usr/src/app
 USER node
 ```
 
-The official node images include a least-privileged `node` user. Ensure all copied files are owned by this user to prevent permission issues.
+The official node images include a least-privileged `node` user. Ensure all copied files are owned by this user to
+prevent permission issues.
 
 ### Handle Process Signals Properly
 
 Use a proper init system to handle process signals correctly:
+
 ```dockerfile
 RUN apk add dumb-init
 CMD ["dumb-init", "node", "server.js"]
 ```
 
 Avoid these problematic patterns:
+
 - `CMD "npm" "start"` - npm doesn't forward signals
 - `CMD "node" "server.js"` - Node.js as PID 1 doesn't handle signals properly
 
 ### Implement Graceful Shutdown
 
 Add signal handlers in your Node.js application code:
+
 ```javascript
     async function closeGracefully(signal) {
        console.log(`*^!@4=> Received signal to terminate: ${signal}`)
-     
+
        await fastify.close()
        // await db.close() if we have a db connection in this app
        // await other things we should cleanup nicely
@@ -106,7 +119,8 @@ CMD ["dumb-init", "node", "server.js"]
 ### Use .dockerignore File
 
 Create a `.dockerignore` file to exclude unnecessary and sensitive files:
-```
+
+```gitignore
 node_modules
 npm-debug.log
 Dockerfile
@@ -116,6 +130,7 @@ Dockerfile
 ```
 
 This prevents:
+
 - Copying modified local `node_modules/` over the container-built version
 - Including sensitive files like credentials or local configuration
 - Cache invalidation from log files or temporary files
@@ -123,11 +138,13 @@ This prevents:
 ### Mount Secrets Securely
 
 Use Docker BuildKit secrets to handle sensitive files like `.npmrc`:
+
 ```dockerfile
 RUN --mount=type=secret,mode=0644,id=npmrc,target=/usr/src/app/.npmrc npm ci --omit=dev
 ```
 
 Build command:
+
 ```bash
 docker build . -t nodejs-tutorial --secret id=npmrc,src=.npmrc
 ```
@@ -138,4 +155,5 @@ This ensures secrets are never copied into the final Docker image layers.
 
 Regularly scan your Docker images for vulnerabilities using static analysis tools and keep dependencies updated.
 
-By following these practices, you'll create secure, optimized, and maintainable Node.js Docker images suitable for production deployment.
+By following these practices, you'll create secure, optimized, and maintainable Node.js Docker images suitable for
+production deployment.

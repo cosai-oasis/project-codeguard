@@ -5,12 +5,16 @@ languages:
 alwaysApply: false
 ---
 
-### Memory and String Safety Guidelines
+# Memory and String Safety Guidelines
 
-#### Unsafe Memory Functions - FORBIDDEN
+## Memory and String Safety Guidelines
+
+### Unsafe Memory Functions - FORBIDDEN
+
 **NEVER use these unsafe memory functions that don't check input parameter boundaries:**
 
-##### Banned Memory Functions:
+#### Banned Memory Functions
+
 - `memcpy()` → Use `memcpy_s()`
 - `memset()` → Use `memset_s()`
 - `memmove()` → Use `memmove_s()`
@@ -18,7 +22,8 @@ alwaysApply: false
 - `bzero()` → Use `memset_s()`
 - `memzero()` → Use `memset_s()`
 
-##### Safe Memory Function Replacements:
+#### Safe Memory Function Replacements
+
 ```c
 // Instead of: memcpy(dest, src, count);
 errno_t result = memcpy_s(dest, dest_size, src, count);
@@ -40,10 +45,12 @@ if (result == 0) {
 }
 ```
 
-#### Unsafe String Functions - FORBIDDEN
+### Unsafe String Functions - FORBIDDEN
+
 **NEVER use these unsafe string functions that can cause buffer overflows:**
 
-##### Banned String Functions:
+#### Banned String Functions
+
 - `strstr()` → Use `strstr_s()`
 - `strtok()` → Use `strtok_s()`
 - `strcpy()` → Use `strcpy_s()`
@@ -52,7 +59,8 @@ if (result == 0) {
 - `strcat()` → Use `strcat_s()`
 - `sprintf()` → Use `snprintf()`
 
-##### Safe String Function Replacements:
+#### Safe String Function Replacements
+
 ```c
 // String Search
 errno_t strstr_s(char *dest, rsize_t dmax, const char *src, rsize_t slen, char **substring);
@@ -76,9 +84,10 @@ errno_t strcat_s(char *dest, rsize_t dmax, const char *src);
 int snprintf(char *s, size_t n, const char *format, ...);
 ```
 
-#### Implementation Examples:
+### Implementation Examples
 
-##### Safe String Copy Pattern:
+#### Safe String Copy Pattern
+
 ```c
 // Bad - unsafe
 char dest[256];
@@ -94,7 +103,8 @@ return ERROR;
 }
 ```
 
-##### Safe String Concatenation Pattern:
+#### Safe String Concatenation Pattern
+
 ```c
 // Bad - unsafe
 char buffer[256] = "prefix_";
@@ -109,7 +119,8 @@ return ERROR;
 }
 ```
 
-##### Safe Memory Copy Pattern:
+#### Safe Memory Copy Pattern
+
 ```c
 // Bad - unsafe
 memcpy(dest, src, size); // No boundary checking!
@@ -122,7 +133,8 @@ return ERROR;
 }
 ```
 
-##### Safe String Tokenization Pattern:
+#### Safe String Tokenization Pattern
+
 ```c
 // Bad - unsafe
 char *token = strtok(str, delim); // Modifies original string unsafely
@@ -137,16 +149,18 @@ token = strtok_s(NULL, &str_max, delim, &next_token);
 }
 ```
 
-#### Memory and String Safety Code Review Checklist:
+### Memory and String Safety Code Review Checklist
 
-##### Pre-Code Review (Developer):
+#### Pre-Code Review (Developer)
+
 - [ ] No unsafe memory functions (`memcpy`, `memset`, `memmove`, `memcmp`, `bzero`)
 - [ ] No unsafe string functions (`strcpy`, `strcat`, `strcmp`, `strlen`, `sprintf`, `strstr`, `strtok`)
 - [ ] All memory operations use `*_s()` variants with proper size parameters
 - [ ] Buffer sizes are correctly calculated using `sizeof()` or known limits
 - [ ] No hardcoded buffer sizes that could change
 
-##### Code Review (Reviewer):
+#### Code Review (Reviewer)
+
 - [ ] **Memory Safety**: Verify all memory operations use safe variants
 - [ ] **Buffer Bounds**: Confirm destination buffer sizes are properly specified
 - [ ] **Error Handling**: Check that all `errno_t` return values are handled
@@ -154,15 +168,17 @@ token = strtok_s(NULL, &str_max, delim, &next_token);
 - [ ] **String Termination**: Ensure strings are properly null-terminated
 - [ ] **Length Validation**: Check that source string lengths are validated before operations
 
-##### Static Analysis Integration:
+#### Static Analysis Integration
+
 - [ ] Enable compiler warnings for unsafe function usage
 - [ ] Use static analysis tools to detect unsafe function calls
 - [ ] Configure build system to treat unsafe function warnings as errors
 - [ ] Add pre-commit hooks to scan for banned functions
 
-#### Common Pitfalls and Solutions:
+### Common Pitfalls and Solutions
 
-##### Pitfall 1: Wrong Size Parameter
+#### Pitfall 1: Wrong Size Parameter
+
 ```c
 // Wrong - using source size instead of destination size
 strcpy_s(dest, strlen(src), src); // WRONG!
@@ -171,7 +187,8 @@ strcpy_s(dest, strlen(src), src); // WRONG!
 strcpy_s(dest, sizeof(dest), src); // CORRECT
 ```
 
-##### Pitfall 2: Ignoring Return Values
+#### Pitfall 2: Ignoring Return Values
+
 ```c
 // Wrong - ignoring potential errors
 strcpy_s(dest, sizeof(dest), src); // Error not checked
@@ -182,7 +199,8 @@ if (strcpy_s(dest, sizeof(dest), src) != 0) {
 }
 ```
 
-##### Pitfall 3: Using sizeof() on Pointers
+#### Pitfall 3: Using sizeof() on Pointers
+
 ```c
 // Wrong - sizeof pointer, not buffer
 void func(char *buffer) {

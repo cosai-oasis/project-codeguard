@@ -13,9 +13,12 @@ languages:
 alwaysApply: false
 ---
 
+# HTTP Security Headers Best Practices
+
 ## HTTP Security Headers Guidelines
 
-This rule enforces secure configuration of HTTP response headers to protect against common web vulnerabilities including XSS, Clickjacking, Information Disclosure, and MIME-type attacks.
+This rule enforces secure configuration of HTTP response headers to protect against common web vulnerabilities including
+XSS, Clickjacking, Information Disclosure, and MIME-type attacks.
 
 ### Required Security Headers
 
@@ -23,7 +26,8 @@ This rule enforces secure configuration of HTTP response headers to protect agai
    - Must include default-src directive
    - Must include script-src directive with appropriate restrictions
    - Must include frame-ancestors directive for clickjacking protection
-   - Example: `Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'none'`
+   - Example:
+     `Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'none'`
 
 2. Cookie Security
    - All session/sensitive cookies must have Secure flag
@@ -36,7 +40,8 @@ This rule enforces secure configuration of HTTP response headers to protect agai
    - Must set Cross-Origin-Resource-Policy (CORP)
    - Must set Cross-Origin-Opener-Policy (COOP)
    - Examples:
-     ```
+
+     ```http
      Cross-Origin-Embedder-Policy: require-corp
      Cross-Origin-Resource-Policy: same-origin
      Cross-Origin-Opener-Policy: same-origin
@@ -58,6 +63,7 @@ This rule enforces secure configuration of HTTP response headers to protect agai
 ### Prohibited Headers
 
 The following headers must not be present or must be removed:
+
 - X-Powered-By
 - Server (or must contain non-revealing value)
 - X-AspNet-Version
@@ -82,11 +88,13 @@ Certain security features require multiple headers to work effectively:
 ### Implementation Examples
 
 PHP:
+
 ```php
 header("X-Frame-Options: DENY");
 ```
 
 Apache (.htaccess):
+
 ```apache
 <IfModule mod_headers.c>
 Header always set X-Frame-Options "DENY"
@@ -94,6 +102,7 @@ Header always set X-Frame-Options "DENY"
 ```
 
 IIS (Web.config):
+
 ```xml
 <system.webServer>
 ...
@@ -107,16 +116,19 @@ IIS (Web.config):
 ```
 
 HAProxy:
-```
+
+```text
 http-response set-header X-Frame-Options DENY
 ```
 
 Nginx:
+
 ```nginx
 add_header "X-Frame-Options" "DENY" always;
 ```
 
 Express.js:
+
 ```javascript
 const helmet = require('helmet');
 const app = express();
@@ -132,4 +144,6 @@ app.use(
 
 Mozilla Observatory is an online tool which helps you to check your website's header status.
 
-SmartScanner has a dedicated test profile for testing security of HTTP headers. Online tools usually test the homepage of the given address. But SmartScanner scans the whole website, ensuring all web pages have the right HTTP Headers in place.
+SmartScanner has a dedicated test profile for testing security of HTTP headers. Online tools usually test the homepage
+of the given address. But SmartScanner scans the whole website, ensuring all web pages have the right HTTP Headers in
+place.

@@ -7,15 +7,19 @@ languages:
 alwaysApply: false
 ---
 
+# Kubernetes Security Best Practices
+
 ## Kubernetes Security Guidelines
 
 Essential security practices for secure Kubernetes cluster deployment and management.
 
 ### Host and Component Security
 
-Keep Kubernetes components updated to the latest stable version. The Kubernetes project maintains release branches for the most recent three minor releases with security fixes.
+Keep Kubernetes components updated to the latest stable version. The Kubernetes project maintains release branches for
+the most recent three minor releases with security fixes.
 
 Secure critical components:
+
 - Restrict access to etcd with mutual TLS authentication and firewall isolation
 - Use strong credentials between API servers and etcd
 - Control network access to sensitive ports (6443 for API server, 2379-2380 for etcd)
@@ -24,6 +28,7 @@ Secure critical components:
 ### Build Phase Security
 
 Use approved, scanned container images from trusted registries:
+
 - Store approved images in private registries
 - Integrate vulnerability scanning into CI pipeline to block vulnerable images
 - Use minimal base images (distroless when possible) to reduce attack surface
@@ -59,13 +64,14 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: policy-test
-  labels:    
+  labels:
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/audit: restricted
     pod-security.kubernetes.io/warn: restricted
 ```
 
 Three security profiles available:
+
 - **Privileged**: Unrestricted (system workloads only)
 - **Baseline**: Minimally restrictive, prevents known privilege escalations
 - **Restricted**: Most restrictive, enforces current pod hardening practices
@@ -128,6 +134,7 @@ spec:
 #### Monitoring and Detection
 
 Monitor container behavior for security anomalies:
+
 - Shell execution inside containers
 - Sensitive file access (e.g., /etc/shadow)
 - Unexpected network connections

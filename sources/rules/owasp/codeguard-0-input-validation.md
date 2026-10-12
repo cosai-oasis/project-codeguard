@@ -14,22 +14,30 @@ languages:
 alwaysApply: false
 ---
 
+# Input Validation Security Best Practices
+
 ## Input Validation Security Guidelines
 
-This rule provides clear, actionable guidance for implementing robust input validation security functionality in applications.
+This rule provides clear, actionable guidance for implementing robust input validation security functionality in
+applications.
 
 ### Introduction
 
-Input validation ensures only properly formed data enters the workflow, preventing malformed data from persisting in the database and triggering malfunction of downstream components. Input validation should happen as early as possible in the data flow.
+Input validation ensures only properly formed data enters the workflow, preventing malformed data from persisting in the
+database and triggering malfunction of downstream components. Input validation should happen as early as possible in the
+data flow.
 
-Data from all potentially untrusted sources should be subject to input validation, including Internet-facing web clients and backend feeds from suppliers, partners, vendors or regulators.
+Data from all potentially untrusted sources should be subject to input validation, including Internet-facing web clients
+and backend feeds from suppliers, partners, vendors or regulators.
 
-Input Validation should not be used as the primary method of preventing XSS, SQL Injection and other attacks but can significantly contribute to reducing their impact if implemented properly.
+Input Validation should not be used as the primary method of preventing XSS, SQL Injection and other attacks but can
+significantly contribute to reducing their impact if implemented properly.
 
 ### Input Validation Strategies
 
 - Syntactic validation: enforce correct syntax of structured fields (e.g. SSN, date, currency symbol)
-- Semantic validation: enforce correctness of values in specific business context (e.g. start date before end date, price within expected range)
+- Semantic validation: enforce correctness of values in specific business context (e.g. start date before end date,
+  price within expected range)
 
 ### Implementing Input Validation
 
@@ -42,7 +50,9 @@ Input Validation should not be used as the primary method of preventing XSS, SQL
 
 ### Allowlist vs Denylist
 
-Allowlist validation defines exactly what IS authorized; everything else is not authorized. For structured data (dates, SSNs, zip codes, emails), define strong validation patterns using regular expressions. For fixed options (dropdowns, radio buttons), input must match exactly one offered value.
+Allowlist validation defines exactly what IS authorized; everything else is not authorized. For structured data (dates,
+SSNs, zip codes, emails), define strong validation patterns using regular expressions. For fixed options (dropdowns,
+radio buttons), input must match exactly one offered value.
 
 ### Validating Free-form Unicode Text
 
@@ -53,6 +63,7 @@ Allowlist validation defines exactly what IS authorized; everything else is not 
 ### Regular Expressions (Regex)
 
 Be aware of RegEx Denial of Service (ReDoS) attacks. Input validation should:
+
 - Be applied to all input data
 - Define allowed character sets
 - Define minimum and maximum length (e.g. {1,25})
@@ -62,6 +73,7 @@ Be aware of RegEx Denial of Service (ReDoS) attacks. Input validation should:
 U.S. Zip Code: `^\d{5}(-\d{4})?$`
 
 Java Example:
+
 ```java
 private static final Pattern zipPattern = Pattern.compile("^\d{5}(-\d{4})?$");
 
@@ -79,26 +91,31 @@ public void doPost(HttpServletRequest request, HttpServletResponse response) {
 
 ### Client-side vs Server-side Validation
 
-Input validation must be implemented on the server-side before data processing, as client-side validation can be circumvented by attackers.
+Input validation must be implemented on the server-side before data processing, as client-side validation can be
+circumvented by attackers.
 
 ### File Upload Validation
 
 Upload Verification:
+
 - Validate filename uses expected extension type
 - Enforce maximum file size limits
 - Check ZIP files before extraction (target path, compression level, estimated size)
 
 Upload Storage:
+
 - Use server-generated random filenames
 - Analyze uploaded files for malicious content
 - Server defines file paths, not client
 
 Beware of dangerous file types:
+
 - crossdomain.xml / clientaccesspolicy.xml
 - .htaccess and .htpasswd
 - Web executable scripts: aspx, asp, css, swf, jsp, js, php, cgi
 
 Image Upload:
+
 - Use image rewriting libraries to verify and strip content
 - Set extension based on detected content type
 - Ensure content type is within defined image types
@@ -106,11 +123,13 @@ Image Upload:
 ### Email Address Validation
 
 Syntactic Validation:
+
 - Contains two parts separated by @
 - No dangerous characters (backticks, quotes, null bytes)
 - Domain contains only letters, numbers, hyphens, periods
 - Length limits: local part ≤ 63 chars, total ≤ 254 chars
 
 Semantic Validation:
+
 - Send verification email with secure token
 - Token requirements: ≥32 chars, cryptographically random, single-use, time-limited

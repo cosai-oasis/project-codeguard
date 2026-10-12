@@ -13,15 +13,19 @@ languages:
 alwaysApply: false
 ---
 
+# Web Service Security
+
 ## Web Service Security
 
 Secure web services through transport protection, authentication, input validation, and XML attack prevention.
 
 ### Transport Security
 
-All web service communications with sensitive features or data must use well-configured TLS. TLS provides confidentiality, integrity protection, replay defenses, and server authentication.
+All web service communications with sensitive features or data must use well-configured TLS. TLS provides
+confidentiality, integrity protection, replay defenses, and server authentication.
 
 Server certificate validation requirements:
+
 - Issued by trusted provider
 - Not expired or revoked
 - Matches service domain name
@@ -35,6 +39,7 @@ Server certificate validation requirements:
 ### Message Protection
 
 For XML data requiring integrity beyond TLS:
+
 - Use XML digital signatures with sender's private key
 - Encrypt sensitive data with strong ciphers for both transport and at-rest protection when required
 
@@ -48,11 +53,13 @@ For XML data requiring integrity beyond TLS:
 ### Input Validation
 
 Schema validation:
+
 - Validate SOAP payloads against XML schema definition (XSD)
 - Define maximum length and character sets for all parameters
 - Use strong allow-list patterns for fixed format parameters (zip codes, phone numbers)
 
 Content validation for XML input:
+
 - Validate against malformed XML entities
 - Validate against XML Bomb attacks
 - Use strong allowlists for input validation
@@ -61,6 +68,7 @@ Content validation for XML input:
 ### XML Attack Protection
 
 Configure XML parsers to protect against:
+
 - Recursive payloads
 - Oversized payloads
 - XML entity expansion

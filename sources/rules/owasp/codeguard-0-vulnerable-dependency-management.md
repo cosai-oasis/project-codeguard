@@ -9,18 +9,23 @@ languages:
 alwaysApply: false
 ---
 
+# Vulnerable Dependency Management
+
 ## Vulnerable Dependency Management
 
-Detect and mitigate security vulnerabilities in third-party dependencies through automated scanning, proper testing, and systematic remediation approaches.
+Detect and mitigate security vulnerabilities in third-party dependencies through automated scanning, proper testing, and
+systematic remediation approaches.
 
 ### Automated Detection
 
 Integrate vulnerability scanning from project inception using tools that cover multiple vulnerability sources:
+
 - CVE databases (NIST National Vulnerability Database)
 - Full disclosure sources (mailing lists, Exploit-DB)
 - Provider-specific vulnerability feeds
 
 Recommended tools:
+
 - OWASP Dependency Check (Java, .NET, experimental support for Python, Ruby, PHP, Node.js, C/C++)
 - NPM Audit (Node.js, JavaScript)
 - OWASP Dependency Track (organization-wide management)
@@ -28,17 +33,20 @@ Recommended tools:
 ### Remediation Cases
 
 Case 1 - Patched version available:
+
 1. Update dependency version in testing environment
 2. Run automated tests to verify functionality
 3. If tests pass: deploy to production
 4. If tests fail: update application code for API changes or report incompatibility to provider
 
 Case 2 - Patch delayed, provider provides workaround:
+
 1. Apply provider workaround if available
 2. If provider lists impacted functions, add protective wrappers
 3. Validate workaround in testing environment
 
 Example protective wrapper for RCE vulnerability:
+
 ```java
 public void callFunctionWithRCEIssue(String externalInput){
     //Apply input validation on the external input using regex
@@ -54,6 +62,7 @@ public void callFunctionWithRCEIssue(String externalInput){
 ```
 
 Case 3 - No patch available:
+
 1. Analyze CVE description to understand vulnerability type (SQL injection, XSS, XXE, etc.)
 2. Identify all application code calling the vulnerable dependency
 3. Implement compensating controls based on vulnerability type
@@ -61,15 +70,18 @@ Case 3 - No patch available:
 5. For open source dependencies: consider creating and contributing patches
 
 Case 4 - Previously unknown vulnerability discovered:
+
 1. Notify provider with vulnerability details
 2. If provider cooperates: follow Case 2 approach
 3. If provider unresponsive: follow Case 3 approach
 
 ### Dependencies Analysis
 
-Transitive dependencies: Act on direct dependencies when possible, as modifying transitive dependencies requires understanding complex dependency chains and can impact application stability.
+Transitive dependencies: Act on direct dependencies when possible, as modifying transitive dependencies requires
+understanding complex dependency chains and can impact application stability.
 
 Use dependency management tools to identify:
+
 - Direct vs transitive dependency relationships
 - All code paths using vulnerable components
 - Impact scope of potential vulnerabilities
@@ -77,11 +89,13 @@ Use dependency management tools to identify:
 ### Testing and Validation
 
 Maintain comprehensive automated tests covering:
+
 - Features using impacted dependencies
 - Security controls added as mitigations
 - Regression detection during updates
 
 Run tests before and after dependency updates to ensure:
+
 - Application functionality remains intact
 - Security mitigations are effective
 - No new vulnerabilities are introduced
@@ -89,6 +103,7 @@ Run tests before and after dependency updates to ensure:
 ### Risk Management
 
 Document all vulnerability decisions including:
+
 - Technical analysis and CVSS scoring
 - Chosen mitigation approach and rationale
 - Testing results and validation steps
@@ -99,12 +114,14 @@ Escalate risk acceptance decisions to Chief Risk Officer after thorough technica
 ### Continuous Monitoring
 
 Implement continuous dependency scanning in CI/CD pipelines:
+
 - Scan on every build
 - Fail builds for high-severity vulnerabilities
 - Generate reports for security team review
 - Track remediation progress and compliance
 
-Choose tools supporting false-positive flagging and multiple reliable input sources to handle different vulnerability disclosure methods.
+Choose tools supporting false-positive flagging and multiple reliable input sources to handle different vulnerability
+disclosure methods.
 
 ### Prevention Guidelines
 

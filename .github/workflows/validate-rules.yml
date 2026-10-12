@@ -13,7 +13,17 @@ on:
       - 'skills/codeguard/**'
       - 'sources/**'
       - 'src/**'
+      - 'tests/**'
+      - '.vscode/extensions.json'
+      - '.gitignore'
       - 'pyproject.toml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.editorconfig'
+      - '.gitattributes'
+      - '.markdownlint.jsonc'
+      - '.prettierrc.json'
+      - '.prettierignore'
   push:
     branches:
       - main
@@ -25,7 +35,17 @@ on:
       - 'skills/codeguard/**'
       - 'sources/**'
       - 'src/**'
+      - 'tests/**'
+      - '.vscode/extensions.json'
+      - '.gitignore'
       - 'pyproject.toml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.editorconfig'
+      - '.gitattributes'
+      - '.markdownlint.jsonc'
+      - '.prettierrc.json'
+      - '.prettierignore'
   workflow_dispatch:
 
 jobs:
@@ -48,6 +68,32 @@ jobs:
 
       - name: Install dependencies
         run: uv sync
+
+      - name: Check Python formatting and lint
+        run: |
+          uv run --with ruff==0.16.9 ruff format --check src tests
+          uv run --with ruff==0.16.9 ruff check src tests
+          uv run --with ruff==0.16.9 ruff check tests --select C901
+          PYTHONPATH=src uv run --with pylint==4.0.9 pylint --errors-only src/*.py src/formats/*.py
+          PYTHONPATH=src uv run --with pylint==4.0.9 pylint tests/*.py
+
+      - name: Test each Python script with 95% coverage
+        run: uv run --with coverage==7.16.1 python tests/check_python_coverage.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install Markdown tools
+        run: npm ci
+
+      - name: Check Python types with Pyright
+        run: uv run --with pyright==1.1.414 --with coverage==7.16.1 pyright --project pyproject.toml
+
+      - name: Check source Markdown formatting and lint
+        run: npm run format:check && npm run lint
 
       - name: Validate versions
         run: uv run python src/validate_versions.py "$(uv version --short)"
@@ -88,11 +134,12 @@ jobs:
           
           # Regenerate (core rules only, matching default)
           uv run python src/convert_to_ide_formats.py
+          npm run format:release > /dev/null
           
           # Compare only the codeguard subtree
           if ! diff -r skills/codeguard/ skills-committed/ > /dev/null 2>&1; then
             echo "❌ skills/codeguard/ is out of date!"
-            echo "Please regenerate by running: python src/convert_to_ide_formats.py"
+            echo "Please regenerate and format by running: python src/convert_to_ide_formats.py && npm run prepare:release"
             echo "Then: git add skills/codeguard/"
             diff -r skills/codeguard/ skills-committed/ || true
             rm -rf skills-committed
@@ -101,6 +148,9 @@ jobs:
           
           rm -rf skills-committed
           echo "✅ skills/codeguard/ is up-to-date"
+
+      - name: Format and lint release Markdown
+        run: npm run prepare:release
 
       - name: Test conversion to IDE formats
         run: |

@@ -12,9 +12,12 @@ languages:
 alwaysApply: false
 ---
 
+# Forgot Password Security Best Practices
+
 ## Forgot Password Security Guidelines
 
-This rule advises on secure password reset implementation to prevent user enumeration, token abuse, and unauthorized access:
+This rule advises on secure password reset implementation to prevent user enumeration, token abuse, and unauthorized
+access:
 
 - Password Reset Request Security
   - Return consistent messages for both existent and non-existent accounts to prevent user enumeration.
@@ -68,4 +71,6 @@ This rule advises on secure password reset implementation to prevent user enumer
   - Separate password reset abuse protection from authentication lockout mechanisms.
 
 Summary:  
-Implement secure password reset functionality through consistent response handling, cryptographically secure token generation and storage, CSRF protection, proper session management, and comprehensive logging while preventing user enumeration and account lockout attacks.
+Implement secure password reset functionality through consistent response handling, cryptographically secure token
+generation and storage, CSRF protection, proper session management, and comprehensive logging while preventing user
+enumeration and account lockout attacks.

@@ -30,13 +30,13 @@ metadata:
 
 Before writing any new code, ask:
 
-1. Is there an explicit constraint requiring C/C++? (bare-metal with no MSL runtime,
-   hard real-time below 1μs, existing codebase policy)
+1. Is there an explicit constraint requiring C/C++? (bare-metal with no MSL runtime, hard real-time below 1μs, existing
+   codebase policy)
 2. If no constraint exists, default to a memory-safe language
 3. Select the target language using the guide in [references/language-selection.md](references/language-selection.md)
 
-If the project is predominantly C/C++, write the new module in an MSL and integrate
-via FFI. See [references/ffi-security.md](references/ffi-security.md) for boundary rules.
+If the project is predominantly C/C++, write the new module in an MSL and integrate via FFI. See
+[references/ffi-security.md](references/ffi-security.md) for boundary rules.
 
 ## Migration workflow
 
@@ -53,6 +53,7 @@ python scripts/assess-migration.py --file <source_file>
 Or manually evaluate using the checklist in [references/assessment-checklist.md](references/assessment-checklist.md).
 
 Priority order for migration:
+
 1. Network-facing code (parsers, protocol handlers, TLS)
 2. Code handling untrusted input (file parsers, deserialization)
 3. Cryptographic implementations
@@ -62,23 +63,21 @@ Priority order for migration:
 
 ### Step 2: Write tests first
 
-Never migrate a component without test coverage. If no tests exist, write them
-against the C/C++ implementation before touching anything. These tests become the
-correctness oracle for the new implementation.
+Never migrate a component without test coverage. If no tests exist, write them against the C/C++ implementation before
+touching anything. These tests become the correctness oracle for the new implementation.
 
 ### Step 3: Migrate incrementally
 
-One function or module at a time. Never rewrite an entire codebase in one pass.
-Follow the Android model: new code in MSL, existing stable code stays in place,
-proportion of unsafe code decreases over time.
+One function or module at a time. Never rewrite an entire codebase in one pass. Follow the Android model: new code in
+MSL, existing stable code stays in place, proportion of unsafe code decreases over time.
 
-For common migration patterns (buffers, strings, concurrency, error handling),
-see [references/migration-patterns.md](references/migration-patterns.md).
+For common migration patterns (buffers, strings, concurrency, error handling), see
+[references/migration-patterns.md](references/migration-patterns.md).
 
 ### Step 4: Secure the FFI boundary
 
-Every interface between safe and unsafe code is a security boundary. Follow all
-rules in [references/ffi-security.md](references/ffi-security.md). Key rules:
+Every interface between safe and unsafe code is a security boundary. Follow all rules in
+[references/ffi-security.md](references/ffi-security.md). Key rules:
 
 - Validate all inputs from the unsafe side (null checks, bounds checks, type checks)
 - Minimize `unsafe` blocks — wrap only the minimum necessary operation
@@ -109,16 +108,15 @@ After every migration unit, verify:
 
 Never do these during migration:
 
-- **Wrapping unsafe C in a "safe" API without actual safety guarantees** — if the
-  wrapper just passes through without validation, it provides false confidence
-- **Using `unsafe` to replicate C-style patterns in Rust** — if extensive `unsafe`
-  is needed, the approach should be redesigned or the code should remain in C
+- **Wrapping unsafe C in a "safe" API without actual safety guarantees** — if the wrapper just passes through without
+  validation, it provides false confidence
+- **Using `unsafe` to replicate C-style patterns in Rust** — if extensive `unsafe` is needed, the approach should be
+  redesigned or the code should remain in C
 - **Migrating without tests** — write tests for C/C++ first, then validate MSL version
-- **Ignoring error handling differences** — C uses return codes, Rust uses `Result`,
-  Go uses multiple returns. Every error path must be explicitly mapped
-- **Assuming GC languages need no resource discipline** — they prevent memory corruption
-  but can still leak file handles, sockets, and connections. Use `defer`, `try-with-resources`,
-  `using`, or `with` patterns
+- **Ignoring error handling differences** — C uses return codes, Rust uses `Result`, Go uses multiple returns. Every
+  error path must be explicitly mapped
+- **Assuming GC languages need no resource discipline** — they prevent memory corruption but can still leak file
+  handles, sockets, and connections. Use `defer`, `try-with-resources`, `using`, or `with` patterns
 - **Migrating performance-critical loops without benchmarking** — verify first
 
 ## References

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from typing import TypedDict
 
-
 SKILL_COPY_HOSTS: list[str] = [
     ".claude",
     ".opencode",

@@ -63,4 +63,10 @@ class WindsurfFormat(BaseFormat):
             tags_str = ", ".join(rule.tags)
             yaml_lines.append(f"tags: [{tags_str}]")
 
-        return self._build_yaml_frontmatter(yaml_lines, rule.content)
+        # Markdownlint treats the Windsurf frontmatter title as an H1.
+        # Keep the rule_id metadata while dropping the generated H1 to avoid
+        # a duplicate top-level heading in this format.
+        content = rule.content
+        if content.startswith("# "):
+            content = content.partition("\n")[2].lstrip("\n")
+        return self._build_yaml_frontmatter(yaml_lines, content)

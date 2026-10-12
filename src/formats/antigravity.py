@@ -48,7 +48,7 @@ class AntigravityFormat(BaseFormat):
 
         Returns:
             Formatted .md content with trigger, globs, description, and version
-        
+
         Note:
             Antigravity rules use activation types:
             - 'always_on': Rule applies to all files (when alwaysApply is true)

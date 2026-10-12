@@ -7,9 +7,13 @@ languages:
 alwaysApply: false
 ---
 
-Protecting your applications from Cross-Site Leaks is crucial for safeguarding user privacy. XS-Leaks are a class of vulnerabilities that exploit subtle browser behaviors to extract sensitive user information across origins. 
+# Preventing Cross-Site Leaks (XS-Leaks)
 
-XS-Leaks occur when an attacker's website can infer information about a user's state on another website through side-channels like:
+Protecting your applications from Cross-Site Leaks is crucial for safeguarding user privacy. XS-Leaks are a class of
+vulnerabilities that exploit subtle browser behaviors to extract sensitive user information across origins.
+
+XS-Leaks occur when an attacker's website can infer information about a user's state on another website through
+side-channels like:
 
 - Error messages
 - Frame counting
@@ -17,7 +21,8 @@ XS-Leaks occur when an attacker's website can infer information about a user's s
 - Cache probing
 - Response size detection
 
-These attacks can reveal sensitive information such as whether a user is logged in, specific account details, or even extract data from cross-origin resources.
+These attacks can reveal sensitive information such as whether a user is logged in, specific account details, or even
+extract data from cross-origin resources.
 
 Properly configured cookies are your first line of defense against XS-Leaks. For example:
 
@@ -45,16 +50,14 @@ In your HTTP response headers:
 Set-Cookie: sessionId=abc123; SameSite=Strict; Secure; HttpOnly; Path=/
 ```
 
+- Always specify a `SameSite` attribute:
+  - Use `SameSite=Strict` for cookies related to sensitive actions
+  - Use `SameSite=Lax` for cookies needed on normal navigation to your site
+  - Use `SameSite=None; Secure` only when third-party usage is absolutely required
 
+- Never rely on browser defaults as they may vary across browsers and versions
 
-* Always specify a `SameSite` attribute:
-  * Use `SameSite=Strict` for cookies related to sensitive actions
-  * Use `SameSite=Lax` for cookies needed on normal navigation to your site
-  * Use `SameSite=None; Secure` only when third-party usage is absolutely required
-
-* Never rely on browser defaults as they may vary across browsers and versions
-
-### Framing Protection
+## Framing Protection
 
 Prevent your site from being framed by potentially malicious sites:
 
@@ -66,10 +69,10 @@ app.use((req, res, next) => {
     'Content-Security-Policy',
     "frame-ancestors 'self' https://trusted-parent.com"
   );
-  
+
   // X-Frame-Options (legacy fallback)
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  
+
   next();
 });
 ```
@@ -83,24 +86,24 @@ function secureEndpoint(req, res, next) {
   const fetchSite = req.get('Sec-Fetch-Site') || 'unknown';
   const fetchMode = req.get('Sec-Fetch-Mode') || 'unknown';
   const fetchDest = req.get('Sec-Fetch-Dest') || 'unknown';
-  
+
   // Block cross-site requests to sensitive endpoints
   if (fetchSite === 'cross-site' && req.path.startsWith('/api/sensitive')) {
     return res.status(403).send('Cross-site requests not allowed');
   }
-  
+
   // Block embedding in iframes from untrusted sites
   if (fetchDest === 'iframe' && fetchSite === 'cross-site') {
     return res.status(403).send('Embedding not allowed');
   }
-  
+
   next();
 }
 
 app.use(secureEndpoint);
 ```
 
-### Secure Cross-Origin Communication
+## Secure Cross-Origin Communication
 
 When using `postMessage` for cross-origin communication:
 
@@ -118,13 +121,13 @@ window.addEventListener('message', (event) => {
     console.error('Received message from untrusted origin:', event.origin);
     return;
   }
-  
+
   // Process the message
   processMessage(event.data);
 });
 ```
 
-### Isolating Browsing Contexts
+## Isolating Browsing Contexts
 
 Use Cross-Origin-Opener-Policy (COOP) to isolate your site from potential attackers:
 
@@ -151,7 +154,7 @@ app.use((req, res, next) => {
 });
 ```
 
-### Preventing Cache-Based Leaks
+## Preventing Cache-Based Leaks
 
 Protect sensitive resources from cache probing attacks:
 
@@ -160,11 +163,11 @@ Protect sensitive resources from cache probing attacks:
 app.get('/api/sensitive-data', (req, res) => {
   // Add user-specific token to prevent cache probing
   const userToken = req.user.securityToken;
-  
+
   // Disable caching for sensitive resources
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Pragma', 'no-cache');
-  
+
   // Add user token to response to ensure uniqueness
   const data = { userToken, sensitiveData: 'secret information' };
   res.json(data);
@@ -183,7 +186,7 @@ function getUserSpecificUrl(baseUrl) {
 const profileImageUrl = getUserSpecificUrl('/images/profile.jpg');
 ```
 
-### Comprehensive Defense Strategy
+## Comprehensive Defense Strategy
 
 Implement these headers for a robust defense against XS-Leaks:
 
@@ -192,16 +195,16 @@ app.use((req, res, next) => {
   // Framing protection
   res.setHeader('Content-Security-Policy', "frame-ancestors 'self'");
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  
+
   // Resource isolation
   res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-  
+
   // Cache control for dynamic content
   if (req.path.startsWith('/api/')) {
     res.setHeader('Cache-Control', 'no-store');
   }
-  
+
   next();
 });
 ```

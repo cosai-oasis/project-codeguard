@@ -2,16 +2,24 @@
 
 ## **1. Purpose**
 
-The purpose of this guideline is to define a standardized, comprehensive process for conducting security code reviews of application codebases. This guideline enables AI agents to systematically identify security vulnerabilities, assess risk severity, and provide actionable remediation guidance aligned with industry best practices (OWASP, CWE, NIST, CIS).
+The purpose of this guideline is to define a standardized, comprehensive process for conducting security code reviews of
+application codebases. This guideline enables AI agents to systematically identify security vulnerabilities, assess risk
+severity, and provide actionable remediation guidance aligned with industry best practices (OWASP, CWE, NIST, CIS).
 
-Automated security code review should combine **static analysis**, **contextual code understanding**, and **security rule correlation** to identify vulnerabilities that could lead to data breaches, unauthorized access, or system compromise.
+Automated security code review should combine **static analysis**, **contextual code understanding**, and **security
+rule correlation** to identify vulnerabilities that could lead to data breaches, unauthorized access, or system
+compromise.
 
-**Security rules for code review are sourced from [Project CodeGuard](https://github.com/cosai-oasis/project-codeguard), organized in two primary directories:**
+**Security rules for code review are sourced from [Project CodeGuard](https://github.com/cosai-oasis/project-codeguard),
+organized in two primary directories:**
 
-- **[`sources/rules/core/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core)** - Core security playbooks (foundational rules)
-- **[`sources/rules/owasp/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp)** - OWASP-based best practices
+- **[`sources/rules/core/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core)** - Core
+  security playbooks (foundational rules)
+- **[`sources/rules/owasp/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp)** -
+  OWASP-based best practices
 
-**CRITICAL REQUIREMENT:** AI agents must follow a prioritized rule-loading strategy to optimize context window usage while ensuring comprehensive security coverage.
+**CRITICAL REQUIREMENT:** AI agents must follow a prioritized rule-loading strategy to optimize context window usage
+while ensuring comprehensive security coverage.
 
 **Rule Loading Priority:**
 
@@ -25,7 +33,7 @@ Automated security code review should combine **static analysis**, **contextual 
 
 **SELECTIVE (Load Based on Target Tech Stack):**
 
-2. **OWASP Rules** - Technology-specific security guidance (load only relevant files)
+1. **OWASP Rules** - Technology-specific security guidance (load only relevant files)
 
    ```text
    https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp/*.md
@@ -60,15 +68,17 @@ Automated security code review should combine **static analysis**, **contextual 
 - **Priority 3**: Relevant OWASP rules (selective, ~10-20 files = ~25K tokens)
 - **Total Budget**: ~70K tokens for rules, leaving 900K+ tokens for code analysis
 
-**Agent Context Window:** The agent has 1,000,000 tokens available. The goal is to maximize space for reading the TARGET CODEBASE, not rule files.
+**Agent Context Window:** The agent has 1,000,000 tokens available. The goal is to maximize space for reading the TARGET
+CODEBASE, not rule files.
 
 ---
 
 ## **2. Quick Start for AI Agents**
 
-**WARNING: Read Section 3.2 "Agent Thinking Patterns That Signal Failure" FIRST**
+> WARNING: Read Section 3.2 "Agent Thinking Patterns That Signal Failure" FIRST
 
-If you find yourself thinking "this is too large" or "I'll use a shortcut approach," you are about to fail. Section 3.2 addresses these exact thoughts and provides solutions.
+If you find yourself thinking "this is too large" or "I'll use a shortcut approach," you are about to fail. Section 3.2
+addresses these exact thoughts and provides solutions.
 
 **If you are an AI agent beginning a security code review, follow this sequence:**
 
@@ -114,7 +124,8 @@ Record: "Loaded X core rules + Y relevant OWASP rules"
 
 ### **Step 2: Discover ALL Files in Target Repository** -- **HIGHEST PRIORITY**
 
-**CRITICAL: The target codebase is the most important part of the review. Maximize time and context spent reading YOUR application code, not rule files.**
+**CRITICAL: The target codebase is the most important part of the review. Maximize time and context spent reading YOUR
+application code, not rule files.**
 
 Execute comprehensive file discovery using glob patterns (see Phase 2, Step 1 for complete list). Minimum patterns:
 
@@ -139,7 +150,8 @@ Record total files discovered by category.
 
 ### **Step 3: Categorize Files by Risk**
 
-- **Critical Risk**: Files with auth, password, credential, secret, token, crypto in name/path + all certs + all .env files
+- **Critical Risk**: Files with auth, password, credential, secret, token, crypto in name/path + all certs + all .env
+  files
 - **High Risk**: Files with database, sql, api, admin, permission, upload, exec, command + all IaC
 - **Medium Risk**: Business logic, data processing, dependency manifests
 - **Low Risk**: Tests, docs, static assets
@@ -179,7 +191,8 @@ This document applies to **AI-based security review systems** performing compreh
 - Infrastructure as Code (IaC) templates
 - Build and deployment scripts
 
-The review covers all stages of the secure development lifecycle (SDLC) and addresses vulnerabilities across the OWASP Top 10, CWE Top 25, and industry security requirements.
+The review covers all stages of the secure development lifecycle (SDLC) and addresses vulnerabilities across the OWASP
+Top 10, CWE Top 25, and industry security requirements.
 
 ---
 
@@ -211,44 +224,44 @@ The review covers all stages of the secure development lifecycle (SDLC) and addr
 
 **If you find yourself thinking any of these thoughts, STOP and re-read this guideline:**
 
-**"The guidelines are too extensive to read fully"**
+#### "The guidelines are too extensive to read fully"
 
 - **WRONG**: Thinking all OWASP rules must be read regardless of relevance
 - **CORRECT**: Read ALL core rules, then ONLY relevant OWASP rules for your tech stack
 - **Math**: ~22 core rules + 10 relevant OWASP rules = ~32 files / 20 per batch = 2 parallel batches
 - **Priority**: Save context window space for reading the TARGET CODEBASE (most important)
 
-**"I'll use a minimal approach to show compliance"**
+#### "I'll use a minimal approach to show compliance"
 
 - **WRONG**: Half-measures create false confidence and miss critical vulnerabilities
 - **CORRECT**: Either do a complete review or clearly state you cannot perform the task
 - **Impact**: Incomplete reviews are worse than no review -- they create blind spots
 
-**"I'll focus on key high-risk directories and skip others"**
+#### "I'll focus on key high-risk directories and skip others"
 
 - **WRONG**: You don't know what's high-risk until you've analyzed the code
 - **CORRECT**: Use glob patterns to discover ALL files, categorize by risk, then read 100% of critical/high
 - **Reality**: Vulnerabilities hide in unexpected places -- assumptions create gaps
 
-**"I'll use grep/rg to search for patterns instead of reading files"**
+#### "I'll use grep/rg to search for patterns instead of reading files"
 
 - **WRONG**: Grep finds known patterns but misses context, logic flaws, and novel vulnerabilities
 - **CORRECT**: Use grep for specific targeted searches AFTER comprehensive file reading
 - **Example**: Grep finds `password =`, but misses weak crypto, auth bypass, and injection flaws
 
-**"The repo is too large, I'll process guidelines incrementally"**
+#### "The repo is too large, I'll process guidelines incrementally"
 
 - **WRONG**: You're thinking sequentially (one file at a time) instead of in parallel
 - **CORRECT**: Read 15-20 rules simultaneously, then 15-20 code files simultaneously
 - **Tool Usage**: `read_file(file1) + read_file(file2) + ... + read_file(file20)` in ONE call
 
-**"I'll mark guideline review as pending and move forward"**
+#### "I'll mark guideline review as pending and move forward"
 
 - **WRONG**: Phase 1 (rule loading) is MANDATORY before Phase 2 (code analysis)
 - **CORRECT**: Complete Phase 1 fully, then proceed to Phase 2
 - **Reason**: You can't identify vulnerabilities without knowing what to look for
 
-**"I'll note coverage limits in the final report"**
+#### "I'll note coverage limits in the final report"
 
 - **WRONG**: The guideline specifies minimum coverage requirements (100% critical, 100% high, 80% medium)
 - **CORRECT**: Meet the coverage requirements, or state the review is incomplete/invalid
@@ -290,6 +303,7 @@ Batch 2: read_file("file21.py") + read_file("file22.py") + ... + read_file("file
 **Solution**: You have 1,000,000 tokens with optimized allocation:
 
 **Optimized Token Budget:**
+
 - Core rules: ~22 files x 2KB = ~44KB = ~11K tokens
 - Selective OWASP rules: ~15 files x 2KB = ~30KB = ~7.5K tokens
 - **Target codebase**: ~350 files x 3KB = ~1MB = ~250K tokens -- **PRIORITY**
@@ -368,8 +382,12 @@ Before conducting a security code review, ensure:
 
 2. **Security Rules & Knowledge Base**
    - Access to security scanning rules from Project CodeGuard, organized in two primary directories:
-     - **[`sources/rules/core/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core)** - Core security playbooks following the pattern `codeguard-<tier>-<topic>.md` (e.g., `codeguard-0-authentication-mfa.md`, `codeguard-1-crypto-algorithms.md`)
-     - **[`sources/rules/owasp/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp)** - OWASP-based security guidance (e.g., `codeguard-0-sql-injection-prevention.md`, `codeguard-0-cross-site-scripting-prevention.md`)
+     - **[`sources/rules/core/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core)** - Core
+       security playbooks following the pattern `codeguard-<tier>-<topic>.md` (e.g.,
+       `codeguard-0-authentication-mfa.md`, `codeguard-1-crypto-algorithms.md`)
+     - **[`sources/rules/owasp/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp)** -
+       OWASP-based security guidance (e.g., `codeguard-0-sql-injection-prevention.md`,
+       `codeguard-0-cross-site-scripting-prevention.md`)
    - Understanding of each rule's intent, detection patterns, and remediation guidance
 
 3. **Baseline Understanding**
@@ -389,7 +407,7 @@ The AI agent should follow a systematic, multi-phase approach to ensure comprehe
 
 **CRITICAL:** This phase uses a prioritized approach to maximize context for target code analysis.
 
-**Step 1a: Load Mandatory Core Rules (100% Required)**
+#### Step 1a: Load Mandatory Core Rules (100% Required)
 
 1. **Discover Core Rule Files**
 
@@ -409,9 +427,9 @@ The AI agent should follow a systematic, multi-phase approach to ensure comprehe
    - Batch 2: read_file() calls for files 16-22 (parallel)
    - **DO NOT** skip any core rules
 
-**Step 1b: Identify Target Technology Stack**
+#### Step 1b: Identify Target Technology Stack
 
-3. **Quick Reconnaissance of Target Repository**
+1. **Quick Reconnaissance of Target Repository**
    - Use glob patterns to identify dependency manifests:
 
      ```text
@@ -429,9 +447,9 @@ The AI agent should follow a systematic, multi-phase approach to ensure comprehe
    - List detected languages/frameworks/databases
    - Note if APIs, web frameworks, or specific libraries are present
 
-**Step 1c: Load Relevant OWASP Rules (Selective)**
+#### Step 1c: Load Relevant OWASP Rules (Selective)
 
-4. **Discover All OWASP Rules**
+1. **Discover All OWASP Rules**
 
    Fetch the listing of all `*.md` files from:
 
@@ -439,7 +457,7 @@ The AI agent should follow a systematic, multi-phase approach to ensure comprehe
    https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp
    ```
 
-5. **Read ONLY Technology-Relevant OWASP Rules**
+2. **Read ONLY Technology-Relevant OWASP Rules**
    - Based on Step 1b findings, read ONLY applicable rules:
      - **If Python detected**: Read OWASP rules for Python, Django, Flask, SQL injection, etc.
      - **If JavaScript detected**: Read rules for Node.js, React, Express, XSS, etc.
@@ -449,14 +467,14 @@ The AI agent should follow a systematic, multi-phase approach to ensure comprehe
    - **SKIP** rules for technologies NOT in your target repo
    - Example: If no Ruby code exists, skip Ruby-specific OWASP rules
 
-6. **Verify Rule Loading Completeness**
+3. **Verify Rule Loading Completeness**
    - Confirm 100% of core rules loaded
    - Confirm relevant OWASP rules loaded (selective based on tech stack)
    - Document: "Loaded X core rules + Y relevant OWASP rules"
 
-**Step 1d: Analyze Loaded Rules**
+#### Step 1d: Analyze Loaded Rules
 
-7. **Extract Key Information from Rules**
+1. **Extract Key Information from Rules**
    - For each loaded rule, note:
      - Detection patterns (what to look for)
      - Vulnerability context (why it's dangerous)
@@ -467,11 +485,12 @@ The AI agent should follow a systematic, multi-phase approach to ensure comprehe
 
 ### **Phase 2: Comprehensive Code Analysis** -- **THIS IS THE MOST IMPORTANT PHASE**
 
-**CRITICAL PRIORITY: Reading and analyzing the TARGET CODEBASE is the primary objective. Rules are just tools -- the real security value comes from comprehensively analyzing YOUR application's code.**
+**CRITICAL PRIORITY: Reading and analyzing the TARGET CODEBASE is the primary objective. Rules are just tools -- the
+real security value comes from comprehensively analyzing YOUR application's code.**
 
 Conduct a thorough, systematic examination of the entire codebase:
 
-**STEP 1: Complete File Discovery**
+#### STEP 1: Complete File Discovery
 
 Use `glob_file_search` to discover ALL files in the repository. Execute these searches in parallel:
 
@@ -529,8 +548,10 @@ Use `glob_file_search` to discover ALL files in the repository. Execute these se
    - **Images**: `*.png`, `*.jpg`, `*.jpeg`, `*.gif`, `*.bmp`, `*.ico`, `*.svg`, `*.webp`
    - **Fonts**: `*.woff`, `*.woff2`, `*.ttf`, `*.otf`, `*.eot`
    - **Media**: `*.mp4`, `*.avi`, `*.mov`, `*.mp3`, `*.wav`, `*.pdf`
-   - **Lock Files** (optional skip): `package-lock.json`, `yarn.lock`, `poetry.lock`, `Pipfile.lock` (unless checking dependency versions)
-   - **Dependency Directories**: `node_modules/`, `venv/`, `env/`, `.venv/`, `__pycache__/`, `vendor/`, `target/`, `dist/`, `build/`
+   - **Lock Files** (optional skip): `package-lock.json`, `yarn.lock`, `poetry.lock`, `Pipfile.lock` (unless checking
+     dependency versions)
+   - **Dependency Directories**: `node_modules/`, `venv/`, `env/`, `.venv/`, `__pycache__/`, `vendor/`, `target/`,
+     `dist/`, `build/`
    - **Version Control**: `.git/`, `.svn/`, `.hg/`
 
    **Why Exclude:**
@@ -547,17 +568,19 @@ Use `glob_file_search` to discover ALL files in the repository. Execute these se
    - Scripts (shell, PowerShell, Python scripts)
    - Documentation files if they contain code examples or configurations
 
-**STEP 2: File Categorization by Risk**
+#### STEP 2: File Categorization by Risk
 
 After discovery, categorize ALL files into risk levels:
 
 - **CRITICAL RISK**: Files containing keywords in path or name:
-  - `auth`, `login`, `password`, `credential`, `secret`, `key`, `token`, `oauth`, `jwt`, `session`, `crypto`, `encrypt`, `decrypt`, `sign`, `verify`
+  - `auth`, `login`, `password`, `credential`, `secret`, `key`, `token`, `oauth`, `jwt`, `session`, `crypto`, `encrypt`,
+    `decrypt`, `sign`, `verify`
   - All certificate files (.pem, .crt, .key)
   - All environment configuration files (.env, config.*)
   - Database connection files
 - **HIGH RISK**:
-  - Files with `database`, `db`, `sql`, `query`, `api`, `endpoint`, `route`, `controller`, `admin`, `user`, `permission`, `role`, `access`, `file`, `upload`, `download`, `exec`, `command`, `shell`
+  - Files with `database`, `db`, `sql`, `query`, `api`, `endpoint`, `route`, `controller`, `admin`, `user`,
+    `permission`, `role`, `access`, `file`, `upload`, `download`, `exec`, `command`, `shell`
   - All IaC files (Terraform, CloudFormation, K8s)
   - Docker and container configurations
 - **MEDIUM RISK**:
@@ -569,7 +592,7 @@ After discovery, categorize ALL files into risk levels:
   - Documentation (*.md, docs/)
   - Static assets (images, fonts, etc.)
 
-**STEP 3: Systematic File Reading**
+#### STEP 3: Systematic File Reading
 
 **CRITICAL:** Read files in parallel batches, prioritized by risk level.
 
@@ -590,7 +613,7 @@ After discovery, categorize ALL files into risk levels:
    - Only if they reference high-risk functionality
    - Skip obvious test fixtures and documentation
 
-**STEP 4: Line-by-Line Security Inspection**
+#### STEP 4: Line-by-Line Security Inspection
 
 For each file read:
 
@@ -609,7 +632,7 @@ For each file read:
    - Follow data through validation, processing, storage
    - Identify where untrusted data reaches sensitive operations
 
-**STEP 5: Contextual Analysis**
+#### STEP 5: Contextual Analysis
 
 1. **Trust Boundaries**
    - Identify where untrusted data enters (API endpoints, user input, file uploads)
@@ -662,8 +685,8 @@ Focus security analysis on these high-impact vulnerability classes (ordered by c
 
 ### **5.1. Injection Flaws**
 
-**Priority:** CRITICAL
-**Types:** SQL injection, NoSQL injection, LDAP injection, OS command injection, code injection, XML injection, template injection
+**Priority:** CRITICAL **Types:** SQL injection, NoSQL injection, LDAP injection, OS command injection, code injection,
+XML injection, template injection
 
 **Detection Criteria:**
 
@@ -689,8 +712,8 @@ eval(user_input)  # BAD
 
 ### **5.2. Authentication & Authorization**
 
-**Priority:** CRITICAL
-**Types:** Broken authentication, broken access control, session management issues, privilege escalation
+**Priority:** CRITICAL **Types:** Broken authentication, broken access control, session management issues, privilege
+escalation
 
 **Detection Criteria:**
 
@@ -717,8 +740,7 @@ DB_PASSWORD = "mySecretP@ssw0rd123"  # BAD
 
 ### **5.3. Hardcoded Secrets & Credentials**
 
-**Priority:** CRITICAL
-**Types:** API keys, passwords, tokens, private keys, connection strings, certificates
+**Priority:** CRITICAL **Types:** API keys, passwords, tokens, private keys, connection strings, certificates
 
 **Detection Criteria:**
 
@@ -742,8 +764,8 @@ conn = psycopg2.connect("postgresql://admin:password123@localhost/db")  # BAD
 
 ### **5.4. Cryptographic Misuse**
 
-**Priority:** CRITICAL
-**Types:** Weak algorithms, insecure random number generation, improper key management, insecure TLS configuration
+**Priority:** CRITICAL **Types:** Weak algorithms, insecure random number generation, improper key management, insecure
+TLS configuration
 
 **Detection Criteria:**
 
@@ -772,8 +794,7 @@ cipher = DES.new(key, DES.MODE_ECB)  # BAD - DES is broken
 
 ### **5.5. Server-Side Request Forgery (SSRF)**
 
-**Priority:** HIGH
-**Types:** Internal network access, cloud metadata access, port scanning
+**Priority:** HIGH **Types:** Internal network access, cloud metadata access, port scanning
 
 **Detection Criteria:**
 
@@ -794,8 +815,7 @@ response = requests.get(url)  # BAD - no validation
 
 ### **5.6. Path Traversal & Directory Enumeration**
 
-**Priority:** HIGH
-**Types:** File system access, arbitrary file read/write, directory listing
+**Priority:** HIGH **Types:** File system access, arbitrary file read/write, directory listing
 
 **Detection Criteria:**
 
@@ -816,8 +836,8 @@ with open('/var/www/uploads/' + filename) as f:  # BAD - allows ../../../etc/pas
 
 ### **5.7. Remote Code Execution (RCE)**
 
-**Priority:** CRITICAL
-**Types:** Unsafe deserialization, template injection, command injection, arbitrary code execution
+**Priority:** CRITICAL **Types:** Unsafe deserialization, template injection, command injection, arbitrary code
+execution
 
 **Detection Criteria:**
 
@@ -841,8 +861,7 @@ template = Template(user_input)  # BAD - SSTI
 
 ### **5.8. Cross-Site Scripting (XSS) & CSRF**
 
-**Priority:** HIGH
-**Types:** Reflected XSS, stored XSS, DOM XSS, CSRF, clickjacking
+**Priority:** HIGH **Types:** Reflected XSS, stored XSS, DOM XSS, CSRF, clickjacking
 
 **Detection Criteria:**
 
@@ -871,8 +890,7 @@ def transfer():
 
 ### **5.9. Unsafe Deserialization**
 
-**Priority:** HIGH
-**Types:** Object injection, arbitrary code execution via deserialization
+**Priority:** HIGH **Types:** Object injection, arbitrary code execution via deserialization
 
 **Detection Criteria:**
 
@@ -883,8 +901,8 @@ def transfer():
 
 ### **5.10. Insecure Defaults & Configurations**
 
-**Priority:** MEDIUM
-**Types:** Debug mode in production, overly permissive CORS, weak security headers, exposed admin interfaces
+**Priority:** MEDIUM **Types:** Debug mode in production, overly permissive CORS, weak security headers, exposed admin
+interfaces
 
 **Detection Criteria:**
 
@@ -910,8 +928,7 @@ def after_request(response):
 
 ### **5.11. Supply Chain Vulnerabilities**
 
-**Priority:** MEDIUM to HIGH
-**Types:** Outdated dependencies, known CVEs, dependency confusion, malicious packages
+**Priority:** MEDIUM to HIGH **Types:** Outdated dependencies, known CVEs, dependency confusion, malicious packages
 
 **Detection Criteria:**
 
@@ -974,26 +991,24 @@ Generate a comprehensive markdown report with the following sections:
 
 For each security issue discovered, provide:
 
-| Field | Description |
-|-------|-------------|
-| **Issue Title** | Clear, descriptive name of the vulnerability |
-| **Severity** | Critical / High / Medium / Low / Info |
-| **CWE Reference** | Applicable CWE identifier (e.g., CWE-89) |
-| **Rule Reference** | Specific security rule(s) from Project CodeGuard |
-| **Location** | Exact file path and line range(s) |
-| **Code Snippet** | Relevant vulnerable code (5-10 lines) |
-| **Description** | What the vulnerability is and why it's a problem |
-| **Impact** | Potential security consequences if exploited |
-| **Remediation** | Specific, actionable fix with secure code example |
-| **References** | Links to OWASP, CWE, or authoritative guidance |
+| Field              | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| **Issue Title**    | Clear, descriptive name of the vulnerability      |
+| **Severity**       | Critical / High / Medium / Low / Info             |
+| **CWE Reference**  | Applicable CWE identifier (e.g., CWE-89)          |
+| **Rule Reference** | Specific security rule(s) from Project CodeGuard  |
+| **Location**       | Exact file path and line range(s)                 |
+| **Code Snippet**   | Relevant vulnerable code (5-10 lines)             |
+| **Description**    | What the vulnerability is and why it's a problem  |
+| **Impact**         | Potential security consequences if exploited      |
+| **Remediation**    | Specific, actionable fix with secure code example |
+| **References**     | Links to OWASP, CWE, or authoritative guidance    |
 
 **Example Finding Format:**
 
 #### Finding #1: SQL Injection in User Query Function
 
-**Severity:** CRITICAL
-**CWE:** CWE-89 (SQL Injection)
-**Rule Reference:** `codeguard-0-input-validation-injection.md`
+**Severity:** CRITICAL **CWE:** CWE-89 (SQL Injection) **Rule Reference:** `codeguard-0-input-validation-injection.md`
 
 **Location:** `app/database/queries.py`, lines 45-47
 
@@ -1006,11 +1021,10 @@ def get_user_by_id(user_id):
     return cursor.fetchone()
 ```
 
-**Description:**
-The function constructs a SQL query using string concatenation with user-supplied input (`user_id`) without parameterization or validation. This allows attackers to inject arbitrary SQL commands.
+**Description:** The function constructs a SQL query using string concatenation with user-supplied input (`user_id`)
+without parameterization or validation. This allows attackers to inject arbitrary SQL commands.
 
-**Impact:**
-An attacker can:
+**Impact:** An attacker can:
 
 - Extract sensitive data from any database table
 - Modify or delete database records
@@ -1018,8 +1032,7 @@ An attacker can:
 - Execute administrative operations
 - Potentially gain OS-level access via SQL extensions
 
-**Remediation:**
-Use parameterized queries (prepared statements) instead of string concatenation:
+**Remediation:** Use parameterized queries (prepared statements) instead of string concatenation:
 
 ```python
 def get_user_by_id(user_id):

@@ -6,6 +6,8 @@ languages:
 alwaysApply: false
 ---
 
+# Docker Security Best Practices
+
 ## Docker Security Guidelines
 
 This rule advises on critical Docker container security practices to protect against common risks:
@@ -56,4 +58,6 @@ This rule advises on critical Docker container security practices to protect aga
   - Remove package managers and unnecessary tools from production images.
 
 Summary:  
-Always run containers as non-root users, never expose Docker daemon socket, drop unnecessary capabilities, use secure Dockerfile practices, implement resource limits and read-only filesystems, configure proper networking, manage secrets securely, and scan images for vulnerabilities.
+Always run containers as non-root users, never expose Docker daemon socket, drop unnecessary capabilities, use secure
+Dockerfile practices, implement resource limits and read-only filesystems, configure proper networking, manage secrets
+securely, and scan images for vulnerabilities.
