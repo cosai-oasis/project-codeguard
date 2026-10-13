@@ -50,11 +50,28 @@ Project CodeGuard skills and rules cover essential security domains:
 
 Get started in minutes:
 
-1. **Download the skills and rules** from our [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
-2. **Copy to your project** - Place AI agent and IDE specific skills and rules in your repository
-3. **Start coding** - AI assistants will automatically follow security best practices
+### Optional: Install the CodeGuard skill with APM
 
-- Additional details in the [Get Started →](https://project-codeguard.org/getting-started/)
+[APM (Agent Package Manager)](https://github.com/microsoft/apm) provides an
+optional install path for the CodeGuard Agent Skill across harnesses. Pre-built
+release ZIPs remain the primary way to install glob-scoped security rules.
+
+```bash
+curl -sSL https://aka.ms/apm-unix | sh   # install APM CLI once
+apm init my-project -y
+apm install cosai-oasis/project-codeguard#v1.4.0
+```
+
+See [Installing with APM](docs/apm-install.md) for targets, lockfiles, and team
+commit guidance.
+
+### Recommended: Pre-built release ZIPs
+
+1. **Download the skills and rules** from our [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
+2. **Copy to your project** — place the IDE-specific directory in your repository
+3. **Start coding** — AI assistants will automatically follow security best practices
+
+Additional details in [Get Started →](https://project-codeguard.org/getting-started/)
 
 
 ## CodeGuard MCP Server
@@ -65,7 +82,7 @@ This repository also includes an [MCP](https://modelcontextprotocol.io/) server 
 ## How It Works
 
 1. **Security skills and rules** are written in unified markdown format (`sources/` directory)
-2. **Conversion tools** translate skills and rules into formats for popular coding agents
-3. **Release automation** packages skills and rules into downloadable ZIP files
+2. **Conversion tools** translate skills and rules into formats for popular coding agents; the optional [APM package](docs/apm-install.md) ships the Agent Skill only
+3. **Release automation** packages skills and rules into downloadable ZIP files and an optional APM skill manifest
 4. **AI assistants** reference these skills and rules when generating or reviewing code
 5. **Secure code** is produced automatically without developer intervention

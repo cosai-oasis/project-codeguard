@@ -15,6 +15,7 @@ from collections import defaultdict
 from artifact_targets import SKILL_COPY_HOSTS
 from converter import RuleConverter
 from emit_agents import emit_agents
+from emit_apm import emit_apm
 from formats import (
     CursorFormat,
     WindsurfFormat,
@@ -463,11 +464,12 @@ if __name__ == "__main__":
                 agents_source_dir=PROJECT_ROOT / "sources" / "agents",
                 output_dir=Path(cli_args.output_dir),
             )
+            emit_apm(project_root=PROJECT_ROOT, version=version)
         except (ValueError, FileNotFoundError) as exc:
-            print(f"❌ Agent emission failed: {exc}")
+            print(f"❌ Agent/APM emission failed: {exc}")
             sys.exit(1)
     else:
-        print("ℹ️  Skipped agent emission (no 'core' source).")
+        print("ℹ️  Skipped agent and APM emission (no 'core' source).")
 
     # Sync metadata last so a failed build doesn't leave plugin.json dirty.
     sync_plugin_metadata(version)

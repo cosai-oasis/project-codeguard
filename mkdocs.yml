@@ -46,6 +46,7 @@ edit_uri: edit/main/docs/
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Installing with APM: apm-install.md
   - Choosing an Install Path: install-paths.md
   - CoSAI Personas: personas.md
   - Claude Code Plugin: claude-code-skill-plugin.md
