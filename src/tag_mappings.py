@@ -13,5 +13,6 @@ KNOWN_TAGS = {
     "privacy",
     "secrets",
     "web",
+    "agents",
 }
 
