@@ -1,5 +1,5 @@
 ---
-description: Logging & monitoring (structured telemetry, redaction, integrity, detection & alerting)
+description: Security event logging for structured, safe, reviewable application telemetry
 languages:
 - c
 - javascript
@@ -10,37 +10,72 @@ tags:
 
 rule_id: codeguard-0-logging
 
-## Logging & Monitoring
+## Security Event Logging
 
-Produce structured, privacy‑aware telemetry that supports detection, response, and forensics without exposing secrets.
+Instrument application decision points so security-relevant activity can be detected and investigated. Emit concise, structured events that describe what the application decided and what changed, without exposing secrets or unnecessary personal data. Application code owns event meaning and coverage; this rule does not prescribe logging backends or detection operations.
 
-### What to Log
-- Authn/authz events; admin actions; config changes; sensitive data access; input validation failures; security errors.
-- Include correlation/request IDs, user/session IDs (non‑PII), source IP, user agent, timestamps (UTC, RFC3339).
+### Choose Events at Security Decision Points
 
-### How to Log
-- Structured logs (JSON) with stable field names; avoid free‑form text for critical signals.
-- Sanitize all log inputs to prevent log injection (strip CR/LF/delimiters); validate data from other trust zones.
-- Redact/tokenize secrets and sensitive fields; never log credentials, tokens, recovery codes, or raw session IDs.
-- Ensure integrity: append‑only or WORM storage; tamper detection; centralized aggregation; access controls and retention policies.
+Identify the decisions and state changes that matter to the application's threat model, then emit an event where the authoritative decision is made. Prefer the authentication, authorization, business-service, or state-change layer over a generic request logger: request logs alone cannot say whether access was granted or why an operation changed sensitive state.
 
-### Detection & Alerting
-- Build alerts for auth anomalies (credential stuffing patterns, impossible travel), privilege changes, excessive failures, SSRF indicators, and data exfil patterns.
-- Tune thresholds; provide runbooks; ensure on‑call coverage; test alert flows.
+Record the outcome of relevant events such as:
 
-### Storage & Protection
-- Isolate log storage (separate partition/database); strict file/directory permissions; store outside web‑accessible locations.
-- Synchronize time across systems; use secure protocols for transmission; implement tamper detection and monitoring.
+- Authentication attempts (`authentication.attempt`, with `succeeded` or `denied` outcome), account lockout or recovery, and changes to credentials or MFA.
+- Authorization decisions (`authorization.decision`, with `allowed` or `denied` outcome) for sensitive operations, including the action and resource category.
+- Administrative actions and changes to roles, permissions, security policy, or security-relevant configuration (for example, `security.role_change` or `security.policy_change` with an accurate outcome).
+- Access to, export of, or deletion of sensitive records when that access is security- or compliance-relevant.
+- Security control decisions such as rate limiting, request forgery checks, and validation rejection when they indicate a meaningful attack signal.
 
-### Privacy & Compliance
-- Maintain data inventory and classification; minimize personal data in logs; honor retention and deletion policies.
-- Provide mechanisms to trace and delete user‑linked log data where required by policy.
+Avoid logging every routine request or low-value invalid field. Choose events that answer who or what acted, what was attempted, the decision or outcome, and the affected resource or security setting. Emit success for a state-changing operation only when the change commits; represent denied, failed, and rolled-back outcomes accurately. Do not emit duplicate events at multiple layers for the same decision.
 
-### Implementation Checklist
-- JSON logging enabled; log injection sanitization active; redaction filters active; correlation IDs on all requests.
-- Isolated log storage with tamper detection; centralized log pipeline with integrity protections; retention configured.
-- Security alerts defined and tested; dashboards and reports in place.
+### Use a Stable, Structured Event Shape
 
-### Validation
-- Unit/integration tests assert presence/absence of key fields; redaction unit tests.
-- Periodic audits for secret/PII leakage; tabletop exercises for incident workflows.
+Use the application's structured logger and stable event names and field names. Keep fields typed and machine-readable; use bounded enumerations for `event`, `outcome`, and `reason_code` rather than parsing prose. A useful event usually includes:
+
+- A stable `event` name and `outcome` (for example, `authorization.decision` and `denied`).
+- UTC timestamp, service or component, and environment when available from trusted application context.
+- A server-generated request or interaction identifier for correlation.
+- Actor or principal type and a pseudonymous identifier when needed; include an anonymous or system actor explicitly when applicable.
+- Action and target type, with a stable target identifier only when needed for investigation.
+- A bounded reason code or policy decision category that explains the outcome without exposing internal secrets or sensitive policy details.
+
+Include only fields useful for the event and permitted by the application's data classification. Treat account IDs and stable pseudonyms as potentially personal data. Source IP, user agent, and session context are not automatic fields: include them only when necessary, minimize precision or retention where appropriate, and never use a raw session identifier as a correlation ID.
+
+Example authorization decision:
+
+```json
+{
+  "timestamp": "2026-04-18T14:23:05Z",
+  "event": "authorization.decision",
+  "outcome": "denied",
+  "reason_code": "tenant_scope_mismatch",
+  "actor": { "type": "user", "id": "user_ref_7f2a" },
+  "action": "invoice.read",
+  "target": { "type": "invoice", "id": "inv_4821" },
+  "request_id": "req_01JQ8M2A",
+  "service": "billing-api"
+}
+```
+
+Use the framework's JSON or equivalent structured logging API; do not build records by concatenating untrusted values into log lines. Keep free-form messages supplemental, not the only representation of a security event. Bound or classify values with a defined schema so downstream consumers can review and compare events consistently.
+
+### Protect Logs from Disclosure and Forgery
+
+- Never log passwords, authentication secrets, access or refresh tokens, API keys, recovery codes, raw session identifiers, private keys, or authorization headers.
+- Do not log full request or response bodies, sensitive records, payment data, or raw exception messages by default. Select safe fields and use approved redaction or pseudonymization where identifiers are needed.
+- Treat client-controlled values and exception text as untrusted. Prefer validated enums and identifiers; rely on structured encoders to escape values and reject or bound fields that could create forged records or excessive log volume.
+- Keep application responses separate from security events. A useful internal event must not cause secrets or stack traces to be returned to the caller.
+- Avoid logging the same sensitive value in a second field or in a free-form message after redacting it from the structured fields.
+
+### Review for Missing Events
+
+During implementation and review, build a small event coverage table from the threat model and the changed security-sensitive code:
+
+| Decision or state change | Expected event and outcomes | Authoritative code path | Required safe context |
+| --- | --- | --- | --- |
+| Sensitive resource access | `authorization.decision` (`allowed` / `denied`) | Authorization decision for the operation | Actor, action, target type, outcome, request ID |
+| Role or policy change | `security.role_change` or `security.policy_change` (accurate success or failure outcome) | Administrative update and commit result | Actor, changed setting or target, outcome, request ID |
+
+For each row, trace the allow and deny paths, relevant exceptions, and transaction or rollback paths. Confirm every security-relevant outcome reaches one event at the decision point, successful changes are logged only after commit, and event fields are populated from trusted context. Search the changed code for the decision and state mutation sites and verify each is covered; an event-name search alone cannot prove coverage. Record an explicit reason when a decision is intentionally not logged, such as to avoid high-volume, low-value noise.
+
+When adding or changing event behavior, update the application's logging tests or review evidence to assert required events and outcomes are present and sensitive fields are absent. Validation should inspect both the emitted event shape and the code paths that produce it; a passing redaction check does not establish event coverage.
