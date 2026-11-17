@@ -75,7 +75,7 @@ Identifies languages present in the repository using file extensions and manifes
 
 **2. Load rules**
 
-Lists all `codeguard-*` rule files. Each rule's frontmatter declares applicability via `languages:` or `globs:`. Rules with neither field always apply; rules that don't match the repo's languages are skipped and noted as "not applicable".
+Lists rule files in the host's rule or reference directory. Skill references use short topic filenames and carry the canonical `rule_id:` in their body. Each rule's frontmatter declares applicability via `languages:` or `globs:`. Rules with neither field always apply; rules that don't match the repo's languages are skipped and noted as "not applicable".
 
 **3. Search for violations**
 

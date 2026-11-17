@@ -39,7 +39,7 @@ class TomlAgentHost(TypedDict):
 AGENT_HOSTS: dict[str, AgentHost] = {
     ".claude": {
         "fm": {"skills": ["codeguard"]},
-        "rules_dir": ".claude/skills/codeguard/rules",
+        "rules_dir": ".claude/skills/codeguard/references",
         "rule_ext": ".md",
         "filename": "{agent}.md",
     },
@@ -65,7 +65,7 @@ AGENT_HOSTS: dict[str, AgentHost] = {
                 "websearch": "deny",
             },
         },
-        "rules_dir": ".opencode/skills/codeguard/rules",
+        "rules_dir": ".opencode/skills/codeguard/references",
         "rule_ext": ".md",
         "filename": "{agent}.md",
     },
@@ -80,7 +80,7 @@ AGENT_HOSTS: dict[str, AgentHost] = {
 
 TOML_AGENT_HOSTS: dict[str, TomlAgentHost] = {
     "codex": {
-        "rules_dir": ".agents/skills/codeguard/rules",
+        "rules_dir": ".agents/skills/codeguard/references",
         "rule_ext": ".md",
         "output_dir": ".codex/agents",
     },

@@ -32,17 +32,64 @@ const clean = DOMPurify.sanitize(userHtml, {
 });
 ```
 
+### HTML Sanitizers: Native API and DOMPurify
+- Prefer the native HTML Sanitizer API (`Element.setHTML()`, `Document.parseHTML()`) where supported; it always strips XSS‑unsafe elements and attributes, even if a custom config allows them. Browser support varies, so feature‑detect and fall back to DOMPurify.
+- Never use `setHTMLUnsafe()` / `parseHTMLUnsafe()` with untrusted input.
+- Pin DOMPurify and keep it current; it receives frequent bypass fixes (including mXSS bypasses). Track advisories and update promptly.
+- Never re‑parse sanitized output: do not concatenate it into other HTML strings or re‑insert it via `innerHTML` inside `<script>`, `<xmp>`, `<iframe>`, `<noembed>`, `<noframes>`, or `<noscript>` wrappers (mutation XSS).
+- Avoid `IN_PLACE` mode combined with hooks that remove nodes; use separate DOMPurify instances per trust boundary instead of reusing one with changing configs.
+- When Trusted Types is enforced, request `RETURN_TRUSTED_TYPE: true` so the output is accepted by DOM sinks.
+
+Feature‑detected sanitization:
+```javascript
+if ('setHTML' in Element.prototype) {
+  el.setHTML(userHtml);
+} else {
+  el.innerHTML = DOMPurify.sanitize(userHtml, { RETURN_TRUSTED_TYPE: true });
+}
+```
+
 ### DOM‑based XSS and Dangerous Sinks
 - Prohibit `innerHTML`, `outerHTML`, `document.write` with untrusted data.
 - Prohibit `eval`, `new Function`, string‑based `setTimeout/Interval`.
 - Validate and encode data before assigning to `location` or event handler properties.
 - Use strict mode and explicit variable declarations to prevent global namespace pollution from DOM clobbering.
-- Adopt Trusted Types and enforce strict CSP to prevent DOM sinks exploitation.
+- Adopt Trusted Types and enforce strict CSP to prevent exploitation of DOM sinks.
 
 Trusted Types + CSP:
 ```http
 Content-Security-Policy: script-src 'self' 'nonce-{random}'; object-src 'none'; base-uri 'self'; require-trusted-types-for 'script'
 ```
+
+### Framework Escape Hatches
+Frameworks auto‑escape by default; XSS in modern apps usually enters through APIs that bypass that escaping. Treat each of these as a dangerous sink that requires sanitized or trusted input:
+- React: `dangerouslySetInnerHTML`; `href`/`src`/`action` props bound to user URLs. React 19+ neutralizes `javascript:` URLs, but React ≤18 does not, and no version blocks `data:` or `vbscript:` URLs or direct `window.location` assignments.
+- Vue: `v-html`; dynamic `:href`/`:src` bindings.
+- Angular: `[innerHTML]` (sanitized, but avoid for untrusted rich content), and every `DomSanitizer.bypassSecurityTrust*` call.
+- Svelte: `{@html ...}`.
+- Any framework: refs or direct DOM access (`ref.current.innerHTML`, `this.$el.innerHTML`), server‑side rendered HTML strings, and client‑side template compilation of user input (template injection).
+- Validate user‑supplied URLs against an allow‑list of schemes (`https:`, `mailto:`) before binding them to `href`/`src`.
+
+```jsx
+// Unsafe: data:/vbscript: URLs pass through (and javascript: on React <=18)
+<a href={user.website}>Site</a>
+
+// Safe: allow-list the scheme first
+const safeUrl = (u) => {
+  try { return ['https:', 'mailto:'].includes(new URL(u).protocol) ? u : '#'; }
+  catch { return '#'; }
+};
+<a href={safeUrl(user.website)}>Site</a>
+```
+
+### Client‑side Prototype Pollution
+Attacker‑controlled keys (`__proto__`, `constructor`, `prototype`) reaching a deep merge, clone, or set‑by‑path helper can modify `Object.prototype` and alter behavior app‑wide, often chained with a library "gadget" into DOM XSS or authorization bypass. Common sources: URL query strings and fragments (`?__proto__[x]=1`, `#constructor[prototype][x]=1`), parsed JSON, and `postMessage` data.
+- Use `Map`/`Set` for untrusted dictionary keys; if an object is required, create it with `Object.create(null)`.
+- Never pass untrusted input to recursive merge or set‑by‑path utilities; reject `__proto__`, `constructor`, and `prototype` key segments before writing.
+- Validate parsed data against a strict schema (e.g., Zod, ajv with `additionalProperties: false`) so unexpected keys are dropped.
+- Note that `Object.assign` and spread treat `__proto__` differently; strip it from untrusted objects before copying.
+- Use maintained merge/query‑string libraries patched against prototype pollution; keep them updated.
+- Defense in depth: `Object.freeze(Object.prototype)` where compatible with your dependencies.
 
 ### Content Security Policy (CSP)
 - Prefer nonce‑based or hash‑based CSP over domain allow‑lists.
@@ -81,10 +128,18 @@ SRI example:
 
 ### HTML5, CORS, WebSockets, Storage
 - postMessage: always specify exact target origin; verify `event.origin` on receive.
-- CORS: avoid `*`; allow‑list origins; validate preflights; do not rely on CORS for authz.
+- CORS: avoid `*`; allow‑list origins by exact match (never reflect an unchecked request `Origin` or allow `null`, especially with credentials); validate preflights; do not rely on CORS for authz.
 - WebSockets: require `wss://`, origin checks, auth, message size limits, and safe JSON parsing.
-- Client storage: never store secrets in `localStorage`/`sessionStorage`; prefer HttpOnly cookies; if unavoidable, isolate via Web Workers.
+- Client storage: never store secrets in `localStorage`/`sessionStorage`; prefer HttpOnly cookies; if unavoidable, isolate via Web Workers (this hides the secret from page scripts but does not stop XSS from using it).
 - Links: add `rel="noopener noreferrer"` to external `target=_blank` links.
+
+### Secrets and Source Exposure in Client Bundles
+Everything shipped to the browser is public, including minified bundles, source maps, and build‑time environment variables.
+- Never embed API secrets, private keys, signing keys, or privileged tokens in frontend code. Proxy privileged calls through a backend that holds the credential.
+- Treat client‑exposed env vars as public: `NEXT_PUBLIC_*`, `VITE_*`, `REACT_APP_*`, `EXPO_PUBLIC_*`, `PUBLIC_*` (SvelteKit/Astro). Only put values there that are safe for anyone to read.
+- Publishable keys (e.g., Stripe `pk_*`, Firebase web config) are acceptable only when backed by server‑side restrictions (domain/referrer limits, security rules, scoped permissions).
+- Do not publish source maps to production, or restrict access to them; they expose original source, comments, and internal endpoints.
+- Scan build output for secrets in CI (e.g., gitleaks, trufflehog) and fail the build on findings.
 
 ### HTTP Security Headers (Client Impact)
 - HSTS: enforce HTTPS everywhere.
@@ -98,6 +153,10 @@ SRI example:
 
 ### Implementation Checklist
 - Contextual encoding/sanitization for every sink; no dangerous APIs without guards.
+- `setHTML()` used where supported with DOMPurify fallback; DOMPurify pinned to a current, patched version.
+- Framework escape hatches (`dangerouslySetInnerHTML`, `v-html`, `bypassSecurityTrust*`, `{@html}`) reviewed; user URLs scheme‑allow‑listed.
+- No untrusted keys reach merge/set‑by‑path helpers; `Map` or `Object.create(null)` for untrusted dictionaries.
+- No secrets in client bundles or public env vars; production source maps not publicly served.
 - Strict CSP with nonces and Trusted Types; violations monitored.
 - CSRF tokens on all state‑changing requests; secure cookie attributes.
 - Frame protections set; XS‑Leak mitigations enabled (Fetch Metadata, COOP/COEP/CORP).
@@ -106,6 +165,9 @@ SRI example:
 - Security headers enabled and validated.
 
 ### Test Plan
-- Automated checks for dangerous DOM/API patterns.
+- Automated checks for dangerous DOM/API patterns, including framework escape hatches.
+- Prototype pollution probes via URL query/fragment (`?__proto__[x]=1`, then check `({}).x`); tools like DOM Invader or ppmap.
+- Dependency audit for sanitizer and merge‑utility advisories (DOMPurify, lodash, query‑string parsers).
+- Secret scanning of built bundles and verification that source maps are not publicly accessible.
 - E2E tests for CSRF and clickjacking; CSP report monitoring.
 - Manual probes for XS‑Leaks (frame count, timing, cache) and open redirect behavior.

@@ -29,7 +29,7 @@ Apply secure‑by‑default patterns per platform. Harden configurations, use bu
 - Set `DEFAULT_AUTHENTICATION_CLASSES` and restrictive `DEFAULT_PERMISSION_CLASSES`; never leave `AllowAny` for protected endpoints.
 - Always call `self.check_object_permissions(request, obj)` for object‑level authz.
 - Serializers: explicit `fields=[...]`; avoid `exclude` and `"__all__"`.
-- Throttling: enable rate limits (and/or at gateway/WAF).
+- Throttling: enable rate limits, but DRF throttles are not a security control; enforce brute-force and DoS limits at the gateway/WAF.
 - Disable unsafe HTTP methods where not needed. Avoid raw SQL; use ORM/parameters.
 
 ### Laravel
@@ -46,7 +46,7 @@ Apply secure‑by‑default patterns per platform. Harden configurations, use bu
 - CSRF: use `csrf_token()` and `isCsrfTokenValid()` for manual flows; Forms include tokens by default.
 - SQLi: Doctrine parameterized queries; never concatenate inputs.
 - Command execution: avoid `exec/shell_exec`; use Filesystem component.
-- Uploads: validate with `#[File(...)]`; store outside public; unique names.
+- Uploads: validate with the `File` constraint (`#[Assert\File(...)]`); store outside public; unique names.
 - Directory traversal: validate `realpath`/`basename` and enforce allowed roots.
 - Sessions/security: configure secure cookies and authentication providers/firewalls.
 
@@ -83,7 +83,7 @@ IO.write("| os command here", "foo")
 - Keep runtime and NuGet packages updated; enable SCA in CI.
 - Authz: use `[Authorize]` attributes; perform server‑side checks; prevent IDOR.
 - Authn/sessions: ASP.NET Identity; lockouts; cookies `HttpOnly`/`Secure`; short timeouts.
-- Crypto: use PBKDF2 for passwords, AES‑GCM for encryption; DPAPI for local secrets; TLS 1.2+.
+- Crypto: use Identity's PBKDF2 `PasswordHasher` for passwords (set `PasswordHasherOptions.IterationCount` per [authentication-mfa](codeguard-0-authentication-mfa.md)), AES‑GCM for encryption; a secret store (e.g., DPAPI on Windows, or a managed vault) for local secrets; TLS 1.2+.
 - Injection: parameterize SQL/LDAP; validate with allow‑lists.
 - Config: enforce HTTPS redirects; remove version headers; set CSP/HSTS/X‑Content‑Type‑Options.
 - CSRF: anti‑forgery tokens on state‑changing actions; validate on server.
@@ -91,14 +91,14 @@ IO.write("| os command here", "foo")
 ### Java and JAAS
 - SQL/JPA: use `PreparedStatement`/named parameters; never concatenate input.
 - XSS: allow‑list validation; sanitize output with reputable libs; encode for context.
-- Logging: parameterized logging to prevent log injection.
+- Logging: use parameterized logging, and also neutralize CR/LF and other control characters in user-controlled values or log via a structured (JSON) serializer; placeholders by themselves do not stop log injection.
 - Crypto: AES‑GCM; secure random nonces; never hardcode keys; use KMS/HSM.
 - JAAS: configure `LoginModule` stanzas; implement `initialize/login/commit/abort/logout`; avoid exposing credentials; segregate public/private credentials; manage subject principals properly.
 
 ### Node.js
 - Limit request sizes; validate and sanitize input; escape output.
 - Avoid `eval`, `child_process.exec` with user input; use `helmet` for headers; `hpp` for parameter pollution.
-- Rate limit auth endpoints; monitor event loop health; handle uncaught exceptions cleanly.
+- Rate limit auth endpoints; monitor event loop health; on uncaught exceptions or unhandled rejections, log, clean up, and exit so a supervisor restarts the process; never resume.
 - Cookies: set `secure`, `httpOnly`, `sameSite`; set `NODE_ENV=production`.
 - Keep packages updated; run `npm audit`; use security linters and ReDoS testing.
 

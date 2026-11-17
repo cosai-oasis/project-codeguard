@@ -42,7 +42,7 @@ Agent Skills are model-invoked capabilities that Claude autonomously uses based 
 
 ## How It Works
 
-The CodeGuard skill integrates **23 security rule files** covering all major security domains across languages, frameworks, and technology stacks. The skill follows a simple but powerful workflow:
+The CodeGuard skill integrates **24 security rule files** covering all major security domains across languages, frameworks, and technology stacks. The entrypoint routes to references for the security boundaries touched by the task:
 
 ### Skill Activation
 
@@ -56,33 +56,19 @@ The skill activates automatically when:
 
 ### Security Workflow
 
-When generating or reviewing code, Claude follows this 3-step workflow:
+Claude preserves the requested behavior, scope, and output format while applying secure implementation patterns. It reads every reference whose security boundary the task touches. A task can require several references; tasks that touch no listed boundary keep the core instructions active without loading a reference.
 
-**1. Initial Security Check**
-- Will this handle credentials? → Apply `codeguard-1-hardcoded-credentials`
-- What language is being used? → Identify applicable language-specific rules
-- What security domains are involved? → Load relevant rule files
-
-**2. Code Generation**
-- Apply secure-by-default patterns from relevant CodeGuard rules
-- Add security-relevant comments explaining choices
-
-**3. Security Review**
-- Review against implementation checklists in each rule
-- Verify no hardcoded credentials or secrets
-- Validate that all applicable rules have been followed
-- Explain which security rules were applied
-- Highlight security features implemented
+The response includes a Security Report describing issues remediated, prevented, or mitigated and any residual risk. Exact or machine-readable responses keep their required format; the report goes in a separate supported location or is omitted.
 
 ### Rule Categories
 
-**Always-Apply Rules** (3 critical rules checked on every code operation):
+**Cross-Language Rules** (3 topics loaded when applicable):
 - `codeguard-1-hardcoded-credentials` - Never hardcode secrets or credentials
 - `codeguard-1-crypto-algorithms` - Use modern cryptographic algorithms
 - `codeguard-1-digital-certificates` - Validate certificate security
 
-**Context-Specific Rules** (20 rules applied based on technology and features):
-- Input validation, authentication, authorization, APIs, data storage, privacy, logging, cryptography, file handling, serialization, supply chain, DevOps, cloud, Kubernetes, IaC, frameworks, mobile security, and memory safety (C/C++)
+**Context-Specific Rules** (21 rules applied based on technology and features):
+- Input validation, authentication, authorization, APIs, data storage, privacy, logging, cryptography, file handling, serialization, supply chain, DevOps, cloud, Kubernetes, IaC, frameworks, mobile security, and firmware, and memory safety (C/C++/unsafe Rust/FFI)
 
 ## Usage Examples
 
@@ -163,11 +149,11 @@ For managed environments, administrators can restrict allowed marketplaces with 
 
 ## All Security Rules
 
-The plugin includes 23 comprehensive security rules organized into two categories:
+The plugin includes 24 comprehensive security rules organized into two categories:
 
-### Always-Apply Rules (3 rules)
+### Cross-Language Rules (3 rules)
 
-These critical rules are checked on **every** code operation:
+These rules cover credentials, cryptography, and certificates across languages. The skill loads them when their security boundaries apply:
 
 | Rule | Description |
 |------|-------------|
@@ -175,7 +161,7 @@ These critical rules are checked on **every** code operation:
 | `codeguard-1-crypto-algorithms` | Ban weak algorithms (MD5, SHA-1, DES); use modern alternatives |
 | `codeguard-1-digital-certificates` | Validate certificate expiration, key strength, signature algorithms |
 
-### Context-Specific Rules (20 rules)
+### Context-Specific Rules (21 rules)
 
 These rules apply based on the programming language, framework, or feature being implemented. Claude automatically selects relevant rules based on context:
 
@@ -191,7 +177,8 @@ These rules apply based on the programming language, framework, or feature being
 | **Files & Serialization** | `codeguard-0-file-handling-and-uploads`, `codeguard-0-xml-and-serialization` |
 | **Infrastructure** | `codeguard-0-supply-chain-security`, `codeguard-0-devops-ci-cd-containers`, `codeguard-0-cloud-orchestration-kubernetes`, `codeguard-0-iac-security` |
 | **Platforms** | `codeguard-0-framework-and-languages`, `codeguard-0-mobile-apps` |
-| **Memory Safety (C/C++)** | `codeguard-0-safe-c-functions` |
+| **Firmware** | `codeguard-0-firmware-security` |
+| **Memory Safety (C/C++/Rust/FFI)** | `codeguard-0-write-memory-safe-systems-code` |
 | **MCP Security** | `codeguard-0-mcp-security` |
 
 > **Note:** Each rule file contains detailed guidance, checklists, and examples. Claude references these automatically based on the code context.
@@ -234,11 +221,11 @@ Run `/reload-plugins` after changing plugin state.
 
 ### Using Specific Rule Files
 
-All rule files are available in the `skills/codeguard/rules/` directory within the plugin. You can reference specific rules in prompts:
+All rule files are available in the `skills/codeguard/references/` directory within the plugin. You can reference specific rules in prompts:
 
 ```
 Claude, please review this authentication code against the 
-codeguard-0-authentication-mfa.md guidelines
+references/authentication-mfa.md guidelines
 ```
 
 ### Creating Custom Workflows
@@ -285,8 +272,8 @@ Open `/plugin` and check the **Installed** tab. Look for `codeguard-security@pro
 
 1. **Explicit security review**: Ask Claude to perform comprehensive security analysis
 2. **Reference specific rules**: Mention rule names for focused review (e.g., "Review against codeguard-0-authentication-mfa")
-3. **Check always-apply rules**: Ensure credentials, crypto algorithms, certificates, and C functions are handled securely
-4. **Validate workflow**: Confirm that Claude followed the 3-step security workflow
+3. **Check applicable references**: Ensure credentials, crypto algorithms, certificates, and C functions are handled securely
+4. **Validate workflow**: Confirm that the relevant security boundaries were covered
 
 ### For Teams
 
@@ -309,7 +296,7 @@ uv run python src/convert_to_ide_formats.py
 
 This command:
 - Converts unified rules from `sources/` to IDE-specific formats
-- Generates `skills/` directory with the 23 core security rules (Claude Code plugin)
+- Generates `skills/` directory with the 24 core security rules (Claude Code plugin)
 - Creates `dist/` with all supported agent-specific formats
 
 **Note:** The Claude Code plugin (`skills/`) uses the curated core rules. To build bundles with OWASP supplementary rules for other IDEs, use `--source core owasp`, but this only affects `dist/`, not `skills/`.
@@ -378,11 +365,11 @@ cosai-oasis/project-codeguard/
 ├── skills/                          # Generated — do not edit
 │   └── codeguard/
 │       ├── SKILL.md                 # Regenerated from sources/rules/core/
-│       └── rules/                   # Regenerated rule files
+│       └── references/              # Regenerated topic references
 │
 ├── dist/                            # Release artifacts (not in git)
 │   ├── .claude/                     # Claude Code bundle
-│   │   ├── skills/codeguard/      # SKILL.md + rules/*.md
+│   │   ├── skills/codeguard/      # SKILL.md + references/*.md
 │   │   └── agents/codeguard-reviewer.md # Subagent preloads the skill above
 │   ├── .cursor/                     # Cursor IDE format (+ subagent)
 │   ├── .windsurf/                   # Windsurf IDE format
@@ -390,7 +377,7 @@ cosai-oasis/project-codeguard/
 │   ├── .github/                     # Copilot format (+ custom agent)
 │   ├── .agents/                     # Cross-tool dir (Antigravity + Codex)
 │   │   ├── rules/                      # Google Antigravity rules
-│   │   └── skills/codeguard/      # OpenAI Codex skill (SKILL + rules/)
+│   │   └── skills/codeguard/      # OpenAI Codex skill (SKILL + references/)
 │   ├── .codex/                      # Codex custom agents
 │   │   └── agents/codeguard-reviewer.toml
 │   ├── .opencode/                   # OpenCode bundle (skill + subagent)
@@ -409,7 +396,7 @@ When you write or review code, Claude follows this workflow:
 
 1. **Reads SKILL.md** - Understands when to activate the skill and what workflow to follow
 2. **Initial Security Check** - Identifies which rules apply based on:
-   - Whether credentials are involved (always-apply rule)
+   - Whether credentials are involved
    - The programming language in use
    - The security domains involved (auth, crypto, APIs, etc.)
 3. **Applies Security Rules** - References relevant rule files to:

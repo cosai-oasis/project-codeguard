@@ -26,12 +26,13 @@ Ensure untrusted input is validated and never interpreted as code. Prevent injec
 ### Core Strategy
 - Validate early at trust boundaries with positive (allow‑list) validation and canonicalization.
 - Treat all untrusted input as data, never as code. Use safe APIs that separate code from data.
-- Parameterize queries/commands; escape only as last resort and context‑specific.
+- Never pass untrusted input to `eval`/`exec`/`Function`, expression languages, or template compilation; render user data only as template variables, never as template source (SSTI).
+- Parameterize queries/commands; use context-specific escaping only as a last resort.
 
 ### Validation Playbook
 - Syntactic validation: enforce format, type, ranges, and lengths for each field.
 - Semantic validation: enforce business rules (e.g., start ≤ end date, enum allow‑lists).
-- Normalization: canonicalize encodings before validation; validate complete strings (regex anchors ^$); beware ReDoS.
+- Normalization: canonicalize encodings before validation; validate complete strings (match the whole input, e.g., Python `re.fullmatch`, or `\A...\z` where the regex engine supports it; in some languages `^`/`$` also match at line breaks, so they are not enough on their own); beware ReDoS.
 - Free‑form text: define character class allow‑lists; normalize Unicode; set length bounds.
 - Files: validate by content type (magic), size caps, and safe extensions; server‑generate filenames; scan; store outside web root.
 
@@ -60,18 +61,22 @@ SOQL and SOSL are query/search languages (no SQL-style DDL/DML). Data changes ar
 - For dynamic SOQL, use `Database.queryWithBinds()`; for dynamic SOSL, use `Search.query()`. Allow‑list any dynamic identifiers. If concatenation is unavoidable, escape string values with `String.escapeSingleQuotes()`.
 - Enforce CRUD/FLS with `WITH USER_MODE` or `WITH SECURITY_ENFORCED` (don't combine both). Enforce record sharing with `with sharing` or user-mode operations. Use `Security.stripInaccessible()` before DML.
 
+### NoSQL Injection Prevention
+- Use parameterized queries or the driver's query-building API; never concatenate strings into queries, including in CQL, Cypher, or server-side JavaScript.
+- Treat each user value as a literal: check its type, match it with an explicit equality operator (e.g., MongoDB `{ field: { $eq: value } }`), never pass a request body directly as a filter or update, and allow-list any fields or operators the client may choose. Disable server-side scripting (e.g., `$where`) unless needed.
+
 ### LDAP Injection Prevention
 - Always apply context‑appropriate escaping:
   - DN escaping for `\ # + < > , ; " =` and leading/trailing spaces
   - Filter escaping for `* ( ) \ NUL`
 - Validate inputs with allow‑lists before constructing queries; use libraries that provide DN/filter encoders.
-- Use least‑privilege LDAP connections with bind authentication; avoid anonymous binds for application queries.
+- Use least‑privilege LDAP connections with bind authentication; avoid anonymous binds for application queries. Check that the password is not blank before binding: a username with an empty password is an unauthenticated bind, which some servers accept as a success.
 
 ### OS Command Injection Defense
 - Prefer built‑in APIs instead of shelling out (e.g., library calls over `exec`).
 - If unavoidable, use structured execution that separates command and arguments (e.g., ProcessBuilder). Do not invoke shells.
 - Strictly allow‑list commands and validate arguments with allow‑list regex; exclude metacharacters (& | ; $ > < ` \ ! ' " ( ) and whitespace as needed).
-- Use `--` to delimit arguments where supported to prevent option injection.
+- Use `--` to delimit arguments where supported to reduce option injection; it is not sufficient alone, so still validate each argument.
 
 Example (Java ProcessBuilder):
 ```java
@@ -88,7 +93,7 @@ Process p = pb.start();
 ### Prototype Pollution (JavaScript)
 - Developers should use `new Set()` or `new Map()` instead of using object literals
 - When objects are required, create with `Object.create(null)` or `{ __proto__: null }` to avoid inherited prototypes.
-- Freeze or seal objects that should be immutable; consider Node `--disable-proto=delete` as defense‑in‑depth.
+- Freeze objects and built-in prototypes that should be immutable (sealing alone leaves existing properties writable); consider Node `--disable-proto=delete` as defense‑in‑depth.
 - Avoid unsafe deep merge utilities; validate keys against allow‑lists and block `__proto__`, `constructor`, `prototype`.
 
 ### Caching and Transport

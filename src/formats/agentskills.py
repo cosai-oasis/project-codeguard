@@ -5,6 +5,8 @@ Generates .md files for the Agent Skills standard (agentskills.io).
 This format is used by OpenAI Codex, Claude Code, and other AI coding tools.
 """
 
+import re
+
 from formats.base import BaseFormat, ProcessedRule
 
 
@@ -22,7 +24,7 @@ class AgentSkillsFormat(BaseFormat):
     - Other AI coding tools
 
     The original rule content is preserved and placed in the
-    skills/codeguard/rules/ directory for distribution.
+    skills/codeguard/references/ directory for distribution.
     """
 
     def get_format_name(self) -> str:
@@ -35,7 +37,11 @@ class AgentSkillsFormat(BaseFormat):
 
     def get_output_subpath(self) -> str:
         """Return Agent Skills output subdirectory."""
-        return "skills/codeguard/rules"
+        return "skills/codeguard/references"
+
+    def get_output_filename(self, source_filename: str) -> str:
+        """Use short topic names in skill references; retain rule IDs in the body."""
+        return re.sub(r"^codeguard-[01]-", "", source_filename)
 
     def generate(self, rule: ProcessedRule, globs: str) -> str:
         """

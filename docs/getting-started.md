@@ -175,6 +175,7 @@ Select your AI coding tool and follow the instructions:
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-data-storage.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-devops-ci-cd-containers.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-file-handling-and-uploads.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-firmware-security.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-framework-and-languages.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-iac-security.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-input-validation-injection.md",
@@ -182,7 +183,7 @@ Select your AI coding tool and follow the instructions:
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-mcp-security.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-mobile-apps.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-privacy-data-protection.md",
-            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-safe-c-functions.md",
+            "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-write-memory-safe-systems-code.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-session-management-and-cookies.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-supply-chain-security.md",
             "https://raw.githubusercontent.com/cosai-oasis/project-codeguard/main/sources/rules/core/codeguard-0-xml-and-serialization.md",
@@ -194,7 +195,7 @@ Select your AI coding tool and follow the instructions:
         ```
 
     !!! info "Tradeoff"
-        The skills approach (Option A) uses glob-scoped rules so only relevant rules are loaded based on the files you're editing. Remote instructions load all 23 rules into every session regardless of language. Remote URLs point to the `main` branch -- pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
+        The skills approach (Option A) routes to references for the security boundaries touched by the task. Remote instructions load all 24 rules into every session regardless of language. Remote URLs point to the `main` branch -- pin to a release tag (e.g. `refs/tags/v1.3.0`) if you need a stable, auditable snapshot.
 
         Remote instructions do not install the reviewer agent. Use Option A if
         you want to invoke `@codeguard-reviewer`.
@@ -369,13 +370,15 @@ For GitHub repositories that copy CodeGuard files directly into source control, 
 
 - Cursor (`.cursor/rules/`)
 - Windsurf (`.windsurf/rules/`)
-- Devin (`.devin/skills/codeguard/rules/`)
+- Devin (`.devin/skills/codeguard/references/`)
 - GitHub Copilot (`.github/instructions/`)
 - Antigravity (`.agents/rules/`)
-- OpenCode (`.opencode/skills/codeguard/rules/`)
-- Codex (`.agents/skills/codeguard/rules/`)
-- OpenClaw (`.openclaw/skills/codeguard/rules/`)
-- Hermes (`.hermes/skills/codeguard/rules/`)
+- OpenCode (`.opencode/skills/codeguard/references/`)
+- Codex (`.agents/skills/codeguard/references/`)
+- OpenClaw (`.openclaw/skills/codeguard/references/`)
+- Hermes (`.hermes/skills/codeguard/references/`)
+
+When upgrading an Agent Skill bundle from the earlier `rules/` layout, remove the old `skills/codeguard/rules/` subdirectory and install the new `SKILL.md` with its `references/` directory together.
 
 ### Setup
 

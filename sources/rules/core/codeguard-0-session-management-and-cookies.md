@@ -26,7 +26,7 @@ Implement robust, attack-resistant session handling that prevents fixation, hija
 
 ### Cookie Security Configuration
 - Set `Secure`, `HttpOnly`, `SameSite=Strict` (or `Lax` if necessary for flows) on session cookies.
-- Scope cookies narrowly with `Path` and `Domain`. Avoid cross-subdomain exposure.
+- Scope cookies narrowly: omit `Domain` so they are host-only (`Path` is not a security boundary). Avoid cross-subdomain exposure.
 - Prefer non-persistent session cookies (no Expires/Max-Age). Require full HTTPS; enable HSTS site-wide.
 
 Example header:
@@ -40,7 +40,7 @@ Set-Cookie: id=<opaque>; Secure; HttpOnly; SameSite=Strict; Path=/
 - Use distinct pre‑auth and post‑auth cookie names if framework patterns require it.
 
 ### Expiration and Logout
-- Idle timeout: 2–5 minutes for high-value, 15–30 minutes for lower risk. Absolute timeout: 4–8 hours.
+- Set timeouts by risk. Idle timeout, e.g., 2–5 minutes for high-value, 15–30 minutes for lower risk. Absolute timeout, e.g., 4–8 hours for a workday app.
 - Enforce timeouts server-side. Provide a visible logout button that fully invalidates the server session and clears the cookie client-side.
 
 ### Transport and Caching
@@ -54,11 +54,11 @@ Set-Cookie: id=<opaque>; Secure; HttpOnly; SameSite=Strict; Path=/
   - High risk: require re-authentication; rotate session ID.
   - Medium risk: step-up verification (challenge); rotate session ID.
   - Low risk: log suspicious activity.
-- Always regenerate the session ID when potential hijacking is detected.
+- Always regenerate the session ID and invalidate the old session when potential hijacking is detected.
 
 ### Client-Side Storage
 - Do not store session tokens in `localStorage`/`sessionStorage` due to XSS risk. Prefer HttpOnly cookies for transport.
-- If client-side storage is unavoidable for non-session secrets, isolate via Web Workers and never expose in page context.
+- If client-side storage is unavoidable for non-session secrets, isolate via Web Workers and never expose in page context; this does not stop XSS from using the secret, so prefer keeping it server-side (e.g., a backend-for-frontend).
 
 ### Framework and Multi-Cookie Scenarios
 - Prefer built-in session frameworks; keep them updated and hardened.
@@ -70,7 +70,7 @@ Set-Cookie: id=<opaque>; Secure; HttpOnly; SameSite=Strict; Path=/
 
 ### Implementation Checklist
 1) CSPRNG session IDs (≥64 bits entropy), opaque and server-issued only.
-2) Cookie flags: `Secure`, `HttpOnly`, `SameSite` set; tight domain/path.
+2) Cookie flags: `Secure`, `HttpOnly`, `SameSite` set; host-only scope (no `Domain`).
 3) HTTPS-only with HSTS; no mixed content.
 4) Regenerate IDs on auth and privilege changes; invalidate old IDs.
 5) Idle and absolute timeouts enforced server-side; full logout implemented.

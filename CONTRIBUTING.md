@@ -71,6 +71,8 @@ Generated or derived files include:
 
 The conversion script reads `sources/rules/` and emits IDE-specific rule formats for Cursor, Windsurf, GitHub Copilot, Antigravity, OpenCode, Codex, OpenClaw, Hermes, and Claude. The default conversion source is `sources/rules/core/`; use `--source core owasp` when validating core and OWASP conversion together.
 
+Core rule filenames remain `codeguard-<tier>-<topic>.md`. Agent Skill bundles emit those rules as `references/<topic>.md`, preserving applicability metadata and the canonical `rule_id` in each reference. Author relative links using core rule filenames; the converter rewrites them for each output format. Edit the skill entrypoint and its topic routing in `sources/rules/core/codeguard-SKILLS.md.template`. Every core topic needs a route there. The build injects the project version into `metadata.codeguard-version` and removes the legacy generated `rules/` directory.
+
 ## Validation
 
 Run the validation that matches the files you changed. The commands below include current GitHub Actions checks and recommended local checks.

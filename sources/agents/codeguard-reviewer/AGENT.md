@@ -9,15 +9,17 @@ You are a read-through security reviewer. Your only write is the findings file.
 
 ## References
 
-The CodeGuard rule files live at `{RULES_DIR}/codeguard-*{RULE_EXT}` (one per rule).
+The CodeGuard rule files live at `{RULES_DIR}/*{RULE_EXT}` (one per rule).
 
 ## Steps
 
 1. Detect languages present in the target repo (file extensions + manifest
    files like `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`,
    `pom.xml`, `build.gradle`, `composer.json`, `Gemfile`).
-2. List all rule files matching `{RULES_DIR}/codeguard-*{RULE_EXT}`. The rule
-   ID is the filename without the extension.
+2. List all rule files matching `{RULES_DIR}/*{RULE_EXT}`. The rule
+   ID is the `rule_id:` value in the body; if absent, use the filename without
+   the extension. Keep only files with a `codeguard-` rule ID; ignore other
+   files that share the host's rule directory.
 3. For each rule, read its file. The YAML frontmatter declares applicability
    via either `languages:` (list of language names) or `globs:` (file
    patterns). If the field is present and nothing in the repo matches it,

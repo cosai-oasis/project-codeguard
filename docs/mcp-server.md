@@ -1,6 +1,6 @@
 # CodeGuard MCP Server
 
-The CodeGuard MCP server exposes all 23 core security rules as individual [Model Context Protocol](https://modelcontextprotocol.io/) tools over streamable HTTP. Deploy it once on your infrastructure and every AI coding assistant in your organization gets access to the same curated, versioned security guidance — no per-repo rule bundle installation needed.
+The CodeGuard MCP server exposes all 24 core security rules as individual [Model Context Protocol](https://modelcontextprotocol.io/) tools over streamable HTTP. Deploy it once on your infrastructure and every AI coding assistant in your organization gets access to the same curated, versioned security guidance — no per-repo rule bundle installation needed.
 
 !!! info "When to use the MCP server"
     The MCP server is best suited for teams that already operate MCP infrastructure and want a single, centrally managed source of CodeGuard rules. For most individual users and teams, [rule files or Agent Skills](install-paths.md) are simpler. See [Choosing an Install Path](install-paths.md#mcp-server) for a full comparison.
@@ -82,7 +82,7 @@ The meta skill tells your AI assistant how to use the CodeGuard MCP tools. It li
 
 ## How It Works
 
-The server reads the 23 security rules from `sources/rules/core/` and registers each one as a no-argument MCP tool. When your AI assistant generates or reviews code, it invokes the relevant tools and applies the returned guidance.
+The server reads the 24 security rules from `sources/rules/core/` and registers each one as a no-argument MCP tool. When your AI assistant generates or reviews code, it invokes the relevant tools and applies the returned guidance.
 
 ```
 Developer writes code

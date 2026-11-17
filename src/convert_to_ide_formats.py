@@ -9,8 +9,8 @@ directory.
 
 import re
 import shutil
-from pathlib import Path
 from collections import defaultdict
+from pathlib import Path
 
 from artifact_targets import SKILL_COPY_HOSTS
 from converter import RuleConverter
@@ -72,35 +72,22 @@ def matches_tag_filter(rule_tags: list[str], filter_tags: list[str]) -> bool:
     return all(tag in rule_tags for tag in filter_tags)
 
 
-def _inject_mapping_table(
-    skill_path: Path,
-    mapping: dict[str, list[str]],
-    *,
-    key_header: str,
-    marker_name: str,
-) -> None:
-    """Replace ``<!-- {marker_name}_START/END -->`` in SKILL.md with a sorted
-    two-column markdown table built from ``mapping``. Missing markers raise."""
-    rules_col = "Rule Files to Apply"
-    sep = f"|{'-' * (len(key_header) + 2)}|{'-' * (len(rules_col) + 2)}|"
-    table_lines = [f"| {key_header} | {rules_col} |", sep]
-    for key in sorted(mapping):
-        table_lines.append(f"| {key} | {', '.join(sorted(mapping[key]))} |")
-    table = "\n".join(table_lines)
-
-    start_marker = f"<!-- {marker_name}_START -->"
-    end_marker = f"<!-- {marker_name}_END -->"
-    content = skill_path.read_text(encoding="utf-8")
-    if start_marker not in content or end_marker not in content:
-        raise RuntimeError(
-            f"Invalid SKILL.md: {marker_name} section markers not found in {skill_path}"
-        )
-
-    start_idx = content.index(start_marker)
-    end_idx = content.index(end_marker) + len(end_marker)
-    updated = content[:start_idx] + f"\n\n{table}\n\n" + content[end_idx:]
-    skill_path.write_text(updated, encoding="utf-8")
-    print(f"Updated SKILL.md with {marker_name} table")
+def _render_skill_template(
+    template: str, reference_names: set[str], version: str
+) -> str:
+    """Keep the authored routes for the references included in this bundle."""
+    rendered = re.sub(
+        r'codeguard-version:\s*"[^"]*"',
+        lambda _match: f'codeguard-version: "{version}"',
+        template,
+    )
+    lines = []
+    for line in rendered.splitlines(keepends=True):
+        route = re.match(r"- \[.*?\]\(references/([^/)]+\.md)\):", line)
+        if route and route[1] not in reference_names:
+            continue
+        lines.append(line)
+    return "".join(lines)
 
 
 def convert_rules(
@@ -181,8 +168,7 @@ def convert_rules(
     output_base = Path(output_dir)
 
     results = {"success": [], "errors": [], "skipped": []}
-    language_to_rules = defaultdict(list)
-    tag_to_rules = defaultdict(list)
+    conversions = []
 
     # Process each file
     for md_file in md_files:
@@ -190,39 +176,7 @@ def convert_rules(
             # Convert the file (raises exceptions on error)
             result = converter.convert(md_file)
 
-            # Apply tag filter if specified
-            if filter_tags and not matches_tag_filter(result.tags, filter_tags):
-                results["skipped"].append(result.filename)
-                continue
-
-            # Write each format
-            output_files = []
-            for format_name, output in result.outputs.items():
-                # Construct output path
-                # Agent Skills goes to project root ./skills/
-                # Other formats go to dist/ (or specified output_dir)
-                if format_name == "agentskills":
-                    base_dir = PROJECT_ROOT
-                else:
-                    base_dir = output_base
-
-                output_file = (
-                    base_dir / output.subpath / f"{result.basename}{output.extension}"
-                )
-
-                # Create directory if it doesn't exist and write file
-                output_file.parent.mkdir(parents=True, exist_ok=True)
-                output_file.write_text(output.content, encoding="utf-8")
-                output_files.append(output_file.name)
-
-            print(f"Success: {result.filename} → {', '.join(output_files)}")
-            results["success"].append(result.filename)
-
-            for language in result.languages:
-                language_to_rules[language].append(result.filename)
-
-            for tag in result.tags:
-                tag_to_rules[tag].append(result.filename)
+            conversions.append(result)
 
         except FileNotFoundError as e:
             error_msg = f"{md_file.name}: File not found - {e}"
@@ -239,57 +193,96 @@ def convert_rules(
             print(f"Error: {error_msg}")
             results["errors"].append(error_msg)
 
-    # Summary
-    if filter_tags:
-        print(
-            f"\nResults: {len(results['success'])} success, {len(results['skipped'])} skipped (tag filter), {len(results['errors'])} errors"
-        )
-    else:
-        print(
-            f"\nResults: {len(results['success'])} success, {len(results['errors'])} errors"
-        )
+    selected = []
+    for result in conversions:
+        if filter_tags and not matches_tag_filter(result.tags, filter_tags):
+            results["skipped"].append(result.filename)
+        else:
+            selected.append(result)
 
-    # Generate SKILL.md with language mappings (only if Agent Skills is included)
-    if include_agentskills and language_to_rules:
+    if results["errors"]:
+        return results
+
+    if include_agentskills:
         if not _SKILL_TEMPLATE.exists():
-            raise FileNotFoundError(
-                f"SKILL.md template not found at {_SKILL_TEMPLATE}. "
-                "This file is required for skill-based format generation."
+            raise FileNotFoundError(f"SKILL.md template not found at {_SKILL_TEMPLATE}")
+        template = _SKILL_TEMPLATE.read_text(encoding="utf-8")
+        # Check routing before replacing generated output. Tag-filtered builds
+        # intentionally include only a subset of the authored routes.
+        all_references = {
+            result.outputs["agentskills"].filename for result in conversions
+        }
+        routes = set(re.findall(r"\]\(references/([^/)]+\.md)\)", template))
+        missing_routes = all_references - routes
+        if len(all_references) != len(conversions):
+            raise ValueError("Core rule filenames produce duplicate reference names")
+        if missing_routes:
+            raise ValueError(
+                f"SKILL.md template has no routes for: {sorted(missing_routes)}"
+            )
+        if not filter_tags and path.is_dir() and routes != all_references:
+            raise ValueError(
+                "SKILL.md template references missing rules: "
+                f"{sorted(routes - all_references)}"
             )
 
         output_skill_dir = PROJECT_ROOT / "skills" / "codeguard"
-        output_skill_dir.mkdir(parents=True, exist_ok=True)
+        # Remove both layouts so renamed/deleted rules and v1 files cannot
+        # linger alongside regenerated references (including an empty filter).
+        skill_dirs = [output_skill_dir] + [
+            output_base / host / "skills" / "codeguard" for host in SKILL_COPY_HOSTS
+        ]
+        for skill_dir in skill_dirs:
+            for layout in ("rules", "references"):
+                generated_dir = skill_dir / layout
+                if generated_dir.exists():
+                    shutil.rmtree(generated_dir)
+            (skill_dir / "SKILL.md").unlink(missing_ok=True)
+
+    excluded_by_format = {
+        handler.get_format_name(): {
+            item.outputs[handler.get_format_name()].filename
+            for item in conversions if item not in selected
+        }
+        for handler in all_formats
+    }
+    for result in selected:
+        output_files = []
+        for format_name, output in result.outputs.items():
+            base_dir = PROJECT_ROOT if format_name == "agentskills" else output_base
+            output_file = base_dir / output.subpath / output.filename
+            # When a tag excludes a linked rule, preserve its label as plain
+            # text instead of emitting a link to a file absent from the bundle.
+            excluded = excluded_by_format[format_name]
+            content = re.sub(
+                r"\[([^\]]+)\]\(([^/):#]+)(?:#[^)]*)?\)",
+                lambda match: match[1] if match[2] in excluded else match[0],
+                output.content,
+            )
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            output_file.write_text(content, encoding="utf-8")
+            output_files.append(output_file.name)
+        print(f"Success: {result.filename} → {', '.join(output_files)}")
+        results["success"].append(result.filename)
+
+    if include_agentskills and selected:
+        reference_names = {
+            result.outputs["agentskills"].filename for result in selected
+        }
         output_skill_path = output_skill_dir / "SKILL.md"
-
-        # Callable repl so re.sub treats the version as literal (no \1 backrefs).
-        template_content = _SKILL_TEMPLATE.read_text(encoding="utf-8")
-        replacement = f'codeguard-version: "{version}"'
-        template_content = re.sub(
-            r'codeguard-version:\s*"[^"]*"',
-            lambda _match: replacement,
-            template_content,
+        output_skill_path.write_text(
+            _render_skill_template(template, reference_names, version), encoding="utf-8"
         )
-        output_skill_path.write_text(template_content, encoding="utf-8")
-
-        _inject_mapping_table(
-            output_skill_path,
-            language_to_rules,
-            key_header="Language",
-            marker_name="LANGUAGE_MAPPINGS",
-        )
-        _inject_mapping_table(
-            output_skill_path,
-            tag_to_rules,
-            key_header="Security Context (Tag)",
-            marker_name="TAG_MAPPINGS",
-        )
-
         for host_dir in SKILL_COPY_HOSTS:
-            host_skill_dir = Path(output_dir) / host_dir / "skills" / "codeguard"
-            host_skill_dir.mkdir(parents=True, exist_ok=True)
-            dest = host_skill_dir / "SKILL.md"
+            dest = output_base / host_dir / "skills" / "codeguard" / "SKILL.md"
+            dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(output_skill_path, dest)
             print(f"Copied SKILL.md to {dest}")
+
+    print(
+        f"\nResults: {len(results['success'])} success, "
+        f"{len(results['skipped'])} skipped, {len(results['errors'])} errors"
+    )
 
     return results
 
@@ -400,12 +393,6 @@ if __name__ == "__main__":
         shutil.rmtree(output_path)
         print(f"✅ Cleaned {cli_args.output_dir}/ directory")
 
-    if has_core:
-        skills_rules_dir = PROJECT_ROOT / "skills" / "codeguard" / "rules"
-        if skills_rules_dir.exists():
-            shutil.rmtree(skills_rules_dir)
-            print(f"✅ Cleaned skills/ directory")
-
     # Print processing summary
     if len(source_paths) > 1:
         sources_list = ", ".join(p.name for p in source_paths)
@@ -416,6 +403,7 @@ if __name__ == "__main__":
 
     # Convert all sources
     aggregated = {"success": [], "errors": [], "skipped": []}
+    core_has_rules = False
     # Parse comma-separated tags and normalize to lowercase
     filter_tags = None
     if cli_args.tags:
@@ -446,6 +434,8 @@ if __name__ == "__main__":
             sys.exit(1)
 
         aggregated["success"].extend(results["success"])
+        if is_core:
+            core_has_rules = bool(results["success"])
         aggregated["errors"].extend(results["errors"])
         if "skipped" in results:
             aggregated["skipped"].extend(results["skipped"])
@@ -457,7 +447,7 @@ if __name__ == "__main__":
 
     # Agents read rules from each host's existing rules dir, which only
     # the core build populates for skill-bundle hosts.
-    if has_core:
+    if core_has_rules:
         try:
             emit_agents(
                 agents_source_dir=PROJECT_ROOT / "sources" / "agents",
@@ -467,7 +457,7 @@ if __name__ == "__main__":
             print(f"❌ Agent emission failed: {exc}")
             sys.exit(1)
     else:
-        print("ℹ️  Skipped agent emission (no 'core' source).")
+        print("ℹ️  Skipped agent emission (no core rules selected).")
 
     # Sync metadata last so a failed build doesn't leave plugin.json dirty.
     sync_plugin_metadata(version)

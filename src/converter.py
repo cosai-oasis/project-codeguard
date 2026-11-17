@@ -4,7 +4,8 @@ Rule Converter
 Converts unified markdown rules to multiple IDE formats.
 Handles parsing, validation, and format generation.
 """
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from language_mappings import languages_to_globs
@@ -23,12 +24,14 @@ class FormatOutput:
     Attributes:
         content: The fully formatted content with frontmatter
         extension: File extension including dot (e.g., '.mdc')
-        subpath: Subdirectory path (e.g., '.cursor/rules', 'skills/codeguard/rules')
+        subpath: Subdirectory path (e.g., '.cursor/rules', 'skills/codeguard/references')
+        filename: Emitted filename (may differ from the source rule filename)
     """
 
     content: str
     extension: str
     subpath: str
+    filename: str
 
 
 @dataclass
@@ -50,7 +53,8 @@ class ConversionResult:
                 "cursor": FormatOutput(
                     content="---\\n...\\n---\\n\\nContent",
                     extension=".mdc",
-                    subpath=".cursor/rules"
+                    subpath=".cursor/rules",
+                    filename="my-rule.mdc"
                 )
             },
             languages=["python", "javascript"],
@@ -236,10 +240,22 @@ class RuleConverter:
         outputs = {}
         for format_handler in self.formats:
             format_name = format_handler.get_format_name()
+            # Core sources link to canonical rule filenames. Each host needs
+            # links to its own filenames, including short skill references and
+            # Cursor/Copilot extensions. Leave external and other links alone.
+            content = re.sub(
+                r"\]\((codeguard-[01]-[a-z0-9-]+\.md)(#[^)]*)?\)",
+                lambda match: (
+                    "](" + format_handler.get_output_filename(match[1])
+                    + (match[2] or "") + ")"
+                ),
+                rule.content,
+            )
             outputs[format_name] = FormatOutput(
-                content=format_handler.generate(rule, globs),
+                content=format_handler.generate(replace(rule, content=content), globs),
                 extension=format_handler.get_file_extension(),
                 subpath=format_handler.get_output_subpath(),
+                filename=format_handler.get_output_filename(filename),
             )
 
         return ConversionResult(

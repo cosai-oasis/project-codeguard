@@ -8,6 +8,7 @@ Defines the interface that all format implementations must follow.
 import yaml
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -52,6 +53,10 @@ class BaseFormat(ABC):
         """
         self.version = version
 
+    def get_output_filename(self, source_filename: str) -> str:
+        """Return the emitted filename for a unified rule source."""
+        return Path(source_filename).stem + self.get_file_extension()
+
     @abstractmethod
     def get_format_name(self) -> str:
         """
@@ -78,7 +83,7 @@ class BaseFormat(ABC):
         Return the subdirectory path for this format.
 
         Returns:
-            Subdirectory path (e.g., '.cursor/rules', 'skills/codeguard/rules')
+            Subdirectory path (e.g., '.cursor/rules', 'skills/codeguard/references')
         """
         pass
 

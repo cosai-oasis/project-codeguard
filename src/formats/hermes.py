@@ -7,7 +7,7 @@ generated identically to Agent Skills via inheritance.
 
 Hermes discovers skills by scanning for SKILL.md files in directory structures
 like .hermes/skills/<skill-name>/SKILL.md. Individual rule files live in a
-rules/ subdirectory that the skill tool discovers at runtime.
+references/ subdirectory that the skill tool discovers at runtime.
 
 See: https://github.com/NousResearch/hermes-agent
 """
@@ -26,11 +26,11 @@ class HermesFormat(AgentSkillsFormat):
 
         .hermes/skills/<skill-name>/SKILL.md
 
-    Individual rule files are placed in a rules/ subdirectory:
+    Individual rule files are placed in a references/ subdirectory:
 
-        .hermes/skills/<skill-name>/rules/<rule>.md
+        .hermes/skills/<skill-name>/references/<rule>.md
 
-    The rule files preserve the original YAML frontmatter (description,
+    The reference files preserve the original YAML frontmatter (description,
     languages, alwaysApply) so rules remain complete and can be referenced
     by the AI coding agent.
 
@@ -42,4 +42,4 @@ class HermesFormat(AgentSkillsFormat):
         return "hermes"
 
     def get_output_subpath(self) -> str:
-        return ".hermes/skills/codeguard/rules"
+        return ".hermes/skills/codeguard/references"

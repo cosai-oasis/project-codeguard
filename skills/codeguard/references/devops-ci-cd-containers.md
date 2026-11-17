@@ -21,6 +21,8 @@ Secure the build, packaging, and deployment supply chain: protect pipelines and 
 - Repos: protected branches; mandatory reviews; signed commits.
 - Secrets: never hardcode; fetch at runtime from vault/KMS; mask in logs.
 - Least privilege: ephemeral, isolated runners with minimal permissions.
+- Untrusted input: never interpolate event data an outsider controls (PR titles, branch names, issue or comment bodies) directly into shell steps, e.g., `${{ github.event.* }}` in a `run:` block; pass it through environment variables. Never run untrusted pull-request code with secrets or write tokens (e.g., `pull_request_target` checking out the PR head).
+- Third-party actions and plugins: pin to an immutable reference (e.g., a full commit SHA), not a mutable tag; default pipeline tokens to read-only.
 - Security gates in CI: SAST, SCA, DAST, IaC scanning; block on criticals.
 - Dependencies: pin via lockfiles; verify integrity; use private registries.
 - Sign everything: commits and artifacts (containers/jars) and verify prior to deploy; adopt SLSA provenance.
@@ -35,7 +37,7 @@ Secure the build, packaging, and deployment supply chain: protect pipelines and 
 - Filesystems: read‑only root, tmpfs for temp write; resource limits (CPU/mem).
 - Networks: avoid host network; define custom networks; limit exposed ports.
 - Images: minimal base (distroless/alpine), pin tags and digests; remove package managers and tools from final image; add `HEALTHCHECK`.
-- Secrets: Docker/Kubernetes secrets; never in layers/env; mount via runtime secrets.
+- Secrets: Docker/Kubernetes secrets (Kubernetes Secrets are only base64-encoded unless encryption at rest is enabled); never in layers/env; mount via runtime secrets.
 - Scanning: scan images on build and admission; block high‑severity vulns.
 
 ### Node.js in Containers
@@ -51,7 +53,7 @@ Secure the build, packaging, and deployment supply chain: protect pipelines and 
 - Process: prepare tooling in advance; analyze CVEs; implement patches in log‑only first, then enforce; track and retire after code fix.
 
 ### C/C++ Toolchain Hardening (when applicable)
-- Compiler: `-Wall -Wextra -Wconversion`, `-fstack-protector-all`, PIE (`-fPIE`/`-pie`), `_FORTIFY_SOURCE=2`, CFI (`-fsanitize=cfi` with LTO).
+- Compiler: `-Wall -Wextra -Wconversion`, `-fstack-protector-all`, PIE (`-fPIE`/`-pie`), `_FORTIFY_SOURCE=2` (requires optimization, `-O1` or higher), CFI where the toolchain supports it (e.g., Clang `-fsanitize=cfi` with LTO).
 - Linker: RELRO/now, noexecstack, NX/DEP and ASLR.
 - Debug vs Release: enable sanitizers in debug; enable hardening flags in release; assert in debug only.
 - CI checks: verify flags (`checksec`) and fail builds if protections missing.

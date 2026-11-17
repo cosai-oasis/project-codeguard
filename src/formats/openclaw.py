@@ -7,7 +7,7 @@ generated identically to Agent Skills via inheritance.
 
 OpenClaw discovers skills by scanning for SKILL.md files in directory structures
 like .openclaw/skills/<skill-name>/SKILL.md. Individual rule files live in a
-rules/ subdirectory that the skill tool discovers at runtime.
+references/ subdirectory that the skill tool discovers at runtime.
 
 See: https://github.com/openclaw/openclaw
 """
@@ -25,11 +25,11 @@ class OpenClawFormat(AgentSkillsFormat):
 
         .openclaw/skills/<skill-name>/SKILL.md
 
-    Individual rule files are placed in a rules/ subdirectory:
+    Individual rule files are placed in a references/ subdirectory:
 
-        .openclaw/skills/<skill-name>/rules/<rule>.md
+        .openclaw/skills/<skill-name>/references/<rule>.md
 
-    The rule files preserve the original YAML frontmatter (description,
+    The reference files preserve the original YAML frontmatter (description,
     languages, alwaysApply) so rules remain complete and can be referenced
     by the AI coding agent.
 
@@ -41,4 +41,4 @@ class OpenClawFormat(AgentSkillsFormat):
         return "openclaw"
 
     def get_output_subpath(self) -> str:
-        return ".openclaw/skills/codeguard/rules"
+        return ".openclaw/skills/codeguard/references"

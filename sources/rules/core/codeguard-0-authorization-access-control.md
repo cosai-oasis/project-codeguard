@@ -32,6 +32,7 @@ Enforce least privilege and precise access decisions for every request and resou
 
 ### Preventing IDOR
 - Never trust user-supplied identifiers alone. Always verify access to each object instance.
+- Take the user's identity from the authenticated session or token, never from request parameters or bodies; if a request names a tenant, verify the user belongs to that tenant.
 - Resolve resources through user-scoped queries or server-side lookups. Example: `currentUser.projects.find(id)` instead of `Project.find(id)`.
 - Use non-enumerable identifiers (UUIDs/random) as defense-in-depth. Do not rely on obscurity alone.
 

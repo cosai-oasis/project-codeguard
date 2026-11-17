@@ -19,14 +19,15 @@ Control third‑party risk across ecosystems, from selection and pinning to prov
 
 ### Package Hygiene (npm focus applicable to others)
 - Regularly audit (`npm audit`, ecosystem SCA) and patch; enforce SLAs by severity.
-- Use deterministic builds: `npm ci` (not `npm install`) in CI/CD; maintain lockfile consistency.
+- Use deterministic builds: lockfile-enforcing installs (e.g., `npm ci`, not `npm install`) in CI/CD; maintain lockfile consistency.
 - Avoid install scripts that execute on install when possible; review for risk.
-- Use `.npmrc` to scope private registries; avoid wildcard registries; enable integrity verification.
-- Enable account 2FA for publishing
+- Scope private registries explicitly (e.g., `.npmrc`); avoid wildcard registries; enable integrity verification.
+- Enable account 2FA for publishing; prefer trusted publishing (OIDC) from CI over long-lived publish tokens.
 
 ### Development Practices
 - Minimize dependency footprint; remove unused packages; prefer stdlib/first‑party for trivial tasks.
 - Protect against typosquatting and protestware: pin maintainers, monitor releases, and use provenance checks.
+- Before adding a dependency, verify it is the intended, maintained package in your approved registry; AI-suggested package names are sometimes hallucinated and then registered by attackers.
 - Hermetic builds: no network in compile/packaging stages unless required; cache with authenticity checks.
 
 ### CI/CD Integration

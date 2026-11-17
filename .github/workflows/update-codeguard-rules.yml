@@ -37,48 +37,51 @@ jobs:
           declare -A FORMATS=(
             [".cursor/rules"]="codeguard-cursor.zip"
             [".windsurf/rules"]="codeguard-windsurf.zip"
-            [".devin/skills/codeguard/rules"]="codeguard-devin.zip"
+            [".devin/skills/codeguard/references"]="codeguard-devin.zip"
             [".github/instructions"]="codeguard-copilot.zip"
             [".agents/rules"]="codeguard-antigravity.zip"
-            [".opencode/skills/codeguard/rules"]="codeguard-opencode.zip"
-            [".agents/skills/codeguard/rules"]="codeguard-codex.zip"
-            [".openclaw/skills/codeguard/rules"]="codeguard-openclaw.zip"
-            [".hermes/skills/codeguard/rules"]="codeguard-hermes.zip"
+            [".opencode/skills/codeguard/references"]="codeguard-opencode.zip"
+            [".agents/skills/codeguard/references"]="codeguard-codex.zip"
+            [".openclaw/skills/codeguard/references"]="codeguard-openclaw.zip"
+            [".hermes/skills/codeguard/references"]="codeguard-hermes.zip"
           )
 
           # File patterns for each format
           declare -A PATTERNS=(
             [".cursor/rules"]="codeguard-*.mdc"
             [".windsurf/rules"]="codeguard-*.md"
-            [".devin/skills/codeguard/rules"]="codeguard-*.md"
+            [".devin/skills/codeguard/references"]="*.md"
             [".github/instructions"]="codeguard-*.instructions.md"
             [".agents/rules"]="codeguard-*.md"
-            [".opencode/skills/codeguard/rules"]="codeguard-*.md"
-            [".agents/skills/codeguard/rules"]="codeguard-*.md"
-            [".openclaw/skills/codeguard/rules"]="codeguard-*.md"
-            [".hermes/skills/codeguard/rules"]="codeguard-*.md"
+            [".opencode/skills/codeguard/references"]="*.md"
+            [".agents/skills/codeguard/references"]="*.md"
+            [".openclaw/skills/codeguard/references"]="*.md"
+            [".hermes/skills/codeguard/references"]="*.md"
           )
 
-          # Agent Skill rule directories -> their parent skill directories.
+          # Agent Skill reference directories -> their parent skill directories.
           # Keep each bundle's SKILL.md synchronized with its generated rules.
           declare -A SKILL_ROOTS=(
-            [".devin/skills/codeguard/rules"]=".devin/skills/codeguard"
-            [".opencode/skills/codeguard/rules"]=".opencode/skills/codeguard"
-            [".agents/skills/codeguard/rules"]=".agents/skills/codeguard"
-            [".openclaw/skills/codeguard/rules"]=".openclaw/skills/codeguard"
-            [".hermes/skills/codeguard/rules"]=".hermes/skills/codeguard"
+            [".devin/skills/codeguard/references"]=".devin/skills/codeguard"
+            [".opencode/skills/codeguard/references"]=".opencode/skills/codeguard"
+            [".agents/skills/codeguard/references"]=".agents/skills/codeguard"
+            [".openclaw/skills/codeguard/references"]=".openclaw/skills/codeguard"
+            [".hermes/skills/codeguard/references"]=".hermes/skills/codeguard"
           )
 
           # Legacy paths: warn so users migrate instead of silently going stale.
           declare -A LEGACY_PATHS=(
             [".agent/rules"]="Antigravity (moved to .agents/rules/)"
-            [".codex/skills/software-security/rules"]="Codex (moved to .agents/skills/codeguard/rules/)"
-            [".codex/skills/codeguard/rules"]="Codex (moved to .agents/skills/codeguard/rules/)"
+            [".codex/skills/software-security/rules"]="Codex (moved to .agents/skills/codeguard/references/)"
+            [".codex/skills/codeguard/rules"]="Codex (moved to .agents/skills/codeguard/references/)"
           )
+          for skill_host in .devin .opencode .agents .openclaw .hermes; do
+            LEGACY_PATHS["$skill_host/skills/codeguard/rules"]="Agent Skill (moved to $skill_host/skills/codeguard/references/)"
+          done
           LEGACY_FOUND=""
           for legacy_dir in "${!LEGACY_PATHS[@]}"; do
             if [ -d "$legacy_dir" ] && ls "$legacy_dir"/codeguard-*.md* 1>/dev/null 2>&1; then
-              echo "::warning::Legacy CodeGuard path detected at $legacy_dir (${LEGACY_PATHS[$legacy_dir]}). This path is no longer auto-updated — please migrate by moving its contents to the new location and deleting the old directory."
+              echo "::warning::Legacy CodeGuard path detected at $legacy_dir (${LEGACY_PATHS[$legacy_dir]}). This path is no longer auto-updated — please install the latest bundle at the new location and delete the old directory."
               LEGACY_FOUND="yes"
             fi
           done
@@ -103,14 +106,14 @@ jobs:
             exit 0
           fi
 
-          # Agent Skill rules do not carry a version field, so read their
+          # Agent Skill references do not carry a version field, so read their
           # version from SKILL.md. Update when detected formats disagree.
           CURRENT_VERSION=""
           for dir in $DETECTED_DIRS; do
             dir_version=""
             skill_root="${SKILL_ROOTS[$dir]:-}"
             if [ -n "$skill_root" ] && [ -f "$skill_root/SKILL.md" ]; then
-              dir_version=$(sed -n 's/^codeguard-version: *"\([^"]*\)"/\1/p' "$skill_root/SKILL.md" | head -1)
+              dir_version=$(sed -n 's/^[[:space:]]*codeguard-version: *"\([^"]*\)"/\1/p' "$skill_root/SKILL.md" | head -1)
             else
               pattern="${PATTERNS[$dir]}"
               dir_version=$(grep -h "^version:" "$dir"/$pattern 2>/dev/null | head -1 | awk '{print $2}') || true

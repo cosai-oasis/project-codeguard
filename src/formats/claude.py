@@ -1,6 +1,6 @@
 """Claude Code bundle format.
 
-Emits rule files under ``.claude/skills/codeguard/rules/`` so the
+Emits rule files under ``.claude/skills/codeguard/references/`` so the
 release bundle (``codeguard-claude.zip``) ships the full skill alongside
 the ``codeguard-reviewer`` subagent — parity with the per-host bundles
 for OpenCode, Codex, OpenClaw, and Hermes. The Claude Code plugin remains
@@ -17,4 +17,4 @@ class ClaudeFormat(AgentSkillsFormat):
         return "claude"
 
     def get_output_subpath(self) -> str:
-        return ".claude/skills/codeguard/rules"
+        return ".claude/skills/codeguard/references"

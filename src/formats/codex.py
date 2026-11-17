@@ -23,9 +23,9 @@ class CodexFormat(AgentSkillsFormat):
     discovers skills by scanning ``.agents/skills/<skill-name>/SKILL.md``:
 
         .agents/skills/<skill-name>/SKILL.md
-        .agents/skills/<skill-name>/rules/<rule>.md
+        .agents/skills/<skill-name>/references/<rule>.md
 
-    The rule files preserve the original YAML frontmatter (description,
+    The reference files preserve the original YAML frontmatter (description,
     languages, alwaysApply) so rules remain complete and can be referenced
     by the AI coding agent.
 
@@ -37,4 +37,4 @@ class CodexFormat(AgentSkillsFormat):
         return "codex"
 
     def get_output_subpath(self) -> str:
-        return ".agents/skills/codeguard/rules"
+        return ".agents/skills/codeguard/references"

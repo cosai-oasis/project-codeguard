@@ -20,4 +20,4 @@ class DevinFormat(AgentSkillsFormat):
 
     def get_output_subpath(self) -> str:
         """Return Devin's product-specific Agent Skills directory."""
-        return ".devin/skills/codeguard/rules"
+        return ".devin/skills/codeguard/references"

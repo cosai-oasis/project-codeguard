@@ -13,9 +13,9 @@ class TestRuleProcessor:
     def setup_method(self):
         self.processor = RuleProcessor(RULES_DIR)
 
-    def test_loads_all_23_rules(self):
+    def test_loads_all_24_rules(self):
         rules = self.processor.get_all_rules()
-        assert len(rules) == 23
+        assert len(rules) == 24
 
     def test_every_rule_has_id_and_description(self):
         for rule in self.processor.get_all_rules():
@@ -52,7 +52,7 @@ class TestRuleProcessor:
     def test_codeguard_0_rules_are_context_select(self):
         rules = self.processor.get_all_rules()
         cg0 = [r for r in rules if r.rule_id.startswith("codeguard-0")]
-        assert len(cg0) == 20
+        assert len(cg0) == 21
         for rule in cg0:
             assert not rule.always_apply, f"{rule.rule_id} should not be always_apply"
 

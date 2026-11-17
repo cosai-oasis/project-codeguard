@@ -29,7 +29,7 @@ Build a resilient, user-friendly authentication system that resists credential a
 - Support password managers: `<input type="password">`, allow paste, no JS blocks.
 
 ### Password Policy
-- Accept passphrases and full Unicode; minimum 8 characters; avoid composition rules. Set only a reasonable maximum length (64+).
+- Accept passphrases and full Unicode; minimum 8 characters with MFA (15 if the only factor); avoid composition rules. Set only a reasonable maximum length (64+).
 - Check new passwords against breach corpora (e.g., k‑anonymity APIs); reject breached/common passwords.
 
 ### Password Storage (Hashing)
@@ -38,7 +38,7 @@ Build a resilient, user-friendly authentication system that resists credential a
   - Argon2id: m=19–46 MiB, t=2–1, p=1 (or equivalent security trade‑offs)
   - scrypt: N=2^17, r=8, p=1 (or equivalent)
   - bcrypt (legacy only): cost ≥10, be aware of 72‑byte input limit
-  - PBKDF2 (FIPS): PBKDF2‑HMAC‑SHA‑256 ≥600k, or SHA‑1 ≥1.3M
+  - PBKDF2 (FIPS): PBKDF2‑HMAC‑SHA‑256 ≥600k or SHA‑512 ≥220k; SHA‑1 (≥1.4M) for legacy systems only
 - Optional pepper: store outside DB (KMS/HSM); if used, apply via HMAC or pre‑hashing. Plan for user resets if pepper rotates.
 - Unicode and null bytes must be supported end‑to‑end by the library.
 
@@ -51,6 +51,7 @@ Build a resilient, user-friendly authentication system that resists credential a
 ### Multi‑Factor Authentication (MFA)
 - Adopt phishing‑resistant factors by default for sensitive accounts: passkeys/WebAuthn (FIDO2) or hardware U2F.
 - Acceptable: TOTP (app‑based), smart cards with PIN. Avoid for sensitive use: SMS/voice, email codes; never rely on security questions.
+- Verify one-time codes server-side: single use, short validity, and a small per-account attempt limit; enforce MFA on every login path (web, API, mobile, legacy protocols).
 - Require MFA for: login, password/email changes, disabling MFA, privilege elevation, high‑value transactions, new devices/locations.
 - Risk‑based MFA signals: new device, geo‑velocity, IP reputation, unusual time, breached credentials.
 - MFA recovery: provide single‑use backup codes, encourage multiple factors, and require strong identity verification for resets.
@@ -59,13 +60,13 @@ Build a resilient, user-friendly authentication system that resists credential a
 ### Federation and Protocols (OAuth 2.0 / OIDC / SAML)
 - Use standard protocols only; do not build your own.
 - OAuth 2.0/OIDC:
-  - Prefer Authorization Code with PKCE for public/native apps; avoid Implicit and ROPC.
+  - Use Authorization Code with PKCE (`S256`): required for public/native clients and recommended for confidential clients; do not use Implicit or ROPC.
   - Validate state and nonce; use exact redirect URI matching; prevent open redirects.
   - Constrain tokens to audience/scope; use DPoP or mTLS for sender‑constraining when possible.
   - Rotate refresh tokens; revoke on logout or risk signals.
 - SAML:
   - TLS 1.2+; sign responses/assertions; encrypt sensitive assertions.
-  - Validate issuers, InResponseTo, timestamps (NotBefore/NotOnOrAfter), Recipient; verify against trusted keys.
+  - Validate issuers, InResponseTo, timestamps (NotBefore/NotOnOrAfter), Recipient, Audience (this SP's entity ID), and Destination; verify only against the IdP key from local configuration, never a key embedded in the message (`KeyInfo`).
   - Prevent XML signature wrapping with strict schema validation and hardened XPath selection.
   - Keep response lifetimes short; prefer SP‑initiated flows; validate RelayState; implement replay detection.
 
@@ -80,11 +81,11 @@ Build a resilient, user-friendly authentication system that resists credential a
 - Return the same response for existing and non‑existing accounts (no enumeration). Normalize timing.
 - Generate 32+ byte, CSPRNG tokens; single‑use; store as hashes; short expiry.
 - Use HTTPS reset links to pinned, trusted domains; add referrer policy (no‑referrer) on UI.
-- After reset: require re‑authentication, rotate sessions, and do not auto‑login.
+- After reset: require re‑authentication, invalidate existing sessions, and do not auto‑login.
 - Never lock accounts due to reset attempts; rate‑limit and monitor instead.
 
 ### Administrative and Internal Accounts
-- Separate admin login from public forms; enforce stronger MFA, device posture checks, IP allowlists, and step‑up auth.
+- Separate admin login from public forms; enforce stronger MFA and step‑up auth, and add device posture checks or IP allowlists where practical.
 - Use distinct session contexts and stricter timeouts for admin operations.
 
 ### Monitoring and Signals
@@ -96,7 +97,7 @@ Build a resilient, user-friendly authentication system that resists credential a
 - MFA: WebAuthn/passkeys or hardware tokens for high‑risk; TOTP as fallback; secure recovery with backup codes.
 - Federation: Authorization Code + PKCE; strict redirect URI validation; audience/scope enforced; token rotation.
 - Tokens: short‑lived, sender‑constrained where possible; revocation implemented; secrets in KMS/HSM.
-- Recovery: single‑use, hashed, time‑boxed tokens; consistent responses; re‑auth required after reset; sessions rotated.
+- Recovery: single‑use, hashed, time‑boxed tokens; consistent responses; re‑auth required after reset; existing sessions invalidated.
 - Abuse: rate limits, throttling, and anomaly detection on auth endpoints; uniform error handling.
 - Admin: isolated flows with stricter policies and device checks.
 

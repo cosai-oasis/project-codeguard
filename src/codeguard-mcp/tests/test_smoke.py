@@ -28,7 +28,7 @@ class TestHardcodedSecret:
         tool = tools_by_name["codeguard_1_hardcoded_credentials"]
         content = await tool.fn()
         assert "API key" in content or "API keys" in content
-        assert "NEVER" in content
+        assert "never" in content.lower()
 
     @pytest.mark.asyncio
     async def test_hardcoded_credentials_mentions_stripe(self, tools_by_name):

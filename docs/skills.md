@@ -15,7 +15,7 @@ Both skills are included in the Claude Code plugin and are available in `sources
 
 **Skill file:** `sources/skills/security-review/SKILL.md`
 
-Performs a comprehensive security review of a target repository and produces a formal markdown report with prioritized findings and remediation guidance. The skill loads all 23 CodeGuard core rules plus relevant OWASP supplementary rules for the detected tech stack.
+Performs a comprehensive security review of a target repository and produces a formal markdown report with prioritized findings and remediation guidance. The skill loads all 24 CodeGuard core rules plus relevant OWASP supplementary rules for the detected tech stack.
 
 ### When to use
 
