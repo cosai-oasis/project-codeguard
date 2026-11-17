@@ -2,7 +2,7 @@
 name: codeguard
 description: "Guides secure implementation, vulnerability remediation, and security review. Use when creating or reviewing code, remediating vulnerabilities, or performing security review, or when code or configuration handles untrusted or external data, dynamic execution, authentication, sessions, authorization, privilege, credentials, secrets, cryptography, files or parsers, native or unsafe memory operations, network listeners or destinations, external service integrations, security logs or externally visible errors, dependencies, builds, deployment, or concurrent access to protected state."
 metadata:
-  codeguard-version: "1.5.0"
+  codeguard-version: "2.0.0"
 ---
 
 # CodeGuard

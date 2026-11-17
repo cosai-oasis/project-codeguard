@@ -1,6 +1,6 @@
 [project]
 name = "project-codeguard"
-version = "1.5.0"
+version = "2.0.0"
 description = "AI Coding Rules for Security and Best Practices"
 requires-python = ">=3.11"
 dependencies = [
