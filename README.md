@@ -1,4 +1,5 @@
 # Project CodeGuard: Security Skills and Rules for AI Coding Agents
+
 ![Securing](https://img.shields.io/badge/Securing%20AI%20Generated%20Code-green)
 ![Open Source](https://img.shields.io/badge/Now-Open%20Source-brightgreen)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
@@ -9,29 +10,20 @@ For more information on CoSAI, please visit the [CoSAI website](https://www.coal
 
 
 ## What is Project CodeGuard?
-[Project CodeGuard](https://project-codeguard.org/) is an AI model-agnostic security coding agent skills framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security skills and rules, translators for popular coding agents, and validators to test skills and rule compliance.
 
+[Project CodeGuard](https://project-codeguard.org/) is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides security guidance that AI assistants can use during code generation and review.
 
 ## Why Project CodeGuard?
 
-AI coding agents are transforming software engineering, but this speed can introduce security vulnerabilities. Is your AI coding agent implementation introducing security vulnerabilities?
+AI coding agents can produce code that omits important security controls or uses unsafe patterns. Common problems include:
 
-- Skipping input validation
-- Hardcoding secrets and credentials
-- Using weak cryptographic algorithms
-- Relying on unsafe functions
-- Missing authentication/authorization checks
-- Missing any other security best practice
+- Missing input validation
+- Hardcoded secrets and credentials
+- Weak cryptographic algorithms
+- Unsafe functions
+- Missing authentication or authorization checks
 
-Project CodeGuard solves this by embedding security best practices directly into AI coding agent workflows. 
-
-**During and After Code Generation.**
-
-Project CodeGuard is designed to integrate seamlessly across the entire AI coding lifecycle. 
-- **Before code generation**, skills and rules can be used for the design of a product and for spec-driven development. You can use the skills and rules in the “planning phase” of an AI coding agent to steer models toward secure patterns from the start.
-- **During code generation**, skills and rules can help AI agents to prevent security issues as code is being written.
-- **After code generation**, AI agents like Cursor, GitHub Copilot, Codex, Windsurf, Devin, and Claude Code can use the rules for code review.
-
+CodeGuard gives agents guidance for these decisions throughout development. It can inform security requirements during planning, help an agent select safer implementation patterns, and support the review of existing code.
 
 ## Security Coverage
 
@@ -48,24 +40,23 @@ Project CodeGuard skills and rules cover essential security domains:
 
 ## Quick Start
 
-Get started in minutes:
+CodeGuard is an Agent Skill: a folder of instructions and security guidance for your coding agent. For personal use, install a released version in your user skill directory so it is available across projects.
 
-1. **Download the skills and rules** from our [releases page](https://github.com/cosai-oasis/project-codeguard/releases)
-2. **Copy to your project** - Place AI agent and IDE specific skills and rules in your repository
-3. **Start coding** - AI assistants will automatically follow security best practices
+1. Download **Source code (zip)** from the [latest release](https://github.com/cosai-oasis/project-codeguard/releases/latest) and extract it. The skill folder is `skills/codeguard/` inside the extracted directory.
+2. Copy that complete `codeguard/` folder to your client's personal skill location:
 
-- Additional details in the [Get Started →](https://project-codeguard.org/getting-started/)
+   | Client | Personal skill location |
+   |---|---|
+   | Claude Code | `~/.claude/skills/codeguard/` |
+   | Codex | `~/.agents/skills/codeguard/` |
 
+   Here, `~` means your home directory. For other clients, use their supported Agent Skills location.
+3. Start a new client session and ask: “Use CodeGuard to review this authentication code for security issues.”
 
-## CodeGuard MCP Server
-
-This repository also includes an [MCP](https://modelcontextprotocol.io/) server that exposes all CodeGuard security rules as tools over streamable HTTP. Organizations can deploy it on their infrastructure and connect every developer's AI coding assistant to a single, centrally managed instance. See the [CodeGuard MCP Server README](src/codeguard-mcp/README.md) for setup instructions.
-
+See [Getting Started](docs/getting-started.md) for updating an existing installation, project-level installation, and plugin options.
 
 ## How It Works
 
-1. **Security skills and rules** are written in unified markdown format (`sources/` directory)
-2. **Conversion tools** translate skills and rules into formats for popular coding agents
-3. **Release automation** packages skills and rules into downloadable ZIP files
-4. **AI assistants** reference these skills and rules when generating or reviewing code
-5. **Secure code** is produced automatically without developer intervention
+CodeGuard gives your agent security guidance to consult while planning, writing, or reviewing code. The skill's instructions describe when to use that guidance and how to apply it to the task.
+
+Use CodeGuard alongside your existing tests, security scanners, and human review. For more focused tasks, the repository also includes [security-review and memory-safe-migration workflows](docs/skills.md).
