@@ -24,13 +24,13 @@ rule_id: codeguard-0-additional-cryptography
 Apply modern, vetted cryptography for data at rest and in transit. Manage keys safely, configure TLS correctly, deploy HSTS, and consider pinning only when appropriate.
 
 ### Algorithms and Modes
-- Symmetric: AES‑GCM or ChaCha20‑Poly1305 preferred. Avoid ECB. CBC/CTR only with encrypt‑then‑MAC.
+- Symmetric: AES‑GCM or ChaCha20‑Poly1305 preferred. Avoid ECB. CBC/CTR only for legacy interoperability, with encrypt‑then‑MAC.
 - Asymmetric: RSA ≥2048 or modern ECC (Curve25519/Ed25519). Use OAEP for RSA encryption.
 - Hashing: SHA‑256+ for integrity; avoid MD5/SHA‑1.
 - RNG: Use CSPRNG appropriate to platform (e.g., SecureRandom, crypto.randomBytes, secrets module). Never use non‑crypto RNGs.
 
 ### Key Management
-- Generate keys within validated modules (HSM/KMS) and never from passwords or predictable inputs.
+- Generate keys within validated modules (HSM/KMS) and never directly from passwords or predictable inputs; when a passphrase is required, derive the key with a password-based KDF (e.g., Argon2id) and a random salt.
 - Separate keys by purpose (encryption, signing, wrapping). Rotate on compromise, cryptoperiod, or policy.
 - Store keys in KMS/HSM or vault; never hardcode; avoid plain env vars. Use KEK to wrap DEKs; store separately.
 - Control access to trust stores; validate updates; audit all key access and operations.
@@ -43,8 +43,8 @@ Apply modern, vetted cryptography for data at rest and in transit. Manage keys s
 ### TLS Configuration
 - Protocols: TLS 1.3 preferred; allow TLS 1.2 only for legacy compatibility; disable TLS 1.0/1.1 and SSL. Enable TLS_FALLBACK_SCSV.
 - Ciphers: prefer AEAD suites; disable NULL/EXPORT/anon. Keep libraries updated; disable compression.
-- Key exchange groups: prefer x25519/secp256r1; configure secure FFDHE groups if needed.
-- Certificates: 2048‑bit+ keys, SHA‑256, correct CN/SAN. Manage lifecycle and revocation (OCSP stapling).
+- Key exchange groups: prefer x25519/secp256r1, with hybrid ML-KEM groups where supported (see [crypto-algorithms](crypto-algorithms.md)); use FFDHE only with TLS 1.3 (RFC 7919 groups), never TLS 1.2 DHE suites.
+- Certificates: 2048‑bit+ keys, SHA‑256, correct SAN entries. Manage lifecycle and revocation (CRLs, or OCSP stapling where the CA provides OCSP).
 - Application: HTTPS site‑wide; redirect HTTP→HTTPS; prevent mixed content; set cookies `Secure`.
 
 ### HSTS
@@ -61,7 +61,7 @@ Apply modern, vetted cryptography for data at rest and in transit. Manage keys s
 ### Implementation Checklist
 - AEAD everywhere; vetted libraries only; no custom crypto.
 - Keys generated and stored in KMS/HSM; purpose‑scoped; rotation documented.
-- TLS 1.3/1.2 with strong ciphers; compression off; OCSP stapling on.
+- TLS 1.3/1.2 with strong ciphers; compression off; OCSP stapling on where the CA provides OCSP.
 - HSTS deployed per phased plan; mixed content eliminated.
 - Pinning used only where justified, with backups and update path.
 

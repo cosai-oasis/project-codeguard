@@ -21,7 +21,8 @@ rule_id: codeguard-0-api-web-services
 Secure REST, GraphQL, and SOAP/WS services end‑to‑end: transport, authn/z, schema validation, SSRF controls, DoS limits, and microservice‑safe patterns.
 
 ### Transport and TLS
-- HTTPS only; consider mTLS for high‑value/internal services. Validate certs (CN/SAN, revocation) and prevent mixed content.
+- HTTPS only; consider mTLS for high‑value/internal services. Validate certs (SAN hostname match, revocation) and prevent mixed content.
+- Never disable certificate or hostname verification to make a connection work (e.g., `verify=False`, `InsecureSkipVerify`, `rejectUnauthorized: false`); fix the certificate, or configure the client to trust the private CA explicitly.
 
 ### Authentication and Tokens
 - Use standard flows (OAuth2/OIDC) for clients; avoid custom schemes. For services, use mTLS or signed service tokens.
@@ -35,6 +36,7 @@ Secure REST, GraphQL, and SOAP/WS services end‑to‑end: transport, authn/z, s
 ### Input and Content Handling
 - Validate inputs via contracts: OpenAPI/JSON Schema, GraphQL SDL, XSD. Reject unknown fields and oversize payloads; set limits.
 - Content types: enforce explicit Content‑Type/Accept; reject unsupported combinations. Harden XML parsers against XXE/expansion.
+- Errors: return a generic message with a correlation ID; never return stack traces, SQL errors, internal paths, or software versions to clients; log the details server-side.
 
 ### SQL/Injection Safety in Resolvers and Handlers
 - Use parameterized queries/ORM bind parameters; never concatenate user input into queries or commands.
@@ -46,7 +48,7 @@ Secure REST, GraphQL, and SOAP/WS services end‑to‑end: transport, authn/z, s
 ### SSRF Prevention for Outbound Calls
 - Do not accept raw URLs. Validate domains/IPs using libraries; restrict to HTTP/HTTPS only (block file://, gopher://, ftp://, etc.).
 - Case 1 (fixed partners): strict allow‑lists; disable redirects; network egress allow‑lists.
-- Case 2 (arbitrary): block private/link‑local/localhost ranges; resolve and verify all IPs are public; require signed tokens from the target where feasible.
+- Case 2 (arbitrary): block private/link‑local/localhost ranges for IPv4 and IPv6 (including IPv4-mapped forms), checking parsed addresses rather than raw strings; disable redirects or re-validate every hop; resolve and verify all IPs are public, then connect only to the checked IP, using the hostname for TLS verification (prevents DNS rebinding); require signed tokens from the target where feasible.
 
 ### SOAP/WS and XML Safety
 - Validate SOAP payloads with XSD; limit message sizes; enable XML signatures/encryption where required.
@@ -69,7 +71,7 @@ Secure REST, GraphQL, and SOAP/WS services end‑to‑end: transport, authn/z, s
 
 ### Implementation Checklist
 - HTTPS/mTLS configured; certs managed; no mixed content.
-- Contract validation at the edge and service; unknown fields rejected; size/time limits enforced.
+- Validate inputs at the edge and service; unknown fields rejected; size/time limits enforced.
 - Strong authn/z per endpoint; GraphQL limits applied; introspection disabled in prod.
 - SSRF protections at app and network layers; redirects disabled; allow‑lists where possible.
 - Rate limiting, circuit breakers, and resilient patterns in place.
@@ -77,7 +79,7 @@ Secure REST, GraphQL, and SOAP/WS services end‑to‑end: transport, authn/z, s
 - Logs structured and privacy‑safe with correlation IDs.
 
 ### Test Plan
-- Contract tests for schema adherence; fuzzing with schema‑aware tools.
+- Perform tests for schema adherence; fuzzing with schema‑aware tools.
 - Pen tests for SSRF, IDOR/BOLA, and authz bypass; performance tests for DoS limits.
 - Test all HTTP methods per endpoint; discover parameters in URL paths, headers, and structured data beyond obvious query strings.
 - Automated checks for token validation and revocation behavior.

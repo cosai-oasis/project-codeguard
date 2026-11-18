@@ -52,6 +52,8 @@ The repository keeps optional workflows and supporting tooling separate from the
 | `docs/`, `mkdocs.yml`, and top-level Markdown files | Project documentation and site configuration. |
 | `.github/workflows/` and `.github/ISSUE_TEMPLATE/` | CI workflows and issue templates. |
 
+Maintain detailed guidance in `skills/codeguard/references/<topic>.md` and link each topic from `skills/codeguard/SKILL.md` with the conditions for reading it. Use relative links between reference files. Keep `metadata.codeguard-version` in the skill aligned with the project and plugin versions when preparing a release.
+
 ## Validation
 
 Before submitting changes to CodeGuard, version metadata, packaging, or documentation, run the following commands from the repository root. They check version consistency and build the documentation with strict validation.

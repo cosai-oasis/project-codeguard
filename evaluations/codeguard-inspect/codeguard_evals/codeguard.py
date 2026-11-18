@@ -25,6 +25,7 @@ _REFERENCE_NAME_RE: Final = re.compile(r"\A[a-z0-9]+(?:-[a-z0-9]+)*\.md\Z")
 _METADATA_FIELDS: Final = frozenset({"codeguard-version", "framework", "purpose"})
 _BASE_FRONT_MATTER_FIELDS: Final = frozenset({"name", "description"})
 _FRONT_MATTER_FIELDS: Final = _BASE_FRONT_MATTER_FIELDS | _METADATA_FIELDS
+_NESTED_FRONT_MATTER_FIELDS: Final = _BASE_FRONT_MATTER_FIELDS | {"metadata"}
 
 
 def load_codeguard(source: Path = CODEGUARD_SOURCE) -> dict[str, bytes]:
@@ -119,6 +120,7 @@ def codeguard_version(snapshot: Mapping[str, bytes]) -> str:
     if front_matter_fields not in {
         _FRONT_MATTER_FIELDS,
         _BASE_FRONT_MATTER_FIELDS,
+        _NESTED_FRONT_MATTER_FIELDS,
     }:
         raise ValueError("CodeGuard SKILL.md has unexpected front matter")
     if front_matter["name"] != CODEGUARD_SKILL_NAME:
@@ -132,7 +134,16 @@ def codeguard_version(snapshot: Mapping[str, bytes]) -> str:
         _decode_utf8(snapshot[path], path)
     if front_matter_fields == _BASE_FRONT_MATTER_FIELDS:
         return "unspecified"
-    metadata = {field: front_matter[field] for field in sorted(_METADATA_FIELDS)}
+    if front_matter_fields == _NESTED_FRONT_MATTER_FIELDS:
+        metadata = front_matter["metadata"]
+        if (
+            not isinstance(metadata, dict)
+            or "codeguard-version" not in metadata
+            or not metadata.keys() <= _METADATA_FIELDS
+        ):
+            raise ValueError("CodeGuard SKILL.md has unexpected metadata")
+    else:
+        metadata = {field: front_matter[field] for field in sorted(_METADATA_FIELDS)}
     if any(not isinstance(value, str) or not value for value in metadata.values()):
         raise ValueError("CodeGuard SKILL.md metadata values must be non-empty strings")
     return metadata["codeguard-version"]

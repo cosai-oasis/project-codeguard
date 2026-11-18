@@ -45,8 +45,8 @@ try {
     dbf.setFeature(FEATURE, true);
     dbf.setXIncludeAware(false);
 } catch (ParserConfigurationException e) {
-    logger.info("ParserConfigurationException was thrown. The feature '" + FEATURE
-    + "' is not supported by your XML processor.");
+    // Fail closed: do not continue with a parser that could not be hardened
+    throw new IllegalStateException("Required XML security feature not supported: " + FEATURE, e);
 }
 ```
 
@@ -60,18 +60,20 @@ String[] featuresToDisable = {
     "http://apache.org/xml/features/nonvalidating/load-external-dtd"
 };
 
-for (String feature : featuresToDisable) {
-    try {    
-        dbf.setFeature(feature, false); 
-    } catch (ParserConfigurationException e) {
-        logger.info("ParserConfigurationException was thrown. The feature '" + feature
-        + "' is probably not supported by your XML processor.");
+try {
+    for (String feature : featuresToDisable) {
+        dbf.setFeature(feature, false);
     }
+    dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+} catch (ParserConfigurationException e) {
+    // Fail closed: abort if any required feature cannot be applied
+    throw new IllegalStateException("XML parser cannot be hardened", e);
 }
 dbf.setXIncludeAware(false);
 dbf.setExpandEntityReferences(false);
-dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 ```
+
+StAX (`XMLInputFactory`) needs its own settings: set `XMLInputFactory.SUPPORT_DTD` and `XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES` to `false`.
 
 #### .NET
 ```csharp
@@ -99,7 +101,7 @@ tree = etree.parse('filename.xml', parser)
   - PHP: avoid `unserialize()`; use `json_decode()`.
   - Python: avoid `pickle` and unsafe YAML (`yaml.safe_load` only).
   - Java: override `ObjectInputStream#resolveClass` to allow‑list; avoid enabling default typing in Jackson; use XStream allow‑lists.
-  - .NET: avoid `BinaryFormatter`; prefer `DataContractSerializer` or `System.Text.Json` with `TypeNameHandling=None` for JSON.NET.
+  - .NET: avoid `BinaryFormatter`; prefer `DataContractSerializer` or `System.Text.Json`; with JSON.NET, keep `TypeNameHandling` at `None` (the default).
 - Sign and verify serialized payloads where applicable; log and alert on deserialization failures and anomalies.
 
 ### Implementation Checklist

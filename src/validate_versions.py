@@ -67,7 +67,7 @@ def _read_front_matter_value(path: Path, key: str) -> str:
         raise ValueError(f"Missing front matter in {path}")
     front_matter = front_matter_match.group(1)
     value_match = re.search(
-        rf'^{re.escape(key)}:\s*"([^"]+)"\s*$',
+        rf'^[ \t]*{re.escape(key)}:\s*"([^"]+)"\s*$',
         front_matter,
         re.MULTILINE,
     )
@@ -77,7 +77,7 @@ def _read_front_matter_value(path: Path, key: str) -> str:
 
 
 def get_skill_codeguard_version(root: Path) -> str:
-    """Get codeguard-version from skills/codeguard/SKILL.md."""
+    """Read metadata.codeguard-version (also accepts the legacy top-level key)."""
     skill_path = root / "skills" / "codeguard" / "SKILL.md"
     return _read_front_matter_value(skill_path, "codeguard-version")
 
