@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thank you for your new rule request! Please provide as much detail as possible. Use any of the existing rules as a reference. You only have to provide the rule contents (markdown), not the rule metadata. We will handle the rest. In other words, convert your rule into all supported formats.
+        Propose security guidance for the CodeGuard skill. Use an existing rule as a reference, provide the Markdown content, and explain when the guidance should apply.
 
   - type: textarea
     id: description

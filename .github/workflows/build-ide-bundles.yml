@@ -1,5 +1,5 @@
 ---
-name: Build and Release IDE Bundles
+name: Build and Release CodeGuard Skill
 
 on:
   release:
@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
     steps:
-      - name: Checkout repository
+      - name: Checkout released revision
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: refs/tags/${{ github.event.release.tag_name }}
+          persist-credentials: false
 
       - name: Install uv
         uses: astral-sh/setup-uv@38f3f104447c67c051c4a08e39b64a148898af3a # v4.2.0
@@ -27,57 +27,24 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install locked dependencies
         run: uv sync --locked
-
-      - name: Get version from release
-        id: get_version
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-        run: |
-          VERSION=${TAG#v}
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Release version: $VERSION (tag: $TAG)"
-
-      - name: Validate rules
-        run: uv run python src/validate_unified_rules.py sources/
 
       - name: Validate versions match tag
         env:
-          VERSION: ${{ steps.get_version.outputs.version }}
-        run: uv run python src/validate_versions.py "$VERSION"
+          TAG: ${{ github.event.release.tag_name }}
+        run: uv run --locked python src/validate_versions.py "${TAG#v}"
 
-      - name: Generate IDE bundles
-        run: uv run python src/convert_to_ide_formats.py
-
-      - name: Create release archives
+      - name: Package CodeGuard
         shell: bash
         run: |
-          cd dist
-          zip -r ../codeguard-claude.zip .claude/
-          zip -r ../codeguard-cursor.zip .cursor/
-          zip -r ../codeguard-windsurf.zip .windsurf/
-          zip -r ../codeguard-devin.zip .devin/
-          zip -r ../codeguard-copilot.zip .github/
-          # Antigravity + Codex share .agents/; scope each zip to its own subpath.
-          zip -r ../codeguard-antigravity.zip .agents/rules/
-          zip -r ../codeguard-opencode.zip .opencode/
-          zip -r ../codeguard-codex.zip .agents/skills/ .codex/agents/
-          zip -r ../codeguard-openclaw.zip .openclaw/
-          zip -r ../codeguard-hermes.zip .hermes/
-          cd ..
-          zip -r codeguard-all.zip dist/
-
-          sha256sum codeguard-*.zip > SHA256SUMS
+          (cd skills && zip -r ../codeguard-skill.zip codeguard/)
+          zip codeguard-skill.zip LICENSE.md
+          sha256sum codeguard-skill.zip > SHA256SUMS
           sha256sum --check SHA256SUMS
 
-          ls -lh codeguard-*.zip SHA256SUMS
-
       - name: Upload release assets
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.get_version.outputs.tag }}
-        run: |
-          gh release upload "$TAG" codeguard-*.zip SHA256SUMS
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" codeguard-skill.zip SHA256SUMS

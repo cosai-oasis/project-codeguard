@@ -50,7 +50,7 @@ body:
       label: The feedback pertains to which aspect of the project?
       options:
         - Rule definition
-        - Rule invocation or execution
+        - Rule selection or use
         - Rule distribution
         - Other
     validations:

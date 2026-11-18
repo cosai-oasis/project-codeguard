@@ -8,7 +8,7 @@ so contributors do not need to reconstruct it from meetings or issue history.
 
 | Record | Status | Date |
 | --- | --- | --- |
-| [0001: Separate Guidance from Runtime and Scanning](0001-separate-guidance-from-runtime-and-scanning.md) | Proposed | 2026-07-14 |
+| [0001: Separate Guidance from Runtime and Scanning](0001-separate-guidance-from-runtime-and-scanning.md) | Accepted | 2026-07-14 |
 
 ## When to Write a Decision Record
 
