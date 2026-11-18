@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Project CodeGuard is an AI model-agnostic security framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.">
+        <meta name="description" content="Project CodeGuard is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides security guidance that AI assistants can use during code generation and review.">
       
       
         <meta name="author" content="Cisco AI-enabled Security Engineering, Security and Trust">
@@ -15,10 +15,6 @@
         <link rel="canonical" href="https://project-codeguard.org/mcp-server/">
       
       
-        <link rel="prev" href="../codex-skill-plugin/">
-      
-      
-        <link rel="next" href="../codeguard-reviewer/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>MCP Server - Project CodeGuard</title>
+        <title>CodeGuard MCP Server - Project CodeGuard</title>
       
     
     
@@ -116,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              MCP Server
+              CodeGuard MCP Server
             
           </span>
         </div>
@@ -318,33 +314,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-paths/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Choosing an Install Path
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../personas/" class="md-nav__link">
         
   
@@ -423,229 +392,6 @@
       
   
   
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    MCP Server
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    MCP Server
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quick Start">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-locally-with-uv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run locally with uv
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#connect-your-ide" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Connect Your IDE
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-the-meta-skill" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install the Meta Skill
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How It Works
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="How It Works">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tool-taxonomy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tool Taxonomy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#endpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Endpoints
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../codeguard-reviewer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CodeGuard Reviewer
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
   
   
     <li class="md-nav__item">
@@ -657,33 +403,6 @@
     
   
     Skills
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../custom-rules/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Custom Rules
   
 
     
@@ -797,136 +516,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quick Start">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-locally-with-uv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run locally with uv
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#connect-your-ide" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Connect Your IDE
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-the-meta-skill" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install the Meta Skill
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How It Works
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="How It Works">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tool-taxonomy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tool Taxonomy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#endpoints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Endpoints
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -951,185 +540,8 @@
 
 
 <h1 id="codeguard-mcp-server">CodeGuard MCP Server</h1>
-<p>The CodeGuard MCP server exposes all 23 core security rules as individual <a href="https://modelcontextprotocol.io/">Model Context Protocol</a> tools over streamable HTTP. Deploy it once on your infrastructure and every AI coding assistant in your organization gets access to the same curated, versioned security guidance — no per-repo rule bundle installation needed.</p>
-<div class="admonition info">
-<p class="admonition-title">When to use the MCP server</p>
-<p>The MCP server is best suited for teams that already operate MCP infrastructure and want a single, centrally managed source of CodeGuard rules. For most individual users and teams, <a href="../install-paths/">rule files or Agent Skills</a> are simpler. See <a href="../install-paths/#mcp-server">Choosing an Install Path</a> for a full comparison.</p>
-</div>
-<h2 id="quick-start">Quick Start</h2>
-<h3 id="run-locally-with-uv">Run locally with uv</h3>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>src/codeguard-mcp
-uv<span class="w"> </span>sync
-uv<span class="w"> </span>run<span class="w"> </span>fastmcp<span class="w"> </span>run<span class="w"> </span>src/codeguard_mcp/server.py:mcp<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--transport<span class="w"> </span>streamable-http<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span>--port<span class="w"> </span><span class="m">8080</span>
-</code></pre></div>
-<h3 id="docker">Docker</h3>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>src/codeguard-mcp
-docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
-</code></pre></div>
-<p>Docker Compose publishes the server on <code>127.0.0.1</code> by default. Keep that default
-when the reverse proxy runs on the Docker host. If the proxy runs on another
-host, set <code>CODEGUARD_PUBLISH_ADDRESS</code> to a specific private interface and use
-firewall or security-group rules to allow the published port only from the
-proxy. The proxy must provide TLS and authentication. Do not publish on
-<code>0.0.0.0</code> unless equivalent network controls prevent direct access to the
-backend port.</p>
-<h2 id="connect-your-ide">Connect Your IDE</h2>
-<p>Add the server to your MCP client configuration:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Local</label><label for="__tabbed_1_2">Org-wide</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;codeguard&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://localhost:8080/mcp&quot;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<p>Put the server behind a reverse proxy with TLS and SSO, then point every developer's IDE at the internal URL:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;mcpServers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;codeguard&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://codeguard-mcp.internal.company.com/mcp&quot;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-</div>
-</div>
-</div>
-<h2 id="install-the-meta-skill">Install the Meta Skill</h2>
-<p>The meta skill tells your AI assistant how to use the CodeGuard MCP tools. It lives at <code>.agents/skills/codeguard-mcp-meta/SKILL.md</code> and needs to be installed in your project.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Copy from repo</label><label for="__tabbed_2_2">Download from server</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>-r<span class="w"> </span>src/codeguard-mcp/.agents<span class="w"> </span>/path/to/your/project/
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-o<span class="w"> </span>codeguard-meta-skill.zip<span class="w"> </span>http://localhost:8080/download/skill
-unzip<span class="w"> </span>codeguard-meta-skill.zip<span class="w"> </span>-d<span class="w"> </span>/path/to/your/project/
-</code></pre></div>
-<p>The <code>/download/skill</code> endpoint returns a zip containing the <code>.agents/</code> directory. Unzip it into your project root.</p>
-</div>
-</div>
-</div>
-<h2 id="how-it-works">How It Works</h2>
-<p>The server reads the 23 security rules from <code>sources/rules/core/</code> and registers each one as a no-argument MCP tool. When your AI assistant generates or reviews code, it invokes the relevant tools and applies the returned guidance.</p>
-<div class="highlight"><pre><span></span><code>Developer writes code
-        ↓
-AI assistant reads the meta skill
-        ↓
-Invokes codeguard_1_* tools (always-on guardrails)
-        ↓
-Invokes codeguard_0_* tools (context-selected by language + domain)
-        ↓
-Applies security guidance to generated code
-        ↓
-Documents which rules were applied
-</code></pre></div>
-<h3 id="tool-taxonomy">Tool Taxonomy</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Prefix</th>
-<th style="text-align: left;">When invoked</th>
-<th style="text-align: left;">Count</th>
-<th style="text-align: left;">Examples</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>codeguard_1_*</code></td>
-<td style="text-align: left;"><strong>Always</strong> — before any code change</td>
-<td style="text-align: left;">3</td>
-<td style="text-align: left;"><code>codeguard_1_hardcoded_credentials</code>, <code>codeguard_1_crypto_algorithms</code></td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>codeguard_0_*</code></td>
-<td style="text-align: left;"><strong>Context-selected</strong> by language and domain</td>
-<td style="text-align: left;">20</td>
-<td style="text-align: left;"><code>codeguard_0_input_validation_injection</code>, <code>codeguard_0_api_web_services</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="configuration">Configuration</h2>
-<p>All settings are controlled via environment variables with the <code>CODEGUARD_</code> prefix:</p>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Variable</th>
-<th style="text-align: left;">Default</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>CODEGUARD_HOST</code></td>
-<td style="text-align: left;"><code>0.0.0.0</code></td>
-<td style="text-align: left;">Server bind address</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>CODEGUARD_PUBLISH_ADDRESS</code></td>
-<td style="text-align: left;"><code>127.0.0.1</code></td>
-<td style="text-align: left;">Docker host address for the published port</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>CODEGUARD_PORT</code></td>
-<td style="text-align: left;"><code>8080</code></td>
-<td style="text-align: left;">Bind port</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>CODEGUARD_LOG_LEVEL</code></td>
-<td style="text-align: left;"><code>INFO</code></td>
-<td style="text-align: left;">Log level</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>CODEGUARD_TRANSPORT</code></td>
-<td style="text-align: left;"><code>streamable-http</code></td>
-<td style="text-align: left;"><code>streamable-http</code> or <code>stdio</code></td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>CODEGUARD_RULES_DIR</code></td>
-<td style="text-align: left;"><code>sources/rules/core/</code></td>
-<td style="text-align: left;">Path to rule markdown files</td>
-</tr>
-</tbody>
-</table>
-<p>Set these as environment variables in your shell before running, for example <code>export CODEGUARD_PORT=9090</code>.</p>
-<h2 id="endpoints">Endpoints</h2>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Method</th>
-<th style="text-align: left;">Path</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>POST</code></td>
-<td style="text-align: left;"><code>/mcp</code></td>
-<td style="text-align: left;">MCP protocol endpoint</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>GET</code></td>
-<td style="text-align: left;"><code>/health</code></td>
-<td style="text-align: left;">Health check — returns <code>{"status": "ok", "version": "..."}</code></td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>GET</code></td>
-<td style="text-align: left;"><code>/download/skill</code></td>
-<td style="text-align: left;">Download the meta skill as a <code>.agents/</code> zip</td>
-</tr>
-</tbody>
-</table>
-<h2 id="next-steps">Next Steps</h2>
-<p><a class="md-button md-button--primary" href="../install-paths/">Choosing an Install Path →</a>
-<a class="md-button" href="../getting-started/">Getting Started →</a></p>
+<p>The MCP server implementation is no longer included on <code>main</code>. Its <a href="https://github.com/cosai-oasis/project-codeguard/blob/v1.5.0/docs/mcp-server.md">v1.5.0 documentation and source</a> remain available for existing deployments.</p>
+<p>For the current skill installation, see <a href="../getting-started/">Getting Started</a>.</p>
 
 
 
@@ -1162,44 +574,6 @@ Documents which rules were applied
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../codex-skill-plugin/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Codex Plugin">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Codex Plugin
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../codeguard-reviewer/" class="md-footer__link md-footer__link--next" aria-label="Next: CodeGuard Reviewer">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                CodeGuard Reviewer
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">

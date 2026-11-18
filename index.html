@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Project CodeGuard is an AI model-agnostic security framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.">
+        <meta name="description" content="Project CodeGuard is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides security guidance that AI assistants can use during code generation and review.">
       
       
         <meta name="author" content="Cisco AI-enabled Security Engineering, Security and Trust">
@@ -418,33 +418,6 @@
   
   
     <li class="md-nav__item">
-      <a href="install-paths/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Choosing an Install Path
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="personas/" class="md-nav__link">
         
   
@@ -526,60 +499,6 @@
   
   
     <li class="md-nav__item">
-      <a href="mcp-server/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    MCP Server
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="codeguard-reviewer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CodeGuard Reviewer
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="skills/" class="md-nav__link">
         
   
@@ -588,33 +507,6 @@
     
   
     Skills
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="custom-rules/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Custom Rules
   
 
     
@@ -816,22 +708,18 @@
 
 <h1 id="project-codeguard-security-skills-and-rules-for-ai-coding-agents">Project CodeGuard: Security Skills and Rules for AI Coding Agents</h1>
 <p><a href="https://github.com/cosai-oasis/project-codeguard/releases/latest"><img alt="Latest Release" src="https://img.shields.io/github/v/release/cosai-oasis/project-codeguard" /></a></p>
-<p><a href="https://github.com/cosai-oasis/project-codeguard">Project CodeGuard</a> is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides comprehensive security rules that guide AI assistants to generate more secure code automatically.</p>
+<p><a href="https://github.com/cosai-oasis/project-codeguard">Project CodeGuard</a> is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides security guidance that AI assistants can use during code generation and review.</p>
 <h2 id="why-project-codeguard">Why Project CodeGuard?</h2>
-<p>AI coding agents are transforming software engineering, but this speed can introduce security vulnerabilities. Is your AI coding agent implementation introducing security vulnerabilities?</p>
+<p>AI coding agents can produce code that omits important security controls or uses unsafe patterns. Common problems include:</p>
 <ul>
-<li>Skipping input validation</li>
-<li>Hardcoding secrets and credentials</li>
-<li>Using weak cryptographic algorithms</li>
-<li>Relying on unsafe functions</li>
-<li>Missing authentication/authorization checks</li>
-<li>Missing any other security best practice</li>
+<li>Missing input validation</li>
+<li>Hardcoded secrets and credentials</li>
+<li>Weak cryptographic algorithms</li>
+<li>Unsafe functions</li>
+<li>Missing authentication or authorization checks</li>
 </ul>
-<p>Project CodeGuard solves this by embedding security best practices directly into AI coding agent workflows. </p>
-<p><strong>Before, During, and After Code Generation.</strong></p>
-<p>Project CodeGuard can be used <strong>before</strong>, <strong>during</strong> and <strong>after</strong> code generation. They can be used at the AI agent planning phase or for initial specification-driven engineering tasks. Project CodeGuard rules can also be used to prevent vulnerabilities from being introduced during code generation. They can also be used by automated code-review AI agents. </p>
-<p>For example, a rule focused on input validation could work at multiple stages: it might suggest secure input handling patterns during code generation, flag potentially unsafe user or AI agent input processing in real-time and then validate that proper sanitization and validation logic is present in the final code. Another rule targeting secret management could prevent hardcoded credentials from being generated, alert developers when sensitive data patterns are detected, and verify that secrets are properly externalized using secure configuration management. </p>
-<p>This multi-stage methodology ensures that security considerations are woven throughout the development process rather than being an afterthought, creating multiple layers of protection while maintaining the speed and productivity that make AI coding tools so valuable. </p>
+<p>CodeGuard makes relevant security guidance available while an agent plans, implements, or reviews a change. For example, its input-validation guidance can help an agent choose appropriate checks during implementation and identify missing checks during review.</p>
+<p>The results still need independent testing and review because they depend on the client, model, and task.</p>
 <h2 id="security-coverage">Security Coverage</h2>
 <p>Our rules cover essential security domains:</p>
 <ul>
@@ -845,21 +733,35 @@
 <li><strong>Data Protection</strong>: Privacy, encryption at rest/transit, secure storage</li>
 </ul>
 <h2 id="quick-start">Quick Start</h2>
-<p>Get started in minutes:</p>
+<p>CodeGuard is an Agent Skill: a folder of instructions and security guidance for your coding agent. For personal use, install a released version in your user skill directory so it is available across projects.</p>
 <ol>
-<li><strong>Download the rules</strong> from our <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a></li>
-<li><strong>Copy to your project</strong> - Place IDE-specific rules in your repository</li>
-<li><strong>Start coding</strong> - AI assistants will automatically follow security best practices</li>
+<li>Download <strong>Source code (zip)</strong> from the <a href="https://github.com/cosai-oasis/project-codeguard/releases/latest">latest release</a> and extract it. The skill folder is <code>skills/codeguard/</code> inside the extracted directory.</li>
+<li>Copy that complete <code>codeguard/</code> folder to your client's personal skill location:</li>
 </ol>
-<p><a class="md-button md-button--primary" href="getting-started/">Get Started →</a>
-<a class="md-button" href="https://github.com/cosai-oasis/project-codeguard">View on GitHub <span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg></span></a></p>
+<table>
+<thead>
+<tr>
+<th>Client</th>
+<th>Personal skill location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Claude Code</td>
+<td><code>~/.claude/skills/codeguard/</code></td>
+</tr>
+<tr>
+<td>Codex</td>
+<td><code>~/.agents/skills/codeguard/</code></td>
+</tr>
+</tbody>
+</table>
+<p>Here, <code>~</code> means your home directory. For other clients, use their supported Agent Skills location.
+3. Start a new client session and ask: “Use CodeGuard to review this authentication code for security issues.”</p>
+<p>See <a href="getting-started/">Getting Started</a> for updating an existing installation, project-level installation, and plugin options.</p>
 <h2 id="how-it-works">How It Works</h2>
-<ol>
-<li><strong>Security rules</strong> are written in a unified markdown format</li>
-<li><strong>Conversion tools</strong> translate rules to IDE-specific formats</li>
-<li><strong>AI assistants</strong> reference these rules when generating or reviewing code</li>
-<li><strong>Secure code</strong> is produced automatically without developer intervention</li>
-</ol>
+<p>CodeGuard gives your agent security guidance to consult while planning, writing, or reviewing code. The skill's instructions describe when to use that guidance and how to apply it to the task.</p>
+<p>Use CodeGuard alongside your existing tests, security scanners, and human review. For more focused tasks, the repository also includes <a href="skills/">security-review and memory-safe-migration workflows</a>.</p>
 <h2 id="community">Community</h2>
 <ul>
 <li><strong>📋 Issues</strong>: <a href="https://github.com/cosai-oasis/project-codeguard/issues">Report bugs or request features</a></li>

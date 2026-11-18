@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Project CodeGuard is an AI model-agnostic security framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.">
+        <meta name="description" content="Project CodeGuard is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides security guidance that AI assistants can use during code generation and review.">
       
       
         <meta name="author" content="Cisco AI-enabled Security Engineering, Security and Trust">
@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://project-codeguard.org/personas/">
       
       
-        <link rel="prev" href="../install-paths/">
+        <link rel="prev" href="../getting-started/">
       
       
         <link rel="next" href="../claude-code-skill-plugin/">
@@ -299,33 +299,6 @@
     
   
     Getting Started
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../install-paths/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Choosing an Install Path
   
 
     
@@ -628,60 +601,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp-server/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    MCP Server
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../codeguard-reviewer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CodeGuard Reviewer
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../skills/" class="md-nav__link">
         
   
@@ -690,33 +609,6 @@
     
   
     Skills
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../custom-rules/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Custom Rules
   
 
     
@@ -1042,11 +934,11 @@
 </tr>
 <tr>
 <td style="text-align: left;">Agentic Platform and Framework Providers</td>
-<td style="text-align: left;">Provide the IDEs, agent frameworks, plugin marketplaces, and remote loaders that activate CodeGuard rules/skills.</td>
+<td style="text-align: left;">Provide the IDEs, agent frameworks, and plugin marketplaces that discover and invoke CodeGuard skills.</td>
 </tr>
 <tr>
 <td style="text-align: left;">AI Platform Provider</td>
-<td style="text-align: left;">Hosts centrally operated services such as an internal MCP server or device-management-managed client configuration.</td>
+<td style="text-align: left;">Operates internal skill distribution and device-management-managed client configuration.</td>
 </tr>
 <tr>
 <td style="text-align: left;">AI System Users</td>
@@ -1070,24 +962,22 @@
 <h3 id="application-developer">Application Developer</h3>
 <p>The most common persona implementing CodeGuard.</p>
 <ul>
-<li>Installs rule files and Agent Skills into repositories and user profiles.</li>
-<li>Runs the update workflow or re-downloads release artifacts.</li>
+<li>Installs CodeGuard skills into repositories and user profiles.</li>
+<li>Updates installed skills or plugins from an approved CodeGuard revision or release.</li>
 <li>Uses the AI tool (Cursor, Windsurf, GitHub Copilot, Claude Code, Codex, OpenCode, etc.) that consumes CodeGuard.</li>
 <li>Can operate either at user scope (personal machine) or project scope (committed to a repo).</li>
 </ul>
 <p><strong>Typical install routes owned</strong></p>
 <ul>
-<li>Rule / instruction files (project and user scope)</li>
 <li>Agent Skills (project and user scope)</li>
 <li>Plugin marketplace (Claude Code, Codex)</li>
-<li>Remote instructions / installer (OpenCode, Codex)</li>
-<li>Self-service build from source</li>
+<li>Direct skill installation from source</li>
 </ul>
 <h3 id="ai-system-governance">AI System Governance</h3>
 <p>Represents AI risk, security, and compliance owners at the organization level.</p>
 <ul>
 <li>Decides which CodeGuard rules are mandatory for the organization.</li>
-<li>Owns the contents of vendor admin dashboards (Cursor Team Rules, GitHub Copilot organization custom instructions, Claude Code managed settings).</li>
+<li>Owns organizational settings and policies for approved CodeGuard installations.</li>
 <li>Reviews and approves rule updates landing in repositories through PRs.</li>
 <li>Defines audit, rollback, and change-control procedures for CodeGuard rollouts.</li>
 </ul>
@@ -1095,12 +985,11 @@
 <ul>
 <li>Org-managed vendor dashboards</li>
 <li>Policy review for project-scoped installations</li>
-<li>Governance of MCP-served policy</li>
 </ul>
 <h3 id="agentic-platform-and-framework-providers">Agentic Platform and Framework Providers</h3>
 <p>Providers of the IDEs, agent frameworks, and orchestration tools that actually consume CodeGuard rules.</p>
 <ul>
-<li>Define how rule files, skills, and remote loaders are discovered and activated.</li>
+<li>Define how skills are discovered and invoked.</li>
 <li>Determine how managed settings and marketplaces are enforced.</li>
 <li>Shape the effective guarantees CodeGuard can make in each tool.</li>
 </ul>
@@ -1113,22 +1002,19 @@
 <ul>
 <li>Agent Skills activation behavior</li>
 <li>Plugin marketplace enforcement</li>
-<li>Remote instruction loading</li>
 <li>Managed settings propagation</li>
-<li>Org-wide rule push mechanisms</li>
+<li>Org-wide skill distribution</li>
 </ul>
 <h3 id="ai-platform-provider">AI Platform Provider</h3>
 <p>Platform, SRE, or infrastructure teams that host shared services supporting CodeGuard at scale.</p>
 <ul>
-<li>Operates internally hosted MCP servers that serve CodeGuard rules.</li>
 <li>Manages device management (MDM/Jamf/Intune) flows that push managed settings.</li>
 <li>Runs the CI/CD and artifact pipelines used to build and distribute CodeGuard packages inside an organization.</li>
 <li>Handles uptime, observability, rollback, and access control for shared CodeGuard infrastructure.</li>
 </ul>
 <p><strong>Typical install routes owned</strong></p>
 <ul>
-<li>MCP server (self-hosted)</li>
-<li>Internal redistribution of built-from-source artifacts</li>
+<li>Internal redistribution of approved CodeGuard skills and release artifacts</li>
 <li>Endpoint-managed settings deployment</li>
 </ul>
 <h3 id="ai-system-users">AI System Users</h3>
@@ -1155,12 +1041,11 @@
 <li>Not directly involved in CodeGuard install path implementation, though CodeGuard-guided client-side behavior can reduce unsafe patterns reaching the serving layer.</li>
 </ul>
 <h2 id="persona-to-install-route-mapping">Persona-to-Install-Route Mapping</h2>
-<p>For the canonical per-route mapping used across the documentation, see <a href="../install-paths/#responsible-cosai-personas-per-install-route">Choosing an Install Path → Responsible CoSAI Personas Per Install Route</a>.</p>
+<p>For current plugin and skill-folder installation routes, see <a href="../getting-started/#choose-an-install-path">Getting Started</a>. Application Developers typically own individual and repository installations, AI System Governance reviews organizational adoption, and AI Platform Providers operate internal distribution.</p>
 <h2 id="further-reading">Further Reading</h2>
 <ul>
 <li><a href="https://github.com/cosai-oasis/secure-ai-tooling/blob/main/risk-map/yaml/personas.yaml">CoSAI persona definitions (upstream YAML)</a></li>
 <li><a href="https://www.coalitionforsecureai.org/about/">About Coalition for Secure AI</a></li>
-<li><a href="../install-paths/">Choosing an Install Path</a></li>
 <li><a href="../getting-started/">Getting Started</a></li>
 </ul>
 
@@ -1200,7 +1085,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../install-paths/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Choosing an Install Path">
+          <a href="../getting-started/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Getting Started">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -1210,7 +1095,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Choosing an Install Path
+                Getting Started
               </div>
             </div>
           </a>

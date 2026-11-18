@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Project CodeGuard is an AI model-agnostic security framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.">
+        <meta name="description" content="Project CodeGuard is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides security guidance that AI assistants can use during code generation and review.">
       
       
         <meta name="author" content="Cisco AI-enabled Security Engineering, Security and Trust">
@@ -316,33 +316,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-paths/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Choosing an Install Path
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../personas/" class="md-nav__link">
         
   
@@ -424,60 +397,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp-server/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    MCP Server
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../codeguard-reviewer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CodeGuard Reviewer
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../skills/" class="md-nav__link">
         
   
@@ -486,33 +405,6 @@
     
   
     Skills
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../custom-rules/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Custom Rules
   
 
     
@@ -646,17 +538,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Purpose Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#q-where-can-i-access-the-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -705,17 +586,6 @@
     <span class="md-ellipsis">
       
         Q: What are the OWASP supplementary rules?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-can-i-create-my-own-custom-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Q: Can I create my own custom rules?
       
     </span>
   </a>
@@ -823,17 +693,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#purpose-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Purpose Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#q-where-can-i-access-the-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -882,17 +741,6 @@
     <span class="md-ellipsis">
       
         Q: What are the OWASP supplementary rules?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#q-can-i-create-my-own-custom-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Q: Can I create my own custom rules?
       
     </span>
   </a>
@@ -991,109 +839,37 @@
 
 
 <h1 id="frequently-asked-questions">Frequently Asked Questions</h1>
-<h2 id="purpose-statement">Purpose Statement</h2>
-<p>This FAQ document provides clear, concise answers to help developers seamlessly integrate Project CodeGuard security rules into AI-assisted coding workflows. Our goal is to ensure AI-generated code adheres to secure development practices without disrupting productivity.</p>
-<hr />
 <h2 id="q-where-can-i-access-the-rules">Q: Where can I access the rules?</h2>
 <p><strong>A:</strong> You can access the rules in the <a href="https://github.com/cosai-oasis/project-codeguard">Project CodeGuard GitHub repository</a>. The latest stable release is available on the <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a>.</p>
 <hr />
 <h2 id="q-how-do-i-install-the-rules">Q: How do I install the rules?</h2>
-<p><strong>A:</strong> Detailed installation instructions are available in our <a href="../getting-started/">Getting Started guide</a>. In summary:</p>
-<ol>
-<li>Download the latest release from the <a href="https://github.com/cosai-oasis/project-codeguard/releases">releases page</a></li>
-<li>Extract the archive and copy the appropriate rules directory to your project root (e.g. <code>.cursor/</code> for Cursor, <code>.opencode/</code> for OpenCode)</li>
-<li>Restart your AI coding tool and start coding - the AI assistant will automatically follow the security rules</li>
-</ol>
+<p><strong>A:</strong> See <a href="../getting-started/">Getting Started</a> for plugin and skill-folder installation instructions.</p>
 <hr />
 <h2 id="q-will-these-rules-consume-a-lot-of-the-ai-agents-context-window">Q: Will these rules consume a lot of the AI agent's <strong>context window</strong>?</h2>
-<p><strong>A:</strong> The always‑on rules are lightweight and have minimal impact on the AI agent’s context window. Glob‑scoped rules only apply to their matching file types. Below are Cursor examples: left, no rules; right, three always‑on rules enabled.</p>
-<p align="center">
-  <img src="../images/context-window-no-rules.png" alt="Cursor AI agent context window usage without Project CodeGuard rules" width="40%" style="display:inline-block; margin-right:2%;" />
-  <img src="../images/context-window-with-rules.png" alt="Cursor AI agent context window usage with Project CodeGuard rules enabled" width="40%" style="display:inline-block;" />
-</p>
-
-<center>
-  <sub>
-    <b>Left:</b> Context window usage without any rules in place.<br>
-    <b>Right:</b> Context window usage with three always-on rules enabled.
-  </sub>
-</center>
-
+<p><strong>A:</strong> Context use depends on the client, task, and amount of guidance loaded. CodeGuard does not have a fixed context cost; refer to the <a href="https://github.com/cosai-oasis/project-codeguard/blob/main/skills/codeguard/SKILL.md">skill definition</a> for its current instructions and supporting material.</p>
 <hr />
 <h2 id="q-what-is-the-difference-between-always-on-rules-and-glob-scoped-rules">Q: What is the difference between always-on rules and glob-scoped rules?</h2>
-<p><strong>A:</strong> They are two activation types:</p>
-<ul>
-<li><strong>Always-on</strong> rules apply to all files and provide a baseline security guardrail.</li>
-<li><strong>Glob-scoped</strong> rules apply only to files matching their language/file patterns.</li>
-</ul>
+<p><strong>A:</strong> These terms describe activation in the <a href="https://github.com/cosai-oasis/project-codeguard/blob/v1.5.0/docs/getting-started.md">legacy native rule bundles</a>. The current distribution provides an Agent Skill; its intended use is described in the <a href="https://github.com/cosai-oasis/project-codeguard/blob/main/skills/codeguard/SKILL.md">skill definition</a>.</p>
 <hr />
 <h2 id="q-what-are-the-owasp-supplementary-rules">Q: What are the OWASP supplementary rules?</h2>
-<p><strong>A:</strong> The <code>sources/rules/owasp/</code> folder contains supplementary rules based on OWASP guidance that informed the original rule development. These rules are optional, not enabled by default, and are intended primarily for reference and deeper security review use cases.</p>
-<p>The official release bundles package the main <code>sources/rules/core/</code> rules. If you <a href="../getting-started/#option-2-build-from-source">build from source</a> and want the OWASP supplementary set too, include it explicitly:</p>
-<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp
-</code></pre></div>
-<hr />
-<h2 id="q-can-i-create-my-own-custom-rules">Q: Can I create my own custom rules?</h2>
-<p><strong>A:</strong> Yes. See the <a href="../custom-rules/">Custom Rules</a> documentation for a full guide.</p>
+<p><strong>A:</strong> The <code>sources/rules/owasp/</code> collection contains OWASP-based guidance used by the <code>security-review</code> workflow. It is separate from the primary CodeGuard skill and is not included in its release archive.</p>
 <hr />
 <h2 id="q-why-does-the-downloaded-release-folder-appear-empty">Q: Why does the downloaded release folder appear empty?</h2>
-<p><strong>A:</strong> After downloading and extracting the release, the folders may appear empty because the rule directories start with a dot (<code>.</code>) and are hidden by default on most operating systems.</p>
-<p><strong>To show hidden files:</strong></p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">macOS</label><label for="__tabbed_1_2">Windows</label><label for="__tabbed_1_3">Linux</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<p>In Finder, navigate to the extracted folder and press <span class="keys"><kbd class="key-command">Cmd</kbd><span>+</span><kbd class="key-shift">Shift</kbd><span>+</span><kbd class="key-period">.</kbd></span> to toggle the visibility of hidden files.</p>
-</div>
-<div class="tabbed-block">
-<p>In File Explorer:</p>
-<ol>
-<li>Navigate to the extracted folder</li>
-<li>Click on the <strong>View</strong> tab in the ribbon</li>
-<li>Check the <strong>Hidden items</strong> checkbox</li>
-</ol>
-</div>
-<div class="tabbed-block">
-<p>In your file manager, press <span class="keys"><kbd class="key-control">Ctrl</kbd><span>+</span><kbd class="key-h">H</kbd></span> to toggle hidden files, or use <code>ls -la</code> in the terminal to view all files including hidden ones.</p>
-</div>
-</div>
-</div>
-<p>Once hidden files are visible, copy the appropriate directory to your project root. See <a href="../getting-started/">Getting Started</a> for supported formats.</p>
+<p><strong>A:</strong> Legacy native bundles use hidden dot-directories; follow the <a href="https://github.com/cosai-oasis/project-codeguard/blob/v1.5.0/docs/getting-started.md">v1.5.0 installation guide</a>. The skill archive uses a visible <code>codeguard/</code> directory.</p>
 <hr />
 <h2 id="q-can-i-use-this-with-claude-code">Q: Can I use this with Claude Code?</h2>
-<p><strong>A:</strong> Yes! Install the Project CodeGuard Claude Code plugin (Agent Skill) and Claude will apply the security rules automatically while you code.</p>
-<div class="highlight"><pre><span></span><code>/plugin marketplace add cosai-oasis/project-codeguard
-/plugin install codeguard-security@project-codeguard
-/reload-plugins
-</code></pre></div>
-<p>For team/repo defaults, add the plugin in <code>.claude/settings.json</code> so contributors who trust the repository are prompted to install and enable it. See the <a href="../claude-code-skill-plugin/">Claude Code Plugin documentation</a> for the current settings schema, updates, and troubleshooting.</p>
+<p><strong>A:</strong> Yes. Follow the <a href="../claude-code-skill-plugin/">Claude Code plugin instructions</a>.</p>
 <h2 id="q-how-can-i-report-a-problem-or-enhancement-to-any-of-the-rules">Q: How can I report a problem or enhancement to any of the rules?</h2>
-<p><strong>A:</strong> You can report problems, successes, or suggest enhancements to any of the rules by:</p>
-<ol>
-<li><strong>Creating a GitHub issue</strong>: <a href="https://github.com/cosai-oasis/project-codeguard/issues">Open an issue here</a></li>
-<li><strong>Provide details</strong>: Include which rule(s) are affected, the issue you encountered, and your suggested improvement</li>
-<li><strong>Be specific</strong>: If reporting a bug, include steps to reproduce and example code if possible</li>
-</ol>
-<p>We welcome all feedback - whether it's a bug report, success story, or enhancement suggestion!</p>
+<p><strong>A:</strong> <a href="https://github.com/cosai-oasis/project-codeguard/issues">Open an issue</a> with the affected guidance, client and model, and a reproducible example.</p>
 <hr />
 <h2 id="q-how-can-i-contribute-to-these-rules-and-this-project">Q: How can I contribute to these rules and this project?</h2>
-<p><strong>A:</strong> You can contribute at any time by:</p>
-<ol>
-<li><strong>Creating a pull request</strong>: Submit code, documentation, or rule improvements directly</li>
-<li><strong>Opening a GitHub issue</strong>: Report bugs, suggest new rules, or propose enhancements</li>
-<li><strong>Participating in discussions</strong>: Share your experience and help other users</li>
-<li><strong>Improving documentation</strong>: Help make our docs clearer and more comprehensive</li>
-</ol>
-<p>See <a href="https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for detailed guidelines on our contribution process.</p>
+<p><strong>A:</strong> Follow <a href="https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for proposing changes, validation, and pull requests.</p>
 <hr />
 <h2 id="q-does-project-codeguard-replace-my-security-scanners">Q: Does Project CodeGuard replace my security scanners?</h2>
-<p><strong>A:</strong> No, Project CodeGuard rules do not replace your security scanners. The primary purpose of CodeGuard is to help you avoid introducing new security vulnerabilities as you write code, by providing agentic rules and guidance directly in your IDE. If you perform a code review using these rules, Project CodeGuard will most likely identify many of the same vulnerabilities that security scanning tools would find. However, CodeGuard is not a comprehensive substitute for security scanners—automated security tools are designed to thoroughly analyze your entire codebase and catch a broader range of issues. For best results, use CodeGuard rules in combination with your existing security scanners to maximize your code’s security.</p>
+<p><strong>A:</strong> No. CodeGuard provides guidance to the agent; it does not guarantee review coverage or detection of vulnerabilities. Use it alongside your existing security scanners, functional tests, and human review.</p>
 <hr />
 <h2 id="still-have-questions">Still have questions?</h2>
-<p><strong>Can't find your answer?</strong> </p>
-<ul>
-<li><a href="https://github.com/cosai-oasis/project-codeguard/issues">Open an issue</a> with your question</li>
-<li><a href="https://github.com/cosai-oasis/project-codeguard/discussions">Start a discussion</a> to chat with the community</li>
-</ul>
+<p>If your question is not covered here, <a href="https://github.com/cosai-oasis/project-codeguard/issues">open an issue</a> or <a href="https://github.com/cosai-oasis/project-codeguard/discussions">start a discussion</a> with the community.</p>
 
 
 

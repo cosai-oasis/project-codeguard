@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Project CodeGuard is an AI model-agnostic security framework and ruleset that embeds secure-by-default practices into AI coding workflows (generation and review). It ships core security rules, translators for popular coding agents, and validators to test rule compliance.">
+        <meta name="description" content="Project CodeGuard is an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding agent workflows. It provides security guidance that AI assistants can use during code generation and review.">
       
       
         <meta name="author" content="Cisco AI-enabled Security Engineering, Security and Trust">
@@ -15,10 +15,6 @@
         <link rel="canonical" href="https://project-codeguard.org/custom-rules/">
       
       
-        <link rel="prev" href="../skills/">
-      
-      
-        <link rel="next" href="../results/">
       
       
         
@@ -318,33 +314,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-paths/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Choosing an Install Path
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../personas/" class="md-nav__link">
         
   
@@ -426,60 +395,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../mcp-server/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    MCP Server
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../codeguard-reviewer/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    CodeGuard Reviewer
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../skills/" class="md-nav__link">
         
   
@@ -496,152 +411,6 @@
   
 
       </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Custom Rules
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Custom Rules
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#frontmatter-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Frontmatter Schema
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cli-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Reference
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="CLI Reference">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#convert_to_ide_formatspy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        convert_to_ide_formats.py
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validate_unified_rulespy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        validate_unified_rules.py
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Notes
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -747,86 +516,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#quick-start" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Start
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#frontmatter-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Frontmatter Schema
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cli-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Reference
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="CLI Reference">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#convert_to_ide_formatspy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        convert_to_ide_formats.py
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validate_unified_rulespy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        validate_unified_rules.py
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Notes
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -851,118 +540,8 @@
 
 
 <h1 id="custom-rules">Custom Rules</h1>
-<p>Create custom rules to enforce your own policies, compliance requirements, or coding standards.</p>
-<h2 id="quick-start">Quick Start</h2>
-<ol>
-<li>
-<p><strong>Create a source folder</strong> under <code>sources/rules/</code>:</p>
-<pre><code>sources/
-  rules/
-    core/                      # Project CodeGuard rules
-    owasp/                     # OWASP supplementary rules
-    my-rules/                  # Your custom rules
-  skills/                      # Authored skills (ship in the plugin)
-  agents/                      # Subagent definitions
-  templates/                   # Rule template
-</code></pre>
-</li>
-<li>
-<p><strong>Copy the template</strong> from <code>sources/templates/custom-rule-template.md.example</code>, customize it, and save it as <code>codeguard-&lt;tier&gt;-&lt;topic&gt;.md</code> (e.g., <code>codeguard-0-company-secrets.md</code>)</p>
-</li>
-<li>
-<p><strong>Build with your rules</strong>:</p>
-<pre><code>uv run python src/convert_to_ide_formats.py --source core my-rules
-</code></pre>
-</li>
-</ol>
-<h2 id="frontmatter-schema">Frontmatter Schema</h2>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Field</th>
-<th style="text-align: left;">Required</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>description</code></td>
-<td style="text-align: left;">Yes</td>
-<td style="text-align: left;">Brief description of the rule</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>languages</code></td>
-<td style="text-align: left;">If <code>alwaysApply</code> is false</td>
-<td style="text-align: left;">List of languages this rule applies to</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>alwaysApply</code></td>
-<td style="text-align: left;">No</td>
-<td style="text-align: left;">If <code>true</code>, rule applies to all files (omit <code>languages</code>)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>tags</code></td>
-<td style="text-align: left;">No</td>
-<td style="text-align: left;">Filtering categories (see <code>src/tag_mappings.py</code>)</td>
-</tr>
-</tbody>
-</table>
-<h2 id="cli-reference">CLI Reference</h2>
-<h3 id="convert_to_ide_formatspy">convert_to_ide_formats.py</h3>
-<p>Converts source rules to IDE-specific formats.</p>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--source</code></td>
-<td>Source directories under <code>sources/rules/</code> to include. Default: <code>core</code></td>
-</tr>
-<tr>
-<td><code>--output-dir</code>, <code>-o</code></td>
-<td>Output directory for generated bundles. Default: <code>dist</code></td>
-</tr>
-<tr>
-<td><code>--tag</code></td>
-<td>Filter rules by tags (comma-separated, case-insensitive, AND logic)</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Examples:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Default: convert core rules only</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py
-
-<span class="c1"># Include multiple sources</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>owasp<span class="w"> </span>my-rules
-
-<span class="c1"># Custom output directory</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--source<span class="w"> </span>core<span class="w"> </span>my-rules<span class="w"> </span>-o<span class="w"> </span>build
-
-<span class="c1"># Filter to only rules tagged with data-security</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--tag<span class="w"> </span>data-security
-
-<span class="c1"># Multiple tags (AND logic - rules must have ALL tags)</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/convert_to_ide_formats.py<span class="w"> </span>--tag<span class="w"> </span>data-security,authentication
-</code></pre></div>
-<h3 id="validate_unified_rulespy">validate_unified_rules.py</h3>
-<p>Validates rule files have correct frontmatter and structure before building.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Validate all rules in a directory</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/rules/my-rules/
-
-<span class="c1"># Validate all sources</span>
-uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>src/validate_unified_rules.py<span class="w"> </span>sources/
-</code></pre></div>
-<h2 id="notes">Notes</h2>
-<ul>
-<li>Filenames must be unique across all sources</li>
-<li>Rule files must be named <code>codeguard-&lt;tier&gt;-&lt;topic&gt;.md</code> (tier <code>0</code> = guidance, <code>1</code> = critical). The converter, validator, and auto-update workflow only process files matching <code>codeguard-*.md</code>; other <code>.md</code> files are ignored.</li>
-<li>Rules are converted to all supported IDE formats</li>
-<li>To add new tags, update <code>KNOWN_TAGS</code> in <code>src/tag_mappings.py</code></li>
-</ul>
+<p>Instructions for contributing changes to CodeGuard's guidance are in <a href="https://github.com/cosai-oasis/project-codeguard/blob/main/CONTRIBUTING.md#authored-skills-and-reference-material">CONTRIBUTING.md</a>.</p>
+<p>Instructions for the retired native-rule converter are preserved in the <a href="https://github.com/cosai-oasis/project-codeguard/blob/v1.5.0/docs/custom-rules.md">v1.5.0 documentation</a>.</p>
 
 
 
@@ -995,44 +574,6 @@ uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </sp
       
         <footer class="md-footer">
   
-    
-      
-      <nav class="md-footer__inner md-grid" aria-label="Footer" >
-        
-          
-          <a href="../skills/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Skills">
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-            </div>
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              <div class="md-ellipsis">
-                Skills
-              </div>
-            </div>
-          </a>
-        
-        
-          
-          <a href="../results/" class="md-footer__link md-footer__link--next" aria-label="Next: Evaluation Results">
-            <div class="md-footer__title">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              <div class="md-ellipsis">
-                Evaluation Results
-              </div>
-            </div>
-            <div class="md-footer__button md-icon">
-              
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
-            </div>
-          </a>
-        
-      </nav>
     
   
   <div class="md-footer-meta md-typeset">
