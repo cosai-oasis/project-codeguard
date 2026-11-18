@@ -32,7 +32,7 @@ If the repo path is missing or unclear, ask the user for it before proceeding.
    - Load all core security rules from Project CodeGuard:
 
      ```text
-     https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core
+     https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard/references
      ```
 
      These are mandatory foundational rules that must be loaded for every review.

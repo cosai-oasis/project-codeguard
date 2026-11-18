@@ -1,0 +1,14 @@
+{
+  "GPT-5.6 Sol": {
+    "input": 4.0,
+    "output": 20.0,
+    "input_cache_read": 0.4,
+    "input_cache_write": 5.0
+  },
+  "GPT-5.6 Luna": {
+    "input": 0.2,
+    "output": 1.2,
+    "input_cache_read": 0.02,
+    "input_cache_write": 0.25
+  }
+}

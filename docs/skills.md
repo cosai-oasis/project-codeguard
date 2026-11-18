@@ -1,105 +1,24 @@
 # Authored Skills
 
-Project CodeGuard ships two authored skills in `sources/skills/` that go beyond the core security rules. Unlike the generated rule files, these skills define complete workflows — they tell the AI assistant not just *what* to check, but *how* to carry out a multi-step task.
+The primary [CodeGuard skill](https://github.com/cosai-oasis/project-codeguard/blob/main/skills/codeguard/SKILL.md) guides coding and review. The repository also includes the workflows described below in `sources/skills/` for more focused tasks.
 
-| Skill | What it does |
-|:------|:------------|
-| [`security-review`](#security-review) | Full codebase security review producing a structured markdown report |
-| [`memory-safe-migration`](#memory-safe-migration) | Guided migration of C/C++ code to a memory-safe language |
+| Skill | Purpose |
+|---|---|
+| [security-review](#security-review) | Review a repository and produce a structured Markdown report. |
+| [memory-safe-migration](#memory-safe-migration) | Plan and carry out migration of memory-unsafe code, including FFI boundaries. |
 
-Both skills are included in the Claude Code plugin and are available in `sources/skills/` for use with other agents.
-
----
+Both are registered by the Claude Code plugin and are available as source folders for other integrations. The Codex plugin registers only CodeGuard. See [Getting Started](getting-started.md#choose-an-install-path) for installation instructions.
 
 ## Security Review
 
-**Skill file:** `sources/skills/security-review/SKILL.md`
+The `security-review` skill defines a repository review that produces findings, remediation guidance, and a record of coverage. Its input is the target repository.
 
-Performs a comprehensive security review of a target repository and produces a formal markdown report with prioritized findings and remediation guidance. The skill loads all 24 CodeGuard core rules plus relevant OWASP supplementary rules for the detected tech stack.
+The workflow asks the agent to save a Markdown report at `./security_report/sec_review_<repo-name>_<YYYY-MM-DD_HH-mm-ss>.md`. This path is relative to the agent's working directory. Review the findings and claimed coverage before relying on the report.
 
-### When to use
-
-Use when you want a full, structured security audit of a codebase — not for inline code generation. This produces a standalone report, not inline code suggestions.
-
-### How to trigger
-
-Ask your AI assistant to perform a security review, for example:
-
-```
-Review this repository for security issues and produce a report
-```
-
-If the repository path is ambiguous, the skill will ask for it before proceeding.
-
-### What the report includes
-
-- **Executive Summary** — total findings by severity (Critical / High / Medium / Low / Info), top 5 issues, overall security posture
-- **Detailed Findings** — for each issue: title, severity, rule reference, location, code snippet, description, impact, remediation with examples, and references
-- **Findings by Category** — grouped view across all findings
-- **Recommendations** — immediate actions, short-term (1–3 months), long-term improvements, tooling and process suggestions
-- **Appendix** — files reviewed, rules applied, methodology notes
-
-### Output location
-
-Reports are saved to:
-
-```
-./security_report/sec_review_<repo-name>_<YYYY-MM-DD_HH-mm-ss>.md
-```
-
----
+The [skill definition](https://github.com/cosai-oasis/project-codeguard/blob/main/sources/skills/security-review/SKILL.md) defines the task inputs and report requirements. Its [review guidelines](https://github.com/cosai-oasis/project-codeguard/blob/main/sources/skills/security-review/Security_Code_Reviewer_Guidelines.md) describe rule loading and the detailed procedure.
 
 ## Memory-Safe Migration
 
-**Skill file:** `sources/skills/memory-safe-migration/SKILL.md`
+The `memory-safe-migration` skill helps assess C/C++ migration, select a memory-safe language, and review boundaries between safe and unsafe code.
 
-Guides secure migration of code from memory-unsafe languages (C, C++, Assembly) to memory-safe alternatives (Rust, Go, Java, C#, Swift). Also activates when an AI agent is about to generate new C/C++ code that could be written in a memory-safe language instead.
-
-### When it activates
-
-- Migrating, porting, or rewriting C/C++ code to Rust, Go, Java, C#, or Swift
-- Adding a new module or feature to an existing C/C++ project
-- Designing an FFI boundary between safe and unsafe code
-- Reviewing mixed-language code for memory safety issues
-- Discussing memory safety roadmaps or CISA/NSA compliance
-- AI agent is about to generate new C/C++ code
-
-### Migration workflow
-
-The skill follows a six-step process:
-
-1. **Assess** — evaluate migration priority and feasibility using `scripts/assess-migration.py` or the assessment checklist
-2. **Write tests first** — establish a correctness oracle against the C/C++ implementation before touching anything
-3. **Migrate incrementally** — one function or module at a time; never rewrite an entire codebase in one pass
-4. **Secure the FFI boundary** — validate all inputs from the unsafe side, minimize `unsafe` blocks, document every `unsafe` block with a `// SAFETY:` comment
-5. **Validate** — run existing tests, fuzz FFI boundaries, check memory safety tools (Miri, race detector, ASan), benchmark performance
-6. **Update build and CI** — integrate the memory-safe toolchain, add linting and formatting checks, add safety-specific CI steps
-
-### Migration priority order
-
-| Priority | Code type |
-|:---------|:----------|
-| 1 | Network-facing code (parsers, protocol handlers, TLS) |
-| 2 | Code handling untrusted input (file parsers, deserialization) |
-| 3 | Cryptographic implementations |
-| 4 | Privilege boundary code (auth enforcement) |
-| 5 | Code with a history of memory-related CVEs |
-| 6 | Internal utility code |
-
-### Reference documents
-
-The skill bundles detailed reference docs in `sources/skills/memory-safe-migration/references/`:
-
-| Document | Contents |
-|:---------|:---------|
-| `language-selection.md` | Guide for choosing between Rust, Go, Java, C#, and Swift |
-| `ffi-security.md` | Rules for securing FFI boundaries between safe and unsafe code |
-| `migration-patterns.md` | Common patterns for buffers, strings, concurrency, and error handling |
-| `assessment-checklist.md` | Checklist for evaluating migration priority and feasibility |
-
----
-
-## Next Steps
-
-[Getting Started →](getting-started.md){ .md-button .md-button--primary }
-[Custom Rules →](custom-rules.md){ .md-button }
+The [skill definition](https://github.com/cosai-oasis/project-codeguard/blob/main/sources/skills/memory-safe-migration/SKILL.md) owns the migration sequence and priorities. Its [assessment script](https://github.com/cosai-oasis/project-codeguard/blob/main/sources/skills/memory-safe-migration/scripts/assess-migration.py) and [references](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/skills/memory-safe-migration/references) support planning, FFI design, and validation. Keep these files with the skill when installing it.

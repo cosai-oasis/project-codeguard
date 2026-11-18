@@ -43,17 +43,6 @@ def get_plugin_version(root: Path) -> str:
     return data["version"]
 
 
-def set_plugin_version(version: str, root: Path) -> None:
-    """Set version in the Claude Code plugin manifest."""
-    plugin_path = root / ".claude-plugin" / "plugin.json"
-    with open(plugin_path, encoding="utf-8") as f:
-        data = json.load(f)
-    data["version"] = version
-    with open(plugin_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-        f.write("\n")
-
-
 def get_codex_plugin_version(root: Path) -> str:
     """Get version from the Codex plugin.json."""
     plugin_path = root / ".codex-plugin" / "plugin.json"
@@ -62,35 +51,12 @@ def get_codex_plugin_version(root: Path) -> str:
     return data["version"]
 
 
-def set_codex_plugin_version(version: str, root: Path) -> None:
-    """Set version in the Codex plugin.json."""
-    plugin_path = root / ".codex-plugin" / "plugin.json"
-    with open(plugin_path, encoding="utf-8") as f:
-        data = json.load(f)
-    data["version"] = version
-    with open(plugin_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-        f.write("\n")
-
-
 def get_marketplace_version(root: Path) -> str:
     """Get version from the Claude Code marketplace entry."""
     marketplace_path = root / ".claude-plugin" / "marketplace.json"
     with open(marketplace_path, encoding="utf-8") as f:
         data = json.load(f)
     return data["plugins"][0]["version"]
-
-
-def set_marketplace_version(version: str, root: Path) -> None:
-    """Set version in the Claude Code marketplace entry."""
-    marketplace_path = root / ".claude-plugin" / "marketplace.json"
-    with open(marketplace_path, encoding="utf-8") as f:
-        data = json.load(f)
-    for plugin in data.get("plugins", []):
-        plugin["version"] = version
-    with open(marketplace_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
-        f.write("\n")
 
 
 def _read_front_matter_value(path: Path, key: str) -> str:

@@ -8,7 +8,7 @@ Automated security code review should combine **static analysis**, **contextual 
 
 **Security rules for code review are sourced from [Project CodeGuard](https://github.com/cosai-oasis/project-codeguard), organized in two primary directories:**
 
-- **[`sources/rules/core/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core)** - Core security playbooks (foundational rules)
+- **[`skills/codeguard/references/`](https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard/references)** - Core security playbooks (foundational rules)
 - **[`sources/rules/owasp/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp)** - OWASP-based best practices
 
 **CRITICAL REQUIREMENT:** AI agents must follow a prioritized rule-loading strategy to optimize context window usage while ensuring comprehensive security coverage.
@@ -20,7 +20,7 @@ Automated security code review should combine **static analysis**, **contextual 
 1. **Core Rules** - Foundational security guardrails applicable to all codebases
 
    ```text
-   https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core/*.md
+   https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard/references/*.md
    ```
 
 **SELECTIVE (Load Based on Target Tech Stack):**
@@ -34,7 +34,7 @@ Automated security code review should combine **static analysis**, **contextual 
 **Rule Loading Strategy:**
 
 1. **Phase 1a: Load Mandatory Core Rules**
-   - Fetch or read ALL `*.md` files from Project CodeGuard `sources/rules/core/`
+   - Fetch or read ALL `*.md` files from Project CodeGuard `skills/codeguard/references/`
    - Read ALL discovered files in parallel batches (15-20 per batch)
    - These rules are NON-NEGOTIABLE and must be 100% loaded
 
@@ -79,7 +79,7 @@ If you find yourself thinking "this is too large" or "I'll use a shortcut approa
 Fetch all `*.md` files from Project CodeGuard's core directory:
 
 ```text
-https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core
+https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard/references
 ```
 
 Read ALL discovered files in parallel batches of 15-20 files.
@@ -368,7 +368,7 @@ Before conducting a security code review, ensure:
 
 2. **Security Rules & Knowledge Base**
    - Access to security scanning rules from Project CodeGuard, organized in two primary directories:
-     - **[`sources/rules/core/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core)** - Core security playbooks following the pattern `codeguard-<tier>-<topic>.md` (e.g., `codeguard-0-authentication-mfa.md`, `codeguard-1-crypto-algorithms.md`)
+     - **[`skills/codeguard/references/`](https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard/references)** - Core security playbooks named `<topic>.md` (e.g., `authentication-mfa.md`, `crypto-algorithms.md`), with canonical rule IDs retained in each reference
      - **[`sources/rules/owasp/`](https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/owasp)** - OWASP-based security guidance (e.g., `codeguard-0-sql-injection-prevention.md`, `codeguard-0-cross-site-scripting-prevention.md`)
    - Understanding of each rule's intent, detection patterns, and remediation guidance
 
@@ -396,7 +396,7 @@ The AI agent should follow a systematic, multi-phase approach to ensure comprehe
    Fetch the listing of all `*.md` files from:
 
    ```text
-   https://github.com/cosai-oasis/project-codeguard/tree/main/sources/rules/core
+   https://github.com/cosai-oasis/project-codeguard/tree/main/skills/codeguard/references
    ```
 
    - Record total file count
@@ -993,7 +993,7 @@ For each security issue discovered, provide:
 
 **Severity:** CRITICAL
 **CWE:** CWE-89 (SQL Injection)
-**Rule Reference:** `codeguard-0-input-validation-injection.md`
+**Rule Reference:** `skills/codeguard/references/input-validation-injection.md`
 
 **Location:** `app/database/queries.py`, lines 45-47
 
@@ -1089,7 +1089,7 @@ Provide actionable guidance organized by timeframe:
 #### Rules Applied
 
 - List of security rules used from each Project CodeGuard directory:
-  - Core rules (`sources/rules/core/`)
+  - Core rules (`skills/codeguard/references/`)
   - OWASP rules (`sources/rules/owasp/`)
 - Coverage assessment by rule category
 - Rules requiring updates or additions

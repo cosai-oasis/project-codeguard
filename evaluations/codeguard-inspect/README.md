@@ -315,6 +315,58 @@ unchanged outputs first. Subcategory and confidence columns remain available but
 hidden by default to keep the initial view readable. Finding colors are
 zero-anchored neutral magnitude cues rather than green/red security judgments.
 
+## Export Results
+
+The exporter writes a generated `index.md`, three charts per epoch,
+`results.csv`, and `samples.csv`.
+[Evaluation Results](../../docs/results/index.md) explains the metrics and limits.
+
+First run the full `inspect eval-set` command from [Run](#run), which runs all
+three conditions, with a new `--log-dir` such as `logs/securityeval-report`. It
+writes one log per condition. Then pass those three logs to the exporter:
+
+```bash
+uv run --locked --group reporting python -m codeguard_evals.export_results \
+  --title "CodeGuard 1.5.0 on SecurityEval" \
+  --run "Model A" logs/securityeval-report/BASELINE.eval \
+  --run "Model A" logs/securityeval-report/SECURE_PROMPT.eval \
+  --run "Model A" logs/securityeval-report/CODEGUARD.eval \
+  --output-dir ../../docs/results/2026-10-codeguard-1.5.0
+```
+
+- `--run` takes a public model label and one final log. Repeat for each condition
+  and model, in display order; provider and deployment names are not published.
+- `--epoch N` selects one epoch. By default, every epoch has separate tables and
+  charts. Runs for a model must attempt the same cases in every epoch and have
+  matching epoch counts.
+- `--output-dir` must be new. Nothing is written until all logs pass validation.
+
+Every run needs a complete cost for the findings chart. With the current
+Inspect 0.3.255 pin, OpenAI runs need `--prices FILE.json` when exporting, even
+if costs were recorded. With Inspect 0.3.260 or newer, future runs can record
+costs using [`--model-cost-config`](https://inspect.aisi.org.uk/options.html).
+Prices are per million tokens, keyed by the public `--run` labels; see the
+[1.4.0 prices](reporting/securityeval-1.4-prices.json).
+Keep deployment-specific Inspect configuration private.
+
+With `--prices`, every run uses the supplied rates for tables, charts, and cost
+comparisons. Original recorded costs stay separate in the CSV. Without it, the
+report uses complete recorded costs. `--cost-note TEXT` explains estimate
+assumptions. No prices are fetched.
+For OpenAI logs from Inspect before 0.3.260 (or an unknown version) with missing
+cache-write counts, recorded costs are unreliable: supply `--prices` to estimate
+them. Non-cached input uses the higher input or cache-write rate; cache reads
+retain their discount.
+The 1.4.0 prices were checked October 1, 2026, including
+[Sol promotional pricing](https://developers.openai.com/api/docs/models/gpt-5.6-sol).
+Actual provider charges may differ.
+
+To regenerate a report, export the original logs into a new directory.
+
+Use trusted local logs. Scores are copied, never rescored, and only allowlisted
+fields are exported. Review every generated file before committing, then link the report from
+`docs/results/index.md`. Regenerate and replace the page, charts, and CSVs together.
+
 ## Measurement Details
 
 ### Skill routing
@@ -439,7 +491,7 @@ Run non-live checks:
 
 ```bash
 uv lock --check
-uv run --locked pytest
+uv run --locked --group reporting pytest
 uv run --locked python -m compileall -q codeguard_evals
 uv run --locked inspect list tasks codeguard_evals/securityeval
 docker compose --file sandbox/compose.yaml config --quiet
@@ -458,7 +510,7 @@ a manual pre-merge gate:
 
 ```bash
 uv run --locked python -m codeguard_evals.prefetch
-uv run --locked pytest -m docker --basetemp=logs/pytest-docker
+uv run --locked --group reporting pytest -m docker --basetemp=logs/pytest-docker
 ```
 
 Together, they exercise the real named Semgrep service, a known positive finding,
