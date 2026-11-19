@@ -1,27 +1,30 @@
-"""Load the exact Semgrep image and rules-checkout contract."""
+"""Load the Semgrep image pin and SecurityEval-specific rules contract."""
 
 from __future__ import annotations
 
-import hashlib
-import stat
-from functools import cache
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Annotated, Final, Literal, get_args
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
+from codeguard_evals.artifact_locks import (
+    FilePin,
+    GitFilesLock,
+    RelativePath,
+)
+from codeguard_evals.artifacts import (
+    verify_files,
+)
 from codeguard_evals.safe_io import load_strict_json, read_bounded
 
-SEMGREP_LOCK_PATH: Final = Path(__file__).parents[1] / "semgrep.lock.json"
+SEMGREP_LOCK_PATH: Final = Path(__file__).parents[2] / "semgrep.lock.json"
 SEMGREP_RULES_CACHE_ROOT: Final = (
-    Path(__file__).parents[1]
+    Path(__file__).parents[2]
     / ".cache"
     / "codeguard-evals"
-    / "semgrep-rules"
+    / "semgrep-rules-only"
 )
-MAX_SEMGREP_LOCK_BYTES: Final = 4096
-MAX_RULE_FILE_BYTES: Final = 256 * 1024
-MAX_RULE_TREE_BYTES: Final = 8 * 1024 * 1024
+MAX_SEMGREP_LOCK_BYTES: Final = 128 * 1024
 SEMGREP_ENGINE: Final = "OSS"
 SEMGREP_RULE_ID_REWRITING: Final = True
 SemgrepFindingSubcategory = Literal["audit", "secure default", "vuln"]
@@ -29,9 +32,6 @@ ALL_SEMGREP_SUBCATEGORIES: Final[frozenset[str]] = frozenset(
     get_args(SemgrepFindingSubcategory)
 )
 SemgrepConfidence = Literal["HIGH", "MEDIUM", "LOW"]
-ALL_SEMGREP_CONFIDENCES: Final[frozenset[str]] = frozenset(
-    get_args(SemgrepConfidence)
-)
 SemgrepSeverity = Literal[
     "ERROR",
     "WARNING",
@@ -91,22 +91,35 @@ class SemgrepImageLock(_StrictModel):
         return f"{self.tagged_reference}@{self.index_digest}"
 
 
-class SemgrepRulesLock(_StrictModel):
+class SemgrepRulesLock(GitFilesLock):
     repository: Literal["https://github.com/semgrep/semgrep-rules"]
-    commit: Annotated[
-        str,
-        Field(min_length=40, max_length=40, pattern=r"^[0-9a-f]{40}$"),
-    ]
     subdirectory: Literal["python"]
     finding_category: Literal["security"]
-    tree_sha256: Annotated[
-        str,
-        Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$"),
-    ]
+    # Semgrep's rule catalog exceeds the shared file-count limit. Shared path
+    # and total-size validation still applies.
+    files: Annotated[dict[RelativePath, FilePin], Field(min_length=2, max_length=512)]
+
+    @model_validator(mode="after")
+    def rules_and_license_only(self) -> SemgrepRulesLock:
+        if "LICENSE" not in self.files:
+            raise ValueError("Semgrep bundle requires rules and the upstream license")
+        for name in self.files:
+            if name == "LICENSE":
+                continue
+            path = PurePosixPath(name)
+            if (
+                not name.startswith(f"{self.subdirectory}/")
+                or path.suffix not in {".yaml", ".yml"}
+                or path.stem.endswith((".test", ".fixed"))
+            ):
+                raise ValueError(
+                    "Semgrep manifest must contain only Python rule definitions and LICENSE"
+                )
+        return self
 
 
 class SemgrepLock(_StrictModel):
-    schema_version: Literal[3]
+    schema_version: Literal[4]
     image: SemgrepImageLock
     rules: SemgrepRulesLock
 
@@ -129,8 +142,15 @@ def semgrep_rules_checkout_path(
     *,
     cache_root: Path = SEMGREP_RULES_CACHE_ROOT,
 ) -> Path:
-    """Return the stable cache path for the pinned Git checkout."""
+    """Return the rules-only bundle path, separate from legacy full checkouts."""
     return cache_root / lock.rules.commit
+
+
+def rules_access_error(error: PermissionError, cache_root: Path) -> RuntimeError:
+    return RuntimeError(
+        "Access to pinned Semgrep rules was denied. Check filesystem permissions "
+        f"and endpoint-protection history for {error.filename or cache_root}."
+    )
 
 
 def load_locked_rules_directory(
@@ -138,83 +158,24 @@ def load_locked_rules_directory(
     *,
     cache_root: Path = SEMGREP_RULES_CACHE_ROOT,
 ) -> Path:
-    """Validate and return the operator-provided Python rules directory."""
+    """Validate and return SecurityEval's cached Python rules, without downloads."""
     try:
-        cache_details = cache_root.lstat()
+        # Verify the exact manifest, including LICENSE, before exposing any rules.
+        root = verify_files(lock.rules, cache_root)
+        return root / lock.rules.subdirectory
     except FileNotFoundError:
         raise FileNotFoundError(
-            "The operator-provided Semgrep rules checkout is missing. Prepare "
-            "the pinned checkout described in README.md before prefetch or "
-            "evaluation."
+            "Prepare the pinned SecurityEval rules with: python -m "
+            "codeguard_evals.prefetch --benchmark securityeval --stage scan"
         ) from None
-    except OSError:
-        raise RuntimeError("Cached Semgrep rules cache is invalid") from None
-    if not stat.S_ISDIR(cache_details.st_mode):
-        raise RuntimeError("Cached Semgrep rules cache is invalid")
-    if stat.S_IMODE(cache_details.st_mode) != 0o700:
-        raise RuntimeError("Cached Semgrep rules permissions are invalid")
-
-    checkout = semgrep_rules_checkout_path(lock, cache_root=cache_root)
-    rules = checkout / lock.rules.subdirectory
-    try:
-        checkout_details = checkout.lstat()
-        rules_details = rules.lstat()
-    except FileNotFoundError:
-        raise FileNotFoundError(
-            "The operator-provided Semgrep rules checkout is missing. Prepare "
-            "the pinned checkout described in README.md before prefetch or "
-            "evaluation."
-        ) from None
-    except OSError:
-        raise RuntimeError("Cached Semgrep rules are invalid") from None
-    if not stat.S_ISDIR(checkout_details.st_mode) or not stat.S_ISDIR(
-        rules_details.st_mode
-    ):
-        raise RuntimeError("Cached Semgrep rules are invalid")
-    try:
-        tree_sha256 = _rules_tree_sha256(rules)
-    except (OSError, UnicodeEncodeError, ValueError):
-        raise RuntimeError("Cached Semgrep rules are invalid") from None
-    if tree_sha256 != lock.rules.tree_sha256:
-        raise RuntimeError("Cached Semgrep rules are invalid")
-    return rules
+    except PermissionError as error:
+        raise rules_access_error(error, cache_root) from error
+    except (OSError, ValueError) as error:
+        raise RuntimeError(f"Cached Semgrep rules are invalid: {error}") from None
 
 
-def _rules_tree_sha256(rules: Path) -> str:
-    """Hash every stable regular file in the mounted rules tree."""
-    files: list[tuple[bytes, Path]] = []
-    for path in rules.rglob("*", recurse_symlinks=False):
-        details = path.lstat()
-        if stat.S_ISLNK(details.st_mode):
-            raise ValueError("Semgrep rules tree contains a symlink")
-        if stat.S_ISDIR(details.st_mode):
-            continue
-        if not stat.S_ISREG(details.st_mode):
-            raise ValueError("Semgrep rules tree contains a special file")
-        relative_raw = path.relative_to(rules).as_posix().encode("utf-8")
-        files.append((relative_raw, path))
-
-    digest = hashlib.sha256()
-    total_bytes = 0
-    for relative_raw, path in sorted(files, key=lambda item: item[0]):
-        content = read_bounded(
-            path,
-            MAX_RULE_FILE_BYTES,
-            label="Semgrep rules file",
-        )
-        total_bytes += len(content)
-        if total_bytes > MAX_RULE_TREE_BYTES:
-            raise ValueError("Semgrep rules tree exceeds the total size limit")
-        digest.update(len(relative_raw).to_bytes(8, "big"))
-        digest.update(relative_raw)
-        digest.update(len(content).to_bytes(8, "big"))
-        digest.update(content)
-    return digest.hexdigest()
-
-
-@cache
 def load_default_locked_rules_directory() -> Path:
-    """Validate the operator checkout once per evaluation process."""
+    """Validate cached rules on every preflight, without memoization."""
     return load_locked_rules_directory()
 
 

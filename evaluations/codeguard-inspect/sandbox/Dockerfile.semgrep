@@ -1,0 +1,12 @@
+FROM docker.io/semgrep/semgrep:1.173.0-nonroot@sha256:ae85c429145ef6b29c7a47b4cdec78304f9b325f75ce0ee4a797e841206e3e68
+USER root
+COPY codeguard_evals/__init__.py codeguard_evals/safe_io.py codeguard_evals/artifacts.py \
+    codeguard_evals/sandbox_protocol.py /opt/codeguard/codeguard_evals/
+COPY codeguard_evals/graders/__init__.py codeguard_evals/graders/scanner_worker.py \
+    codeguard_evals/graders/semgrep_protocol.py \
+    codeguard_evals/graders/semgrep_worker.py /opt/codeguard/codeguard_evals/graders/
+RUN --network=none chmod -R a+rX,a-w /opt/codeguard
+USER 1000:1000
+WORKDIR /opt/codeguard
+RUN --network=none /usr/bin/python3 -E -s -B -m codeguard_evals.graders.semgrep_worker --verify-only
+ENV PYTHONDONTWRITEBYTECODE=1 SEMGREP_SEND_METRICS=off SEMGREP_ENABLE_VERSION_CHECK=0

@@ -26,14 +26,11 @@ from inspect_ai.tool import ToolCallError
 from inspect_ai.util import OutputLimitExceededError
 
 import codeguard_evals.sandbox_client as sandbox_client
-import codeguard_evals.scorers as scorer_module
-from codeguard_evals.codeguard import load_codeguard
-from codeguard_evals.output_artifact import (
-    SAVED_OUTPUT_KEY,
-    SavedOutput,
-    save_semgrep_evidence,
-)
-from codeguard_evals.python_output import validate_python_solution
+import codeguard_evals.securityeval.scorers as scorer_module
+from codeguard_evals.graders.semgrep import save_semgrep_evidence
+from codeguard_evals.metrics import save_skill_snapshot
+from codeguard_evals.output_artifact import SAVED_OUTPUT_KEY, SavedOutput
+from codeguard_evals.securityeval.python_output import validate_python_solution
 from codeguard_evals.sandbox_client import (
     BenchmarkInfrastructureError,
     export_solution,
@@ -43,37 +40,39 @@ from codeguard_evals.sandbox_protocol import (
     MAX_PYTHON_SOURCE_BYTES,
     SANDBOX_NAME,
     SANDBOX_USER,
+    SOURCE_FILENAME,
 )
-from codeguard_evals.scorers import (
+from codeguard_evals.securityeval.protocol import (
     CHANGED_OUTPUT_METRIC,
     CONFIDENCE_HIGH_METRIC,
     CONFIDENCE_LOW_METRIC,
     CONFIDENCE_MEDIUM_METRIC,
+    EVALUATION_VERSION,
     FINDING_COUNT_METRIC,
     LOC_METRIC,
-    SCORING_PYTHON_VERSION,
+    SEMGREP_FLAGGED_OUTPUT_METRIC,
     SEVERITY_ERROR_METRIC,
     SEVERITY_INFO_METRIC,
     SEVERITY_WARNING_METRIC,
-    SEMGREP_FLAGGED_OUTPUT_METRIC,
     SKILL_LOADED_METRIC,
     SUBCATEGORY_AUDIT_METRIC,
     SUBCATEGORY_SECURE_DEFAULT_METRIC,
     SUBCATEGORY_VULN_METRIC,
+    TASK_PROMPT,
     VALID_OUTPUT_METRIC,
+)
+from codeguard_evals.securityeval.scorers import (
+    SCORING_PYTHON_VERSION,
     static_safety_scorer,
 )
-from codeguard_evals.securityeval.protocol import (
-    CODEGUARD_SKILL_DIR,
-    EVALUATION_VERSION,
-    TASK_PROMPT,
-)
-from codeguard_evals.semgrep_artifacts import (
+from codeguard_evals.graders.semgrep_artifacts import (
     SemgrepFinding,
     SemgrepSeverity,
     semgrep_provenance,
 )
 from tests.conftest import (
+    CODEGUARD_SKILL_DIR,
+    codeguard_files,
     CASE_ID,
     ORIGINAL_SOURCE,
     SAFE_SOURCE,
@@ -125,12 +124,7 @@ def _state_with_output(
     )
     _save_output(state, source)
     evidence_findings = (
-        (
-            ()
-            if source is not None
-            and validate_python_solution(source).valid
-            else None
-        )
+        (() if source is not None and validate_python_solution(source).valid else None)
         if findings is _DEFAULT_FINDINGS
         else cast(tuple[SemgrepFinding, ...] | None, findings)
     )
@@ -237,7 +231,7 @@ def test_export_uses_the_agent_sandbox_with_fixed_argv_and_output_bounds(
     monkeypatch.setattr(sandbox_client, "sandbox", get_sandbox)
     monkeypatch.setattr(sandbox_client, "override_sandbox_output_limit", output_limit)
 
-    exported = asyncio.run(export_solution())
+    exported = asyncio.run(export_solution(SOURCE_FILENAME))
 
     assert exported.content == SAFE_SOURCE.encode()
     assert sandbox_names == [SANDBOX_NAME]
@@ -246,6 +240,8 @@ def test_export_uses_the_agent_sandbox_with_fixed_argv_and_output_bounds(
         "-I",
         "-m",
         "codeguard_evals.export_solution",
+        "--filename",
+        "solution.py",
     ]
     assert agent.calls[0][0] == expected_command
     call = agent.calls[0][1]
@@ -282,7 +278,7 @@ def test_export_errors_do_not_expose_untrusted_output(
     monkeypatch.setattr(sandbox_client, "sandbox", lambda name: FakeSandbox(result))
 
     with pytest.raises(BenchmarkInfrastructureError) as captured:
-        asyncio.run(export_solution())
+        asyncio.run(export_solution(SOURCE_FILENAME))
 
     assert secret not in str(captured.value)
 
@@ -333,7 +329,7 @@ def test_export_normalizes_sandbox_failures_without_exposing_details(
     monkeypatch.setattr(sandbox_client, "sandbox", lambda _name: FakeSandbox(result))
 
     with pytest.raises(BenchmarkInfrastructureError, match=message) as captured:
-        asyncio.run(export_solution())
+        asyncio.run(export_solution(SOURCE_FILENAME))
 
     error = str(captured.value)
     assert "sensitive timeout details" not in error
@@ -607,7 +603,9 @@ def test_static_safety_scorer_rejects_inconsistent_evidence_applicability(
         _score(state)
 
 
+@pytest.mark.parametrize("json_ascii", [None, False, True], ids=["plain", "json", "json-ascii"])
 def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
+    json_ascii: bool | None,
 ) -> None:
     codeguard_id = f"static_safety/codeguard/{CASE_ID}"
     metadata = {
@@ -615,7 +613,9 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
         "cwe": SAMPLE_CWE,
         "condition": "codeguard",
     }
-    expected_skill = load_codeguard()["SKILL.md"].decode("utf-8")
+    snapshot = codeguard_files()
+    snapshot["SKILL.md"] += "\nUnicode fixture: café → guidance.\n".encode("utf-8")
+    expected_skill = snapshot["SKILL.md"].decode("utf-8")
     skill_document = (
         "Script completed\nOutput:\n"
         f"{expected_skill}"
@@ -632,12 +632,14 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
         result_id: str = "read-skill",
         tool_error: ToolCallError | None = None,
         parse_error: str | None = None,
+        exit_code: int = 0,
     ) -> TaskState:
         state = _state_with_output(
             source=source,
             sample_id=codeguard_id,
             metadata=metadata,
         )
+        save_skill_snapshot(state, snapshot)
         assistant = ModelOutput.for_tool_call(
             "mockllm/model",
             function,
@@ -646,6 +648,11 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
         ).message
         assert assistant.tool_calls is not None
         assistant.tool_calls[0].parse_error = parse_error
+        if json_ascii is not None:
+            # Embed a JSON command result in an otherwise plain-text tool reply.
+            output = "Script completed\nOutput:\n\n" + json.dumps(
+                {"exit_code": exit_code, "output": output}, ensure_ascii=json_ascii
+            )
         state.messages = [
             assistant,
             ChatMessageTool(
@@ -668,12 +675,13 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
         {
             "input": (
                 "const r = await tools.exec_command({"
-                f'cmd:"sed -n \'1,240p\' {skill_path}"'
+                f"cmd:\"sed -n '1,240p' {skill_path}\""
                 "}); text(r.output);"
             )
         },
     )
     skipped = _state_with_output(sample_id=codeguard_id, metadata=metadata)
+    save_skill_snapshot(skipped, snapshot)
     path_check_only = state_with_call(
         "exec_command",
         {"cmd": f"test -f {skill_path}"},
@@ -682,11 +690,17 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
     marker_only_output = state_with_call(
         "exec_command",
         {"cmd": f"cat {skill_path}"},
-        output=(
-            "Process exited with code 0\n"
-            "name: codeguard\n"
-            "# CodeGuard Skill\n"
-        ),
+        output=("Process exited with code 0\nname: codeguard\n# CodeGuard Skill\n"),
+    )
+    truncated_read = state_with_call(
+        "exec_command",
+        {"cmd": f"cat {skill_path}"},
+        output=expected_skill[:-1],
+    )
+    read_then_failure = state_with_call(
+        "exec_command",
+        {"cmd": f"cat {skill_path}; false"},
+        exit_code=1,
     )
     unrelated_path = state_with_call(
         "exec_command",
@@ -713,6 +727,8 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
     skipped_values = _score(skipped).as_dict()
     path_check_values = _score(path_check_only).as_dict()
     marker_only_values = _score(marker_only_output).as_dict()
+    truncated_values = _score(truncated_read).as_dict()
+    read_then_failure_values = _score(read_then_failure).as_dict()
     unrelated_values = _score(unrelated_path).as_dict()
     uncorrelated_values = _score(uncorrelated_read).as_dict()
     errored_values = _score(errored_read).as_dict()
@@ -723,14 +739,28 @@ def test_static_safety_scorer_records_loaded_and_skipped_codeguard_samples(
     assert skipped_values[SKILL_LOADED_METRIC] == 0
     assert path_check_values[SKILL_LOADED_METRIC] == 0
     assert marker_only_values[SKILL_LOADED_METRIC] == 0
+    assert truncated_values[SKILL_LOADED_METRIC] == 0
+    assert read_then_failure_values[SKILL_LOADED_METRIC] == 1
     assert unrelated_values[SKILL_LOADED_METRIC] == 0
     assert uncorrelated_values[SKILL_LOADED_METRIC] == 0
     assert errored_values[SKILL_LOADED_METRIC] == 0
     assert malformed_values[SKILL_LOADED_METRIC] == 0
 
 
-def test_static_safety_scorer_records_replayable_scoring_provenance(
-) -> None:
+def test_codeguard_scoring_requires_the_original_skill_snapshot() -> None:
+    state = _state_with_output(
+        sample_id=f"static_safety/codeguard/{CASE_ID}",
+        metadata={"case_id": CASE_ID, "cwe": SAMPLE_CWE, "condition": "codeguard"},
+    )
+    with pytest.raises(BenchmarkInfrastructureError, match="snapshot is missing"):
+        _score(state)
+    save_skill_snapshot(state, codeguard_files())
+    current = _score(state).as_dict()
+    assert current[SKILL_LOADED_METRIC] == 0
+    assert current[VALID_OUTPUT_METRIC] == 1
+
+
+def test_static_safety_scorer_records_replayable_scoring_provenance() -> None:
     state = _state_with_output(findings=_scan_with_findings())
     score = _score(state)
 
@@ -855,8 +885,7 @@ def _captured_outputs(sources: dict[str, str | None]) -> Solver:
                     if source == SAFE_SOURCE
                     else (
                         ()
-                        if source is not None
-                        and validate_python_solution(source).valid
+                        if source is not None and validate_python_solution(source).valid
                         else None
                     )
                 ),
@@ -924,8 +953,7 @@ def test_inspect_aggregates_each_metric_over_its_intended_samples(
         if sample.scores is not None
     }
     assert {
-        sample_id: value[VALID_OUTPUT_METRIC]
-        for sample_id, value in raw_values.items()
+        sample_id: value[VALID_OUTPUT_METRIC] for sample_id, value in raw_values.items()
     } == {
         missing_id: 0,
         invalid_id: 0,
@@ -942,11 +970,13 @@ def test_inspect_aggregates_each_metric_over_its_intended_samples(
         flagged_id: 1,
     }
     for name in _CONDITIONAL_FINDING_METRICS:
-        assert sum(
-            isinstance(value[name], float)
-            and math.isnan(cast(float, value[name]))
-            for value in raw_values.values()
-        ) == 2
+        assert (
+            sum(
+                isinstance(value[name], float) and math.isnan(cast(float, value[name]))
+                for value in raw_values.values()
+            )
+            == 2
+        )
 
     assert log.results is not None
     assert [result.name for result in log.results.scores[:3]] == [
@@ -1017,6 +1047,7 @@ def test_inspect_aggregates_epochs_as_clustered_generations(
             return state
 
         return solve
+
     samples = [
         Sample(
             id=sample_id,

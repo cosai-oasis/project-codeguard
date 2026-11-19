@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-import codeguard_evals.python_output as python_output_module
-from codeguard_evals.python_output import (
+import codeguard_evals.securityeval.python_output as python_output_module
+from codeguard_evals.securityeval.python_output import (
     MAX_PYTHON_SOURCE_BYTES,
     validate_python_solution,
     validated_original_bytes,

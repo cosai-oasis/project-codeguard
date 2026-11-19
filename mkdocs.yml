@@ -50,7 +50,11 @@ nav:
   - Claude Code Plugin: claude-code-skill-plugin.md
   - Codex Plugin: codex-skill-plugin.md
   - Skills: skills.md
-  - Evaluation Results: results/index.md
+  - Evaluations:
+      - Run the harness: evaluations/index.md
+      - SecurityEval: evaluations/securityeval.md
+      - CyberSecEval: evaluations/cyberseceval.md
+      - Results: results/index.md
   - Project Decisions: adr/index.md
   - FAQ: faq.md
 markdown_extensions:

@@ -5,8 +5,9 @@ from __future__ import annotations
 import csv
 import io
 import math
-import re
-from collections.abc import Mapping, Sequence
+from collections import Counter
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
 from typing import Final
@@ -14,54 +15,27 @@ from typing import Final
 from matplotlib import rc_context
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_agg import FigureCanvasAgg
-from matplotlib.colors import to_hex, to_rgb
+from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 from matplotlib.ticker import MaxNLocator
 
+from codeguard_evals import results_costs as costs
+from codeguard_evals.protocol import CONDITION_LABELS, condition_has_skill
+from codeguard_evals.results_common import LIMIT_FIELDS, NOTE, TITLE, ReportError, Row, text
 
-Row = dict[str, object]
 Numbers = Mapping[object, Mapping[str, object]]
-DEFAULT_TITLE = "SecurityEval results"
-MODEL_LABEL = r"[A-Za-z0-9][A-Za-z0-9 ._()+-]{0,59}"
-TITLE = r"[A-Za-z0-9][A-Za-z0-9 .,:;()/+-]{0,119}"
-VERSION = r"[0-9]+(?:\.[0-9]+){1,3}[A-Za-z0-9.+-]*"
-NOTE = r"[A-Za-z0-9][A-Za-z0-9 .,;:()/%+$-]{0,999}"
-LIMIT_FIELDS = (
-    "agent_turn_limit", "agent_seconds", "sample_seconds_limit", "agent_output_tokens",
-)
-RESULT_FIELDS = (
-    "run", "epoch", "model", "condition", "codeguard_version",
-    *LIMIT_FIELDS,
-    "cases", "shared_cases", "findings", "likely_vulnerabilities", "tokens_per_case",
-    "unfinished", "recorded_cost_usd", "estimated_cost_usd", "cost_per_case_usd",
-    "cost_change_pct", "confidence_high", "confidence_medium", "confidence_low",
-)
-SAMPLE_FIELDS = (
-    "run", "case_id", "epoch", "outcome", "changed_output", "valid_output",
-    "findings", "likely_vulnerabilities",
-)
-
-
-
-class ReportError(ValueError):
-    """A validation error that is safe to display without private input values."""
-
-
+Groups = Mapping[str, Sequence[Row]]
+Column = tuple[str, Callable[[Row], str]]
 INK: Final = "#162536"
 MID: Final = "#536274"
 RULE: Final = "#C9D1DB"  # zero lines and the dashed baseline cross
-CONDITION_NAMES: Final = MappingProxyType(
-    {
-        "baseline": "Baseline",
-        "secure_prompt": "Secure prompt",
-        "codeguard": "CodeGuard",
-    }
+FIXED_STYLES: Final = MappingProxyType(
+    {"Baseline": ("#666666", "o"), "Secure prompt": ("#D55E00", "s")}
 )
-FIXED_COLORS: Final = MappingProxyType(
-    {"Baseline": "#CA6034", "Secure prompt": "#16816B"}
-)
-CODEGUARD_COLORS: Final = ("#9BBDE3", "#236BB5")  # blue endpoints; versions follow input order
+# Categorical colours and built-in markers; skill series follow input order.
+SKILL_COLORS: Final = ("#CC79A7", "#0072B2", "#009E73", "#E69F00", "#56B4E9")
+SKILL_MARKERS: Final = ("^", "D", "P", "v", "X", "h")
 OUTCOMES: Final = (
     ("Completed", "#D6E5F2"),
     ("Turn limit", "#CC824D"),
@@ -69,24 +43,45 @@ OUTCOMES: Final = (
     ("Other limit", "#8793A3"),
     ("Error", "#AF3D47"),
 )
-CONFIDENCE: Final = (
-    ("High", "confidence_high", "#236BB5"),
-    ("Medium", "confidence_medium", "#9BBDE3"),
-    ("Low", "confidence_low", "#E1E4E8"),
-)
-CHARTS: Final = ("findings", "outcomes", "confidence")
-INTRO: Final = (
-    "Findings are Semgrep scanner results, not confirmed vulnerabilities. "
-    "[Evaluation Results](../index.md) explains how the evaluation works and its "
-    "limits."
-)
-DATA: Final = (
-    "## Data",
-    "",
-    "[results.csv](results.csv) has the summary numbers for each run and epoch, and "
-    "[samples.csv](samples.csv) has one row per attempt.",
-    "",
-)
+FINDING_LEVEL_COLORS: Final = ("#236BB5", "#9BBDE3", "#E1E4E8", "#748A9E")
+
+
+@dataclass(frozen=True)
+class ReportDefinition:
+    """Benchmark-specific fields and labels for the shared report renderer."""
+
+    result_fields: Sequence[str]
+    sample_fields: Sequence[str]
+    intro: str
+    chart_text: Callable[[str, bool], tuple[str, str]]
+    detail_name: str
+    finding_parts: Sequence[tuple[str, str]]
+    empty_note: str
+    table_note: str = (
+        "**Findings:** We compare the same examples across all runs. If an example does not meet "
+        "the benchmark's output and scan requirements in any run, it is excluded from every "
+        "run's findings comparison.\n\n"
+        "**Costs:** Totals cover recorded usage, including unfinished attempts. "
+        "Attempts without token counts are listed below when present. "
+        "n/a means a value is unavailable."
+    )
+    footer: str = (
+        "Examples excluded from the findings comparison are still listed in samples.csv. "
+        "Leaving them out can change how the runs compare. One epoch is one pass through the "
+        "examples; it does not show how results vary across repeated runs."
+    )
+    data_note: str = (
+        "[results.csv](results.csv) lists totals for each run and epoch. "
+        "[samples.csv](samples.csv) lists every attempt, including unfinished generations "
+        "and files the scanner could not fully check."
+    )
+    detail_table: Callable[[Groups, str], list[str]] | None = None
+
+    @property
+    def charts(self) -> tuple[str, ...]:
+        return ("findings", "outcomes", self.detail_name)
+
+
 FIGURE_WIDTH: Final = 7.0  # inches; 1,400 pixels at the PNG resolution
 STYLE: Final = MappingProxyType(
     {
@@ -124,28 +119,6 @@ PNG_OPTIONS: Final = MappingProxyType(
 )
 
 
-def text(value: object, pattern: str) -> str:
-    """Return an allowlisted text value; ``None`` becomes blank."""
-    if value is None:
-        return ""
-    if not isinstance(value, str) or re.fullmatch(pattern, value) is None:
-        raise ReportError("An approved text field has an unsupported format.")
-    return value
-
-
-def number(value: object) -> int | float | str:
-    """Return a finite, non-negative number; missing or NaN stays blank, not zero."""
-    if value is None:
-        return ""
-    if type(value) not in (int, float):
-        raise ReportError("An approved numeric field is not numeric.")
-    if math.isnan(value):
-        return ""
-    if not math.isfinite(value) or value < 0:
-        raise ReportError("An approved numeric field is out of range.")
-    return value
-
-
 def _csv(rows: Sequence[Row], fields: Sequence[str]) -> bytes:
     buffer = io.StringIO()
     writer = csv.DictWriter(buffer, fieldnames=fields, lineterminator="\n")
@@ -155,7 +128,8 @@ def _csv(rows: Sequence[Row], fields: Sequence[str]) -> bytes:
 
 
 def write_report(output: Path, results: Sequence[Row], samples: Sequence[Row], *,
-                 title: str, comparison_note: str = "", cost_note: str = "", multiple_epochs: bool = False) -> None:
+                 title: str, comparison_note: str = "", cost_note: str = "", multiple_epochs: bool = False,
+                 definition: ReportDefinition) -> None:
     """Render before creating a new directory; never replace an existing export."""
     if output.exists() or output.is_symlink():
         raise ReportError("The output directory already exists. Choose a new directory.")
@@ -165,11 +139,12 @@ def write_report(output: Path, results: Sequence[Row], samples: Sequence[Row], *
     if any(row["estimated_cost_usd"] != "" for row in results) and not cost_note:
         raise ReportError("Estimated costs require their public method note.")
     files = {
-        "results.csv": _csv(results, RESULT_FIELDS),
-        "samples.csv": _csv(samples, SAMPLE_FIELDS),
+        "results.csv": _csv(results, definition.result_fields),
+        "samples.csv": _csv(samples, definition.sample_fields),
         "index.md": results_page(results, title=title, comparison_note=comparison_note,
-                                 cost_note=cost_note, multiple_epochs=multiple_epochs).encode("utf-8"),
-        **render_charts(results, samples, multiple=multiple_epochs),
+                                 cost_note=cost_note, multiple_epochs=multiple_epochs,
+                                 definition=definition).encode("utf-8"),
+        **render_charts(results, samples, multiple=multiple_epochs, definition=definition),
     }
     output.mkdir(mode=0o700, parents=True, exist_ok=False)
     for name, content in files.items():
@@ -189,79 +164,65 @@ def by_epoch(results: Sequence[Row]):
         yield epoch, by_model([row for row in results if row["epoch"] == epoch])
 
 
-def total_cost(row: Row):
-    """Use supplied-price estimates when present; otherwise use recorded costs."""
-    return row["estimated_cost_usd"] if row["estimated_cost_usd"] != "" else row["recorded_cost_usd"]
-
-
-def higher_confidence(row: Row):
-    values = [row["confidence_high"], row["confidence_medium"]]
-    return "" if "" in values else sum(values)
-
-
-def update_cost_columns(results: Sequence[Row]) -> None:
-    """Derive cost per case and change from the same-model, same-epoch baseline."""
-    for _, groups in by_epoch(results):
-        for rows in groups.values():
-            baseline = next((total_cost(r) for r in rows if r["condition"] == "baseline"), "")
-            for row in rows:
-                cost = total_cost(row)
-                row["cost_per_case_usd"] = cost / row["cases"] if cost != "" and row["cases"] else ""
-                row["cost_change_pct"] = 100 * (cost / baseline - 1) if cost != "" and baseline not in ("", 0) else ""
-
-
-def results_page(results: Sequence[Row], *, title: str, comparison_note: str = "", cost_note: str = "", multiple_epochs: bool = False) -> str:
-    lines = [f"# {title}", "", INTRO, ""]
+def results_page(results: Sequence[Row], *, title: str, comparison_note: str = "", cost_note: str = "",
+                 multiple_epochs: bool = False, definition: ReportDefinition) -> str:
+    lines = [f"# {title}", "", definition.intro, ""]
     if comparison_note:
         lines += [comparison_note, ""]
     if multiple_epochs:
-        lines += ["Runs with multiple epochs use their final attempts for each epoch. "
-                  "Earlier retries may be missing from their token and cost totals.", ""]
+        lines += ["Each epoch is one pass through the examples. Its token and cost totals use the last "
+                  "saved attempt for each example and may omit tokens from earlier retries.", ""]
     for epoch, groups in by_epoch(results):
         if multiple_epochs:
             lines += [f"## Epoch {epoch}", ""]
         heading = "###" if multiple_epochs else "##"
-        lines += _key_table(groups, heading)
+        lines += _key_table(groups, heading, note=definition.table_note)
+        if definition.detail_table is not None:
+            lines += definition.detail_table(groups, heading)
         lines += [f"{heading} Charts", ""]
-        for name in CHARTS:
-            image_title, _ = _chart_text(name, multiple_epochs)
+        for name in definition.charts:
+            image_title, _ = definition.chart_text(name, multiple_epochs)
             filename = _chart_name(name, epoch, multiple_epochs)
             lines += [f"![{image_title}]({filename}.png)", ""]
+    if definition.footer:
+        lines += [definition.footer, ""]
     if cost_note:
         lines += ["## Cost estimates", "", cost_note, ""]
-    lines += DATA
+    lines += ["## Data", "", definition.data_note, ""]
     return "\n".join(lines)
 
 
-def build_figures(results: Sequence[Row], samples: Sequence[Row], *, multiple: bool = False) -> dict[str, Figure]:
-    colors = series_colors(results)
-    if any(total_cost(row) == "" for row in results):
+def build_figures(results: Sequence[Row], samples: Sequence[Row], *, multiple: bool = False,
+                  definition: ReportDefinition) -> dict[str, Figure]:
+    styles = series_styles(results)
+    labels = _chart_labels(results)
+    if any(costs.total_cost(row) == "" for row in results):
         raise ReportError("Every run needs complete costs. Supply --prices to estimate costs for all runs.")
     top = 1.3 * max((row["findings"] for row in results if row["findings"] != ""), default=0) or 1
     cost_limits = {
-        model: max(1.32 * total_cost(row) for row in rows) or 1
+        model: max(1.32 * costs.total_cost(row) for row in rows) or 1
         for model, rows in by_model(results).items()
     }
     figures = {}
     for epoch, groups in by_epoch(results):
         selected = [row for row in samples if row["epoch"] == epoch]
-        counts = {
-            row["run"]: {name: sum(s["run"] == row["run"] and s["outcome"] == name for s in selected) for name, _ in OUTCOMES}
-            for rows in groups.values() for row in rows
-        }
+        counts = _outcome_counts(groups, selected, OUTCOMES)
         charts = {
-            "findings": _tradeoff_figure(groups, colors, top, cost_limits=cost_limits),
-            "outcomes": _stacked_figure(groups, counts, OUTCOMES),
-            "confidence": _confidence_figure(groups),
+            "findings": _tradeoff_figure(
+                groups, styles, top, cost_limits=cost_limits, empty_note=definition.empty_note,
+                labels=labels,
+            ),
+            "outcomes": _stacked_figure(groups, counts, OUTCOMES, labels=labels),
+            definition.detail_name: finding_breakdown_figure(groups, definition.finding_parts, labels=labels),
         }
         for name, figure in charts.items():
-            title, note = _chart_text(name, multiple)
+            title, note = definition.chart_text(name, multiple)
             if multiple:
                 title += f" · Epoch {epoch}"
             figure.suptitle(title, x=0.01, ha="left", fontsize=11, fontweight="bold")
             figure.supxlabel(note, x=0.01, ha="left", fontsize=8, color=MID)
             figures[_chart_name(name, epoch, multiple)] = figure
-    for name in ("outcomes", "confidence"):
+    for name in ("outcomes", definition.detail_name):
         axes = [axis for key, figure in figures.items() if key.startswith(name) for axis in figure.axes]
         right = max(axis.get_xlim()[1] for axis in axes)
         for axis in axes:
@@ -269,10 +230,11 @@ def build_figures(results: Sequence[Row], samples: Sequence[Row], *, multiple: b
     return figures
 
 
-def render_charts(results: Sequence[Row], samples: Sequence[Row], *, multiple: bool = False) -> dict[str, bytes]:
+def render_charts(results: Sequence[Row], samples: Sequence[Row], *, multiple: bool = False,
+                  definition: ReportDefinition) -> dict[str, bytes]:
     rendered = {}
     with rc_context(dict(STYLE)):
-        for name, figure in build_figures(results, samples, multiple=multiple).items():
+        for name, figure in build_figures(results, samples, multiple=multiple, definition=definition).items():
             buffer = io.BytesIO()
             figure.savefig(buffer, format="png", bbox_inches="tight", **PNG_OPTIONS)
             rendered[f"{name}.png"] = buffer.getvalue()
@@ -292,56 +254,45 @@ def share(part: object, whole: object) -> str:
     return f"{part:,.0f} of {whole:,.0f} ({fraction:.0%})"
 
 
-def tokens(value: object) -> str:
-    """Write a token count compactly, such as 61.1K or 20M."""
-    if value == "":
-        return "n/a"
-    for suffix in ("", "K", "M", "B"):
-        decimals = 1 if suffix else 0
-        rounded = round(value, decimals)
-        if rounded < 1000 or suffix == "B":
-            return f"{rounded:,.{decimals}f}".removesuffix(".0") + suffix
-        value /= 1000
-
-
 def usd(value: object, decimals: int = 2) -> str:
     return "n/a" if value == "" else f"${value:,.{decimals}f}"
 
 
 def series_label(row: Row) -> str:
-    """Name a run by condition and, for CodeGuard, the skill version."""
-    name = CONDITION_NAMES[row["condition"]]
+    """Name a run by its skill label and ID, or by condition and historical CodeGuard version."""
+    if row["condition"] == "skill":
+        return f"{row['skill_label']} ({row['skill_id']})"
+    name = CONDITION_LABELS[row["condition"]]
     version = row["codeguard_version"]
     return f"{name} {version}" if version else name
 
 
-def series_colors(results: Sequence[Row]) -> dict[str, str]:
-    """Give each condition a fixed colour and CodeGuard versions progressively darker blues in input order."""
-    versions = list(dict.fromkeys(row["codeguard_version"] for row in results if row["codeguard_version"]))
-    light, dark = (to_rgb(color) for color in CODEGUARD_COLORS)
-    colors = dict(FIXED_COLORS)
-    for index, version in enumerate(versions, start=1):
-        weight = index / max(2, len(versions))
-        mixed = [low + (high - low) * weight for low, high in zip(light, dark)]
-        colors[f"CodeGuard {version}"] = to_hex(mixed)
-    return colors
+def series_styles(results: Sequence[Row]) -> dict[str, tuple[str, str]]:
+    """Assign each series a colour and shape shared across models and epochs."""
+    labels = list(dict.fromkeys(series_label(row) for row in results
+                                if condition_has_skill(row["condition"])))
+    styles = dict(FIXED_STYLES)
+    for index, label in enumerate(labels):
+        styles[label] = (SKILL_COLORS[index % len(SKILL_COLORS)],
+                         SKILL_MARKERS[index % len(SKILL_MARKERS)])
+    return styles
+
+
+def _chart_labels(results: Sequence[Row]) -> dict[str, str]:
+    """Shorten unique skill names while retaining IDs for ambiguous names."""
+    names = {
+        series_label(row): row["skill_label"] if row["condition"] == "skill" else series_label(row)
+        for row in results
+    }
+    counts = Counter(names.values())
+    return {
+        full: name if counts[name] == 1 and (name not in names or name == full) else full
+        for full, name in names.items()
+    }
 
 
 def _chart_name(name: str, epoch: int, multiple: bool) -> str:
     return f"{name}-epoch-{epoch}" if multiple else name
-
-
-def _chart_text(name: str, multiple: bool) -> tuple[str, str]:
-    """Keep each chart's reading note on the image so it can be shared alone."""
-    if name == "findings":
-        basis = "all cases in this epoch" if multiple else "all attempted cases and recorded retries"
-        return (
-            "Semgrep findings against estimated total USD cost",
-            f"Findings use shared cases; total USD cost covers {basis}. Cost scales differ by model.",
-        )
-    if name == "outcomes":
-        return ("How each attempt ended", "Attempts that hit a turn or time limit may have left the code unfinished.")
-    return ("Findings by rule confidence", "Shared cases only. Rule confidence is not confirmation of a vulnerability.")
 
 
 def listed(items: Sequence[str]) -> str:
@@ -361,43 +312,34 @@ def _fraction(part: object, whole: object) -> float | None:
 
 
 def _key_table(
-    groups: Mapping[str, Sequence[Row]], heading: str = "##"
+    groups: Groups, heading: str = "##", *,
+    note: str,
 ) -> list[str]:
-    headers = ["Condition", "Findings", "High + Medium", "Likely vulnerabilities", "Tokens per case"]
-    headers += ["Estimated cost per case (USD)", "Estimated total cost (USD)", "Total USD vs baseline"]
-    headers.append("Unfinished")
-    lines = [
-        f"{heading} Key numbers",
-        "",
-        "Findings use shared cases; tokens and costs per case use all attempted cases. "
-        "n/a means a value was not recorded.",
-        "",
-    ]
+    lines = [f"{heading} Key numbers", "", note, ""]
     for model, runs in groups.items():
         shared = runs[0]["shared_cases"]
         lines += [
-            f"{heading}# {model} ({_plural(shared, 'shared case')})",
+            f"{heading}# {model} ({_plural(shared, 'example')} compared)",
             "",
         ]
         lines += _limits_note(runs)
-        lines += [
-            f"| {' | '.join(headers)} |",
-            f"| --- | {' | '.join(['---:'] * (len(headers) - 1))} |",
-        ]
-        for row in runs:
-            cells = [
-                series_label(row), count(row["findings"]),
-                count(higher_confidence(row)), count(row["likely_vulnerabilities"]),
-                tokens(row["tokens_per_case"]),
-            ]
-            change = "n/a" if row["cost_change_pct"] == "" else f"{row['cost_change_pct']:+.1f}%"
-            if row["condition"] == "baseline":
-                change = "—"
-            cells += [usd(row["cost_per_case_usd"], 4), usd(total_cost(row)), change]
-            cells.append(share(row["unfinished"], row["cases"]))
-            lines.append(f"| {' | '.join(cells)} |")
-        lines.append("")
+        lines += table(runs, KEY_COLUMNS)
+        missing = [f"{series_label(row)}: {count(row['usage_missing_cases'])}"
+                   for row in runs if row["usage_missing_cases"]]
+        if missing:
+            lines += ["Attempts without token counts: " + "; ".join(missing) + ". "
+                      "Their cost may be missing from estimates.", ""]
     return lines
+
+
+def table(rows: Sequence[Row], columns: Sequence[Column]) -> list[str]:
+    """Render validated values with the report's standard table layout."""
+    return [
+        f"| {' | '.join(title for title, _ in columns)} |",
+        f"| --- | {' | '.join(['---:'] * (len(columns) - 1))} |",
+        *[f"| {' | '.join(format_value(row) for _, format_value in columns)} |" for row in rows],
+        "",
+    ]
 
 
 def _limits_note(runs: Sequence[Row]) -> list[str]:
@@ -439,10 +381,11 @@ def _figure(
 
 
 def _tradeoff_figure(
-    groups: Mapping[str, Sequence[Row]], colors: Mapping[str, str],
+    groups: Mapping[str, Sequence[Row]], styles: Mapping[str, tuple[str, str]],
     top: float, *, cost_limits: Mapping[str, float],
+    empty_note: str, labels: Mapping[str, str],
 ) -> Figure:
-    """Plot total USD cost and findings, with compact labels beside round dots."""
+    """Plot total USD cost and findings, with Matplotlib placing the legend."""
     figure, axes = _figure([2.6] * len(groups), sharex=False)
     for axis, (model, runs) in zip(axes, groups.items()):
         right = cost_limits[model]
@@ -452,8 +395,8 @@ def _tradeoff_figure(
             loc="left", fontsize=9.5, fontweight="bold", color=INK,
         )
         missing = []
-        for index, row in enumerate(runs):
-            resource = total_cost(row)
+        for row in runs:
+            resource = costs.total_cost(row)
             label = series_label(row)
             if row["findings"] == "":
                 missing.append(label)
@@ -465,29 +408,19 @@ def _tradeoff_figure(
             axis.scatter(
                 *dot,
                 s=70,
-                color=colors[label],
+                color=styles[label][0],
+                marker=styles[label][1],
                 edgecolor="white",
+                linewidths=0.7,
                 zorder=3,
+                label=labels[label],
             )
-            on_right = dot[0] > right / 2
-            dy = (-13 if on_right else -10) if row["condition"] == "secure_prompt" else 0
-            if row["condition"] == "codeguard":
-                dy = 15 if index % 2 == 0 else (-17 if on_right else 4)
-            axis.annotate(
-                label,
-                dot,
-                xytext=(-8 if on_right else 8, dy),
-                textcoords="offset points",
-                ha="right" if on_right else "left",
-                va="bottom" if dy > 0 else "top" if dy < 0 else "center",
-                fontsize=7.2,
-                bbox={"facecolor": "white", "edgecolor": "none", "pad": 1.5},
-                arrowprops={"arrowstyle": "-", "color": MID, "linewidth": 0.55} if abs(dy) > 6 else None,
-            )
+        if axis.collections:
+            axis.legend(loc="best", fontsize=7.2)
         if missing:
             note = (
                 f"Not recorded: {listed(missing)}"
-                if shared else "No case produced changed, valid code in every run"
+                if shared else empty_note
             )
             axis.text(0.01, 0.97, note, transform=axis.transAxes, va="top", color=MID)
         axis.set_xlim(0, right)
@@ -501,21 +434,35 @@ def _tradeoff_figure(
     return figure
 
 
-def _confidence_figure(groups: Mapping[str, Sequence[Row]]) -> Figure:
+def finding_breakdown_figure(groups: Groups, parts: Sequence[tuple[str, str]], *,
+                            labels: Mapping[str, str]) -> Figure:
+    """Use one palette and layout for finding classifications."""
     counts = {
-        row["run"]: {label: row[metric] for label, metric, _ in CONFIDENCE}
+        row["run"]: {label: row[metric] for label, metric in parts}
         for runs in groups.values() for row in runs
     }
     shared = {model: runs[0]["shared_cases"] for model, runs in groups.items()}
     return _stacked_figure(
-        groups, counts, [(label, color) for label, _, color in CONFIDENCE],
-        shared=shared,
+        groups, counts,
+        list(zip((label for label, _ in parts), FINDING_LEVEL_COLORS[:len(parts)], strict=True)),
+        shared=shared, labels=labels,
     )
+
+
+def _outcome_counts(
+    groups: Groups, samples: Sequence[Row], parts: Sequence[tuple[str, str]],
+) -> dict[str, dict[str, int]]:
+    counts = {row["run"]: dict.fromkeys((name for name, _ in parts), 0)
+              for runs in groups.values() for row in runs}
+    for sample in samples:
+        if sample["run"] in counts:
+            counts[sample["run"]][sample["outcome"]] += 1
+    return counts
 
 
 def _stacked_figure(
     groups: Mapping[str, Sequence[Row]], counts: Numbers,
-    parts: Sequence[tuple[str, str]], *, shared: Mapping[str, int] | None = None,
+    parts: Sequence[tuple[str, str]], *, labels: Mapping[str, str], shared: Mapping[str, int] | None = None,
 ) -> Figure:
     heights = [0.45 * len(runs) for runs in groups.values()]
     figure, axes = _figure(heights)
@@ -524,10 +471,13 @@ def _stacked_figure(
         for name, color in parts
         if any(run[name] for run in counts.values())
     ]
+    legend_rows = 1
     if handles:
+        columns = len(handles) if len(handles) <= 5 else 4
+        legend_rows = math.ceil(len(handles) / columns)
         axes[0].legend(
             handles=handles, loc="lower left", bbox_to_anchor=(0, 1),
-            ncols=len(handles), handlelength=1, borderaxespad=0,
+            ncols=columns, handlelength=1, borderaxespad=0,
         )
     widest = max(
         (sum(run.values()) for run in counts.values() if "" not in run.values()), default=0
@@ -536,9 +486,9 @@ def _stacked_figure(
         axis.set_title(
             model if shared is None else f"{model} · {_plural(shared[model], 'shared case')}",
             loc="left", fontsize=9.5, fontweight="bold", color=INK,
-            pad=24 if axis is axes[0] and handles else 6,
+            pad=24 + 14 * (legend_rows - 1) if axis is axes[0] and handles else 6,
         )
-        axis.set_yticks(range(len(runs)), [series_label(row) for row in runs])
+        axis.set_yticks(range(len(runs)), [labels[series_label(row)] for row in runs])
         axis.set_ylim(len(runs) - 0.5, -0.5)
         axis.tick_params(axis="y", labelcolor=INK, labelsize=8.5)
         axis.grid(axis="y", visible=False)
@@ -558,13 +508,13 @@ def _stacked_figure(
                 positions, values, left=left, height=0.56,
                 color=color, edgecolor="white", linewidth=1.2,
             )
-            labels = [
+            bar_labels = [
                 f"{value:,}" if value >= (0.02 if shared is not None else 0.04) * widest else ""
                 for value in values
             ]
             axis.bar_label(
-                bars, labels=labels, label_type="center", fontsize=7.5,
-                color=INK if name in {"Completed", "Medium", "Low"} else "white",
+                bars, labels=bar_labels, label_type="center", fontsize=7.5,
+                color=INK if sum(to_rgb(color)) / 3 > 0.7 else "white",
             )
             left = [start + value for start, value in zip(left, values)]
         if shared is not None:
@@ -572,3 +522,14 @@ def _stacked_figure(
         axis.set_xlim(0, widest * (1.12 if shared is not None else 1))
     axes[-1].set_xlabel("Findings" if shared is not None else "Cases")
     return figure
+
+
+KEY_COLUMNS: tuple[Column, ...] = (
+    ("Condition", series_label),
+    ("Findings", lambda row: count(row["findings"])),
+    ("Flagged outputs", lambda row: share(row["flagged_outputs"], row["shared_cases"])),
+    ("Estimated total cost (USD)", lambda row: usd(costs.total_cost(row))),
+    ("Total USD vs baseline", lambda row: "—" if row["condition"] == "baseline" else
+     "n/a" if row["cost_change_pct"] == "" else f"{row['cost_change_pct']:+.1f}%"),
+    ("Unfinished", lambda row: share(row["unfinished"], row["cases"])),
+)

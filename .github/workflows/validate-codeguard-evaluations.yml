@@ -10,7 +10,6 @@ on:
       - '.gitignore'
       - '.github/workflows/validate-codeguard-evaluations.yml'
       - 'evaluations/codeguard-inspect/**'
-      - 'skills/codeguard/**'
   push:
     branches:
       - main
@@ -19,7 +18,6 @@ on:
       - '.gitignore'
       - '.github/workflows/validate-codeguard-evaluations.yml'
       - 'evaluations/codeguard-inspect/**'
-      - 'skills/codeguard/**'
   workflow_dispatch:
 
 jobs:
@@ -47,7 +45,49 @@ jobs:
         run: uv run --locked --group reporting pytest
 
       - name: Discover Inspect tasks
-        run: uv run --locked inspect list tasks codeguard_evals/securityeval
+        run: |
+          uv run --locked inspect list tasks codeguard_evals/securityeval
+          uv run --locked inspect list tasks codeguard_evals/cyberseceval
 
       - name: Validate Compose configuration
-        run: docker compose --file sandbox/compose.yaml config --quiet
+        run: |
+          docker compose --file sandbox/generate.yaml config --quiet
+          docker compose --file sandbox/semgrep.yaml config --quiet
+          docker compose --file sandbox/icd.yaml config --quiet
+
+  scanner-integration:
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CODEGUARD_SCANNER_CPUS: "2.0"
+    defaults:
+      run:
+        working-directory: evaluations/codeguard-inspect
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.5"
+
+      - name: Install locked dependencies
+        run: uv sync --locked --managed-python
+
+      - name: Prepare and verify pinned scanner artifacts
+        run: |
+          uv run --locked python -m codeguard_evals.prefetch --benchmark securityeval --stage scan
+          uv run --locked python -m codeguard_evals.prefetch --benchmark cyberseceval
+
+      - name: Compare regex findings with the frozen Meta reference
+        run: uv run --locked pytest -m artifacts tests/test_icd_parity.py
+
+      - name: Exercise real scanners with fixtures and mock generation
+        run: >-
+          uv run --locked pytest -m docker
+          tests/test_cyberseceval_docker.py tests/test_docker.py tests/test_batch_scan_docker.py

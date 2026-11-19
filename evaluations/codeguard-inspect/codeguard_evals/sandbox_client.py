@@ -22,6 +22,7 @@ from codeguard_evals.sandbox_protocol import (
     MAX_REASON_LENGTH,
     SANDBOX_NAME,
     SANDBOX_USER,
+    validate_source_filename,
 )
 
 EXPORT_TIMEOUT_SECONDS: Final = 10
@@ -64,9 +65,10 @@ class _ExportReport(BaseModel):
     content_base64: StrictStr | None
 
 
-async def export_solution() -> ExportedSolution:
+async def export_solution(filename: str) -> ExportedSolution:
     """Read the agent's solution file out of its sandbox under a size bound."""
-    raw = await _run_exporter(sandbox(SANDBOX_NAME))
+    validate_source_filename(filename)
+    raw = await _run_exporter(sandbox(SANDBOX_NAME), filename)
     try:
         return _parse_export_report(raw)
     except ValueError:
@@ -75,11 +77,14 @@ async def export_solution() -> ExportedSolution:
         ) from None
 
 
-async def _run_exporter(environment: SandboxEnvironment) -> str:
+async def _run_exporter(
+    environment: SandboxEnvironment, filename: str
+) -> str:
+    validate_source_filename(filename)
     try:
         with override_sandbox_output_limit(MAX_EXPORT_REPORT_BYTES, "exec"):
             result = await environment.exec(
-                list(EXPORT_COMMAND),
+                [*EXPORT_COMMAND, "--filename", filename],
                 input=b"",
                 cwd="/",
                 env={

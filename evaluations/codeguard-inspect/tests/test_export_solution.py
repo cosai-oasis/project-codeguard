@@ -10,16 +10,22 @@ from pathlib import Path
 import pytest
 
 import codeguard_evals.sandbox_client as sandbox_client
+import codeguard_evals.export_solution as exporter
 from codeguard_evals.export_solution import (
     MAX_PYTHON_SOURCE_BYTES,
-    SOLUTION_PATH,
     export_solution,
 )
-from codeguard_evals.sandbox_protocol import SANDBOX_WORKDIR, SOURCE_FILENAME
+from codeguard_evals.sandbox_protocol import SOURCE_FILENAME
 
 
-def test_default_solution_path_matches_the_sandbox_contract() -> None:
-    assert SOLUTION_PATH == Path(SANDBOX_WORKDIR) / SOURCE_FILENAME
+def test_export_cli_reads_the_explicit_language_filename(tmp_path, monkeypatch, capsys):
+    source = b"int example() { return 1; }\n"
+    (tmp_path / "solution.cpp").write_bytes(source)
+    monkeypatch.setattr(exporter, "SANDBOX_WORKDIR", str(tmp_path))
+    assert exporter.main(["--filename", "solution.cpp"]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["status"] == "valid"
+    assert base64.b64decode(report["content_base64"]) == source
 
 
 def test_export_solution_reads_one_bounded_utf8_file(tmp_path: Path) -> None:
@@ -60,8 +66,8 @@ def test_export_solution_preserves_exact_newlines(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     ("contents", "reason"),
     [
-        (b"x" * (MAX_PYTHON_SOURCE_BYTES + 1), "exceeds"),
-        (b"\xff", "not valid UTF-8"),
+        (b"x" * (MAX_PYTHON_SOURCE_BYTES + 1), f"output exceeds {MAX_PYTHON_SOURCE_BYTES} bytes"),
+        (b"\xff", "output is not valid UTF-8"),
     ],
 )
 def test_export_solution_rejects_invalid_content(
@@ -75,7 +81,8 @@ def test_export_solution_rejects_invalid_content(
     report = export_solution(solution)
 
     assert report["status"] == "invalid"
-    assert reason in str(report["reason"])
+    assert report["reason"] == reason
+    assert report["size_bytes"] == len(contents)
     assert report["content_base64"] is None
 
 
@@ -85,6 +92,7 @@ def test_export_solution_rejects_missing_links_and_special_files(
     missing = export_solution(tmp_path / "missing.py")
     assert missing["status"] == "invalid"
     assert missing["reason"] == "missing output"
+    assert missing["size_bytes"] == 0
 
     target = tmp_path / "target.py"
     target.write_text("pass\n", encoding="utf-8")
@@ -97,13 +105,23 @@ def test_export_solution_rejects_missing_links_and_special_files(
     report = export_solution(fifo)
     assert report["status"] == "invalid"
     assert report["reason"] == "output is not a regular file"
+    assert report["size_bytes"] == fifo.stat().st_size
 
     assert export_solution(tmp_path)["status"] == "invalid"
 
 
+@pytest.mark.parametrize(
+    ("replacement", "reason"),
+    [
+        (b"other-longer\n", "output changed while being read"),
+        (b"x" * (MAX_PYTHON_SOURCE_BYTES + 10), f"output exceeds {MAX_PYTHON_SOURCE_BYTES} bytes"),
+    ],
+)
 def test_export_solution_rejects_a_file_changed_during_read(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    replacement: bytes,
+    reason: str,
 ) -> None:
     solution = tmp_path / SOURCE_FILENAME
     solution.write_bytes(b"first\n")
@@ -115,7 +133,7 @@ def test_export_solution_rejects_a_file_changed_during_read(
         status = real_fstat(descriptor)
         calls += 1
         if calls == 1:
-            solution.write_bytes(b"other-longer\n")
+            solution.write_bytes(replacement)
         return status
 
     monkeypatch.setattr(os, "fstat", racing_fstat)
@@ -123,7 +141,8 @@ def test_export_solution_rejects_a_file_changed_during_read(
     report = export_solution(solution)
 
     assert report["status"] == "invalid"
-    assert report["reason"] == "output changed while being read"
+    assert report["reason"] == reason
+    assert report["size_bytes"] == min(len(replacement), MAX_PYTHON_SOURCE_BYTES + 1)
     assert report["content_base64"] is None
 
 
@@ -141,11 +160,19 @@ def test_export_solution_does_not_execute_top_level_side_effects(tmp_path: Path)
     assert not sentinel.exists()
 
 
-@pytest.mark.parametrize("error_number", [errno.ELOOP, errno.ENXIO])
-def test_export_solution_treats_nonregular_open_errors_as_invalid_output(
+@pytest.mark.parametrize(
+    ("error_number", "reason"),
+    [
+        (errno.ELOOP, "output is not a regular file"),
+        (errno.ENXIO, "output is not a regular file"),
+        (errno.EACCES, "output is not readable"),
+    ],
+)
+def test_export_solution_treats_expected_open_errors_as_invalid_output(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     error_number: int,
+    reason: str,
 ) -> None:
     def fail_open(*args: object, **kwargs: object) -> int:
         raise OSError(error_number, "open error")
@@ -155,19 +182,25 @@ def test_export_solution_treats_nonregular_open_errors_as_invalid_output(
     report = export_solution(tmp_path / SOURCE_FILENAME)
 
     assert report["status"] == "invalid"
-    assert report["reason"] == "output is not a regular file"
+    assert report["reason"] == reason
+    assert report["size_bytes"] == 0
 
 
-def test_export_solution_propagates_unexpected_open_errors(
+@pytest.mark.parametrize("operation", ["open", "fdopen"])
+def test_export_solution_propagates_unexpected_io_errors(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    operation: str,
 ) -> None:
-    def fail_open(*args: object, **kwargs: object) -> int:
-        raise OSError(errno.EIO, "open error")
+    solution = tmp_path / SOURCE_FILENAME
+    solution.write_bytes(b"pass\n")
 
-    monkeypatch.setattr(os, "open", fail_open)
+    def fail_io(*args: object, **kwargs: object) -> int:
+        raise OSError(errno.EIO, "I/O error")
+
+    monkeypatch.setattr(os, operation, fail_io)
 
     with pytest.raises(OSError) as error:
-        export_solution(tmp_path / SOURCE_FILENAME)
+        export_solution(solution)
 
     assert error.value.errno == errno.EIO

@@ -1,31 +1,43 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import importlib
 from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
 
 import pytest
+
+
 from inspect_ai import Task
-from inspect_ai import eval as inspect_eval
 from inspect_ai.agent import Agent, AgentState, agent
 from inspect_ai.dataset import MemoryDataset, Sample
-from inspect_ai.event import SampleLimitEvent
-from inspect_ai.model import get_model
-from inspect_ai.solver import Generate, TaskState
+from inspect_ai.log import read_eval_log
+from inspect_ai.model import ModelOutput, ModelUsage, get_model
+from inspect_ai.solver import Generate, TaskState, generate
 from inspect_ai.util import LimitExceededError
 from inspect_ai.viewer import TaskSamplesColumn
 
+import codeguard_evals.graders.semgrep as semgrep_grading
+from codeguard_evals.securityeval import scorers
+import codeguard_evals.harness as harness
 import codeguard_evals.output_artifact as artifact_module
-from codeguard_evals.codeguard import codeguard_content_sha256
-from codeguard_evals.output_artifact import (
-    SAVED_OUTPUT_KEY,
+from codeguard_evals.skill_files import skill_content_sha256
+from codeguard_evals.graders.semgrep import (
     SEMGREP_EVIDENCE_KEY,
-    SavedOutput,
-    SemgrepEvidence,
-    load_semgrep_evidence,
 )
+from codeguard_evals.harness import (
+    AGENT_TIME_LIMIT,
+    CODEX_VERSION,
+    MAX_GENERATION_TOKENS,
+    SAMPLE_TIME_LIMIT,
+    SKILL_DIRECTORY_MODE,
+    SKILL_FILE_MODE,
+    TURN_LIMIT,
+)
+from codeguard_evals.metrics import SKILL_SNAPSHOT_KEY
+from codeguard_evals.output_artifact import SAVED_OUTPUT_KEY, SavedOutput
 from codeguard_evals.sandbox_client import (
     BenchmarkInfrastructureError,
     ExportedSolution,
@@ -39,7 +51,6 @@ from codeguard_evals.sandbox_protocol import (
     SANDBOX_WORKDIR,
     SOURCE_FILENAME,
 )
-from codeguard_evals.scorers import static_safety_scorer
 from codeguard_evals.securityeval.dataset import (
     SECURITYEVAL_FILENAME,
     SECURITYEVAL_REPO_ID,
@@ -51,23 +62,19 @@ from codeguard_evals.securityeval.protocol import (
     AGENT_ENVIRONMENT_INSTRUCTIONS,
     EVALUATION_VERSION,
     Condition,
-    condition_skill_name,
+    condition_has_skill,
     securityeval_prompt,
-    securityeval_task_name,
 )
-from codeguard_evals.securityeval.securityeval import (
-    AGENT_TIME_LIMIT,
-    CODEGUARD_DIRECTORY_MODE,
-    CODEGUARD_FILE_MODE,
+from codeguard_evals.graders.semgrep_artifacts import SemgrepFinding
+from codeguard_evals.skill_catalog import CODEGUARD_VARIANT, SkillProvenance
+from tests.conftest import (
     CODEGUARD_SKILL_DIR,
-    CODEX_VERSION,
-    MAX_GENERATION_TOKENS,
-    SAMPLE_TIME_LIMIT,
-    TURN_LIMIT,
-    bounded_generation,
+    ORIGINAL_SOURCE,
+    SAFE_SOURCE,
+    FakeSandbox,
+    eval_mock_task,
+    task_state,
 )
-from codeguard_evals.semgrep_artifacts import SemgrepFinding
-from tests.conftest import ORIGINAL_SOURCE, SAFE_SOURCE, FakeSandbox, task_state
 
 task_module = importlib.import_module("codeguard_evals.securityeval.securityeval")
 
@@ -97,8 +104,28 @@ def _codeguard_snapshot(guidance_dir: str = "rules") -> dict[str, bytes]:
     }
 
 
+def _codeguard_variant(variant: str) -> tuple[dict[str, bytes], SkillProvenance]:
+    assert variant == CODEGUARD_VARIANT
+    snapshot = _codeguard_snapshot()
+    return snapshot, SkillProvenance(
+        id=variant, label="CodeGuard 1.4.0", name="codeguard",
+        content_sha256=skill_content_sha256(snapshot), version="1.4.0",
+    )
+
+
+def bounded_generation(agent, **kwargs):
+    return harness.bounded_generation(
+        agent,
+        capture_output=harness.capture_source(lambda state: "solution.py"),
+        **kwargs,
+    )
+
+
 def _stub_loaders(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(task_module, "load_codeguard", _codeguard_snapshot)
+    monkeypatch.setattr(
+        scorers, "load_default_locked_rules_directory", lambda: Path("verified")
+    )
+    monkeypatch.setattr(harness, "load_skill_variant", _codeguard_variant)
     monkeypatch.setattr(
         task_module,
         "load_securityeval_cases",
@@ -117,7 +144,7 @@ def _stub_loaders(monkeypatch: pytest.MonkeyPatch) -> None:
     [
         ("securityeval_static_safety_baseline", "baseline"),
         ("securityeval_static_safety_secure_prompt", "secure_prompt"),
-        ("securityeval_static_safety_codeguard", "codeguard"),
+        ("securityeval_static_safety_codeguard", "skill"),
     ],
 )
 @pytest.mark.parametrize("agent_turn_limit", [None, 7], ids=["default", "custom"])
@@ -134,27 +161,35 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
         observed.update(kwargs)
         return _fake_codex_agent()
 
-    monkeypatch.setattr(task_module, "codex_cli", fake_codex_cli)
+    monkeypatch.setattr(harness, "codex_cli", fake_codex_cli)
 
     arguments = (
         {} if agent_turn_limit is None else {"agent_turn_limit": agent_turn_limit}
     )
     task = getattr(task_module, factory)(**arguments)
 
-    skill_name = condition_skill_name(condition)
-    assert task.name == securityeval_task_name(condition)
-    assert task.display_name == {
-        "baseline": "SecurityEval — Baseline",
-        "secure_prompt": "SecurityEval — Secure prompt",
-        "codeguard": "SecurityEval — CodeGuard",
+    uses_skill = condition_has_skill(condition)
+    # Task names are eval-set resume identities, so pin them literally.
+    assert task.name == {
+        "baseline": "securityeval_static_safety_baseline",
+        "secure_prompt": "securityeval_static_safety_secure_prompt",
+        "skill": "securityeval_static_safety_skill_codeguard-1.5",
     }[condition]
+    assert (
+        task.display_name
+        == {
+            "baseline": "SecurityEval — Baseline",
+            "secure_prompt": "SecurityEval — Secure prompt",
+            "skill": "SecurityEval — Skill — CodeGuard 1.4.0",
+        }[condition]
+    )
     assert task.tags == [
         "securityeval",
         "static-safety",
         condition.replace("_", "-"),
     ]
     assert task.setup is not None
-    assert len(task.setup) == (2 if condition == "codeguard" else 1)
+    assert len(task.setup) == (2 if uses_skill else 1)
     assert task.sandbox is not None
     assert task.sandbox.type == "docker"
     assert task.sandbox.config == str(task_module.SANDBOX_CONFIG)
@@ -173,8 +208,9 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     assert task.score_on_error is False
     assert task.checkpoint == Task(checkpoint=False).checkpoint
     assert task.version == EVALUATION_VERSION
-    assert task.scorer is not None and len(task.scorer) == 1
+    assert task.scorer is None
     assert task.viewer is not None
+    assert task.viewer.trust_content is False
     assert task.viewer.sample_score_view is not None
     assert task.viewer.sample_score_view.default == "grid"
     sample_view = task.viewer.task_samples_view
@@ -184,9 +220,7 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     assert sample_view.color_scales_enabled is True
     assert sample_view.sort is not None
     assert [sort.column for sort in sample_view.sort] == [
-        TaskSamplesColumn.score(
-            "static_safety_scorer", "semgrep_flagged_output"
-        ).id,
+        TaskSamplesColumn.score("static_safety_scorer", "semgrep_flagged_output").id,
         TaskSamplesColumn.score("static_safety_scorer", "finding_count").id,
         TaskSamplesColumn.score("static_safety_scorer", "changed_output").id,
         "sampleId",
@@ -218,14 +252,12 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
         "confidence_medium",
         "confidence_low",
     ]
-    skill_column = TaskSamplesColumn.score(
-        "static_safety_scorer", "skill_loaded"
-    ).id
+    skill_column = TaskSamplesColumn.score("static_safety_scorer", "skill_loaded").id
     expected_score_ids = [
         TaskSamplesColumn.score("static_safety_scorer", name).id
         for name in (*visible_scores, *hidden_scores)
     ]
-    if condition == "codeguard":
+    if uses_skill:
         expected_score_ids.append(skill_column)
     assert [column.id for column in sample_view.columns] == [
         "sampleStatus",
@@ -245,7 +277,7 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
         not columns[TaskSamplesColumn.score("static_safety_scorer", name).id]
         for name in hidden_scores
     )
-    assert (skill_column in columns) is (condition == "codeguard")
+    assert (skill_column in columns) is (uses_skill)
     assert sample_view.score_labels is not None
     assert sample_view.score_labels["semgrep_flagged_output"] == "Semgrep flagged"
     assert sample_view.score_labels["confidence_medium"] == "Medium confidence"
@@ -277,11 +309,11 @@ def test_tasks_use_one_static_safety_path_and_explicit_codex_home(
     assert observed["retry_refusals"] == 0
     assert observed["auto_review"] is False
     assert observed["skills"] is None
-    assert task.metadata["skill_available"] is (skill_name is not None)
-    assert (task.metadata["codeguard"] is not None) == (skill_name is not None)
-    assert task.metadata["python_version"] == task_module.PYTHON_VERSION
+    assert task.metadata["skill_available"] is uses_skill
+    assert ("skill" in task.metadata) == uses_skill
+    assert task.metadata["python_version"] == harness.PYTHON_VERSION
     assert task.metadata["generation_limits"] == {
-        "output_tokens": task_module.OUTPUT_TOKEN_LIMIT,
+        "output_tokens": harness.OUTPUT_TOKEN_LIMIT,
         "turns": TURN_LIMIT if agent_turn_limit is None else agent_turn_limit,
         "agent_seconds": AGENT_TIME_LIMIT,
     }
@@ -377,17 +409,26 @@ def test_codeguard_setup_installs_the_exact_repository_bytes(
     success = SimpleNamespace(success=True)
     snapshot = _codeguard_snapshot(guidance_dir)
     environment = FakeSandbox(success, success, success, success, success)
-    monkeypatch.setattr(task_module, "sandbox", lambda _name: environment)
+    monkeypatch.setattr(harness, "sandbox", lambda _name: environment)
     state = _setup_state()
 
     result = asyncio.run(
-        task_module.install_codeguard_skill(snapshot)(state, cast(Generate, None))
+        harness.install_skill(snapshot)(state, cast(Generate, None))
     )
 
     assert result is state
+    assert state.store.get(SKILL_SNAPSHOT_KEY) == {
+        "schema_version": 2,
+        "skill_name": "codeguard",
+        "content_sha256": skill_content_sha256(snapshot),
+        "document_sha256": hashlib.sha256(snapshot["SKILL.md"]).hexdigest(),
+        "document": snapshot["SKILL.md"].decode(),
+    }
     assert environment.calls[0] == (
-        ["/usr/bin/mkdir", "-p", f"{CODEGUARD_SKILL_DIR}/{guidance_dir}"],
+        ["/usr/bin/mkdir", "-p", CODEGUARD_SKILL_DIR, f"{CODEGUARD_SKILL_DIR}/{guidance_dir}"],
         {
+            "input": None,
+            "cwd": None,
             "user": SANDBOX_ROOT_USER,
             "timeout": 10,
             "timeout_retry": False,
@@ -409,10 +450,12 @@ def test_codeguard_setup_installs_the_exact_repository_bytes(
     assert environment.calls[-2] == (
         [
             "/usr/bin/chmod",
-            CODEGUARD_FILE_MODE,
+            SKILL_FILE_MODE,
             *(f"{CODEGUARD_SKILL_DIR}/{path}" for path in sorted(snapshot)),
         ],
         {
+            "input": None,
+            "cwd": None,
             "user": SANDBOX_ROOT_USER,
             "timeout": 10,
             "timeout_retry": False,
@@ -421,12 +464,14 @@ def test_codeguard_setup_installs_the_exact_repository_bytes(
     assert environment.calls[-1] == (
         [
             "/usr/bin/chmod",
-            CODEGUARD_DIRECTORY_MODE,
+            SKILL_DIRECTORY_MODE,
             CODEX_SKILLS_DIR,
             CODEGUARD_SKILL_DIR,
             f"{CODEGUARD_SKILL_DIR}/{guidance_dir}",
         ],
         {
+            "input": None,
+            "cwd": None,
             "user": SANDBOX_ROOT_USER,
             "timeout": 10,
             "timeout_retry": False,
@@ -459,15 +504,17 @@ def test_codeguard_setup_fails_closed_when_installation_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     environment = FakeSandbox(*results)
-    monkeypatch.setattr(task_module, "sandbox", lambda _name: environment)
+    monkeypatch.setattr(harness, "sandbox", lambda _name: environment)
+    state = _setup_state()
 
     with pytest.raises(BenchmarkInfrastructureError, match="Could not install"):
         asyncio.run(
-            task_module.install_codeguard_skill(_codeguard_snapshot())(
-                _setup_state(),
+            harness.install_skill(_codeguard_snapshot())(
+                state,
                 cast(Generate, None),
             )
         )
+    assert SKILL_SNAPSHOT_KEY not in state.store
 
 
 def test_bounded_generation_captures_success_once(
@@ -476,7 +523,7 @@ def test_bounded_generation_captures_success_once(
     export_calls = 0
     scanned: list[str] = []
 
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         nonlocal export_calls
         export_calls += 1
         return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
@@ -486,7 +533,7 @@ def test_bounded_generation_captures_success_once(
         return ()
 
     monkeypatch.setattr(artifact_module, "export_solution", export)
-    monkeypatch.setattr(task_module, "scan_source", scan)
+    monkeypatch.setattr(semgrep_grading, "scan_sources", scan)
     state = _setup_state()
 
     result = asyncio.run(
@@ -498,17 +545,17 @@ def test_bounded_generation_captures_success_once(
 
     assert result is state
     assert export_calls == 1
-    assert scanned == [ORIGINAL_SOURCE]
+    assert scanned == []
     assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
         ORIGINAL_SOURCE
     )
-    assert load_semgrep_evidence(state).findings == ()
+    assert SEMGREP_EVIDENCE_KEY not in state.store
 
 
-def test_bounded_generation_scans_a_parse_valid_output(
+def test_bounded_generation_captures_parse_valid_output_without_scanning(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         return ExportedSolution(SAFE_SOURCE.encode(), None)
 
     finding = SemgrepFinding(
@@ -525,7 +572,7 @@ def test_bounded_generation_scans_a_parse_valid_output(
         return (finding,)
 
     monkeypatch.setattr(artifact_module, "export_solution", export)
-    monkeypatch.setattr(task_module, "scan_source", scan)
+    monkeypatch.setattr(semgrep_grading, "scan_sources", scan)
     state = _setup_state()
 
     asyncio.run(
@@ -535,8 +582,8 @@ def test_bounded_generation_scans_a_parse_valid_output(
         )
     )
 
-    assert scanned == [SAFE_SOURCE]
-    assert load_semgrep_evidence(state).findings == (finding,)
+    assert scanned == []
+    assert SEMGREP_EVIDENCE_KEY not in state.store
 
 
 def test_bounded_generation_skips_an_invalid_output(
@@ -544,14 +591,14 @@ def test_bounded_generation_skips_an_invalid_output(
 ) -> None:
     invalid_source = "def generated(command):\n    return (\n"
 
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         return ExportedSolution(invalid_source.encode(), None)
 
     async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
         raise AssertionError("invalid Python must not reach Semgrep")
 
     monkeypatch.setattr(artifact_module, "export_solution", export)
-    monkeypatch.setattr(task_module, "scan_source", scan)
+    monkeypatch.setattr(semgrep_grading, "scan_sources", scan)
     state = _setup_state()
 
     asyncio.run(
@@ -564,29 +611,25 @@ def test_bounded_generation_skips_an_invalid_output(
     assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
         invalid_source
     )
-    assert load_semgrep_evidence(state).findings is None
+    assert SEMGREP_EVIDENCE_KEY not in state.store
 
 
-def test_bounded_generation_keeps_source_when_scanning_fails(
+def test_generation_does_not_depend_on_scanner_availability(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         return ExportedSolution(SAFE_SOURCE.encode(), None)
 
     async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        raise RuntimeError("Semgrep exited with status 2")
+        return ["parse_error"]
 
     monkeypatch.setattr(artifact_module, "export_solution", export)
-    monkeypatch.setattr(task_module, "scan_source", scan)
+    monkeypatch.setattr(semgrep_grading, "scan_sources", scan)
     state = _setup_state()
 
-    with pytest.raises(RuntimeError, match="status 2"):
-        asyncio.run(
-            bounded_generation(_fake_codex_agent())(
-                state,
-                cast(Generate, None),
-            )
-        )
+    asyncio.run(
+        bounded_generation(_fake_codex_agent())(state, cast(Generate, None))
+    )
 
     assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
         SAFE_SOURCE
@@ -594,16 +637,16 @@ def test_bounded_generation_keeps_source_when_scanning_fails(
     assert SEMGREP_EVIDENCE_KEY not in state.store
 
 
-def test_direct_generation_limit_preserves_context_when_scanning_fails(
+def test_direct_generation_limit_is_preserved_without_scanner_interference(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    applied_limit = task_module.turn_limit(1)
+    applied_limit = harness.turn_limit(1)
 
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         return ExportedSolution(SAFE_SOURCE.encode(), None)
 
     async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        raise RuntimeError("Semgrep exited with status 2")
+        return ["parse_error"]
 
     @agent
     def limited_agent() -> Agent:
@@ -618,12 +661,12 @@ def test_direct_generation_limit_preserves_context_when_scanning_fails(
 
         return execute
 
-    monkeypatch.setattr(task_module, "turn_limit", lambda _limit: applied_limit)
+    monkeypatch.setattr(harness, "turn_limit", lambda _limit: applied_limit)
     monkeypatch.setattr(artifact_module, "export_solution", export)
-    monkeypatch.setattr(task_module, "scan_source", scan)
+    monkeypatch.setattr(semgrep_grading, "scan_sources", scan)
     state = _setup_state()
 
-    with pytest.raises(RuntimeError, match="status 2") as error:
+    with pytest.raises(LimitExceededError) as error:
         asyncio.run(
             bounded_generation(limited_agent())(
                 state,
@@ -631,12 +674,24 @@ def test_direct_generation_limit_preserves_context_when_scanning_fails(
             )
         )
 
-    assert isinstance(error.value.__context__, LimitExceededError)
-    assert error.value.__context__.source is applied_limit
+    assert error.value.source is applied_limit
     assert SavedOutput.model_validate(state.store.get(SAVED_OUTPUT_KEY)).source == (
         SAFE_SOURCE
     )
     assert SEMGREP_EVIDENCE_KEY not in state.store
+
+
+def test_mock_task_preserves_custom_responses_and_usage(tmp_path):
+    response = ModelOutput.from_content("mockllm/model", "Custom fixture response")
+    response.usage = ModelUsage(input_tokens=2, output_tokens=7, total_tokens=9)
+    log = eval_mock_task(
+        Task(dataset=[Sample(input="Fixture request")], solver=generate()),
+        tmp_path,
+        model_args={"custom_outputs": [response]},
+    )
+    assert log.status == "success", log.error
+    assert log.samples[0].output.completion == "Custom fixture response"
+    assert log.stats.model_usage["mockllm/model"] == response.usage
 
 
 @pytest.mark.parametrize(
@@ -650,6 +705,7 @@ def test_direct_generation_limit_preserves_context_when_scanning_fails(
 def test_bounded_generation_captures_and_uses_inspect_native_limit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    offline_batch,
     budget: str,
     budget_value: int | float,
     expected: str,
@@ -661,17 +717,17 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
     """
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
     if budget != "TURN_LIMIT":
-        monkeypatch.setattr(task_module, budget, budget_value)
+        monkeypatch.setattr(harness, budget, budget_value)
 
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         # Truncated before the agent changed anything the setup wrote.
         return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
 
-    async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        return ()
+    async def scan(sources):
+        return [() for _ in sources]
 
     monkeypatch.setattr(artifact_module, "export_solution", export)
-    monkeypatch.setattr(task_module, "scan_source", scan)
+    monkeypatch.setattr(semgrep_grading, "scan_sources", scan)
 
     @agent
     def overruns_its_budget() -> Agent:
@@ -709,18 +765,12 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
                 cast(int, budget_value) if budget == "TURN_LIMIT" else TURN_LIMIT
             ),
         ),
-        scorer=static_safety_scorer(),
+        version=EVALUATION_VERSION,
+        metadata={"benchmark": "SecurityEval", "phase": "generation", "condition": "baseline"},
         time_limit=SAMPLE_TIME_LIMIT,
     )
 
-    log = inspect_eval(
-        task,
-        model="mockllm/model",
-        display="none",
-        log_dir=str(tmp_path),
-        log_realtime=False,
-        ctl_server=False,
-    )[0]
+    log = eval_mock_task(task, tmp_path, model_args={})
 
     assert log.status == "success", log.error
     assert log.samples is not None and len(log.samples) == 1
@@ -729,13 +779,14 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
     assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == (
         ORIGINAL_SOURCE
     )
-    assert SemgrepEvidence.model_validate(
-        sample.store[SEMGREP_EVIDENCE_KEY]
-    ).findings == ()
+    assert SEMGREP_EVIDENCE_KEY not in sample.store
+    assert not sample.scores
     assert sample.limit is not None
     assert sample.limit.type == expected
     assert sample.limit.limit == budget_value
 
+    log = offline_batch(log, tmp_path / "scored")
+    sample = log.samples[0]
     assert sample.scores is not None
     score = sample.scores["static_safety_scorer"]
     assert score.answer == ORIGINAL_SOURCE
@@ -754,17 +805,18 @@ def test_bounded_generation_captures_and_uses_inspect_native_limit(
 def test_bridge_limit_event_survives_fail_closed_scanner_error(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    offline_batch,
 ) -> None:
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
 
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         return ExportedSolution(SAFE_SOURCE.encode(), None)
 
     async def scan(_source: str) -> tuple[SemgrepFinding, ...]:
-        raise RuntimeError("Semgrep exited with status 2")
+        return ["parse_error"]
 
     monkeypatch.setattr(artifact_module, "export_solution", export)
-    monkeypatch.setattr(task_module, "scan_source", scan)
+    monkeypatch.setattr(semgrep_grading, "scan_sources", scan)
 
     @agent
     def overruns_turn_limit() -> Agent:
@@ -776,7 +828,7 @@ def test_bridge_limit_event_survives_fail_closed_scanner_error(
 
         return execute
 
-    case_id = "CWE-078_scan_failure_1.py"
+    case_id = "CWE-078_scan-failure_1.py"
     task = Task(
         name="static_safety_limit_then_scanner_failure",
         dataset=MemoryDataset(
@@ -794,38 +846,26 @@ def test_bridge_limit_event_survives_fail_closed_scanner_error(
             ]
         ),
         solver=bounded_generation(overruns_turn_limit(), agent_turn_limit=2),
-        scorer=static_safety_scorer(),
+        version=EVALUATION_VERSION,
+        metadata={"benchmark": "SecurityEval", "phase": "generation", "condition": "baseline"},
         time_limit=SAMPLE_TIME_LIMIT,
         score_on_error=False,
     )
 
-    log = inspect_eval(
-        task,
-        model="mockllm/model",
-        display="none",
-        log_dir=str(tmp_path),
-        log_realtime=False,
-        ctl_server=False,
-    )[0]
+    log = eval_mock_task(task, tmp_path)
 
-    assert log.status == "error"
-    assert log.samples is not None and len(log.samples) == 1
+    assert log.status == "success"
     sample = log.samples[0]
-    assert sample.error is not None
-    assert "Semgrep exited with status 2" in sample.error.message
-    # The scanner error deliberately becomes the terminal sample error. Inspect
-    # therefore omits its derived ``sample.limit``, but the original framework
-    # event still records why generation stopped.
-    assert sample.limit is None
-    assert any(
-        isinstance(event, SampleLimitEvent)
-        and event.type == "turn"
-        and event.limit == 2
-        for event in sample.events
-    )
-    assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == (
-        SAFE_SOURCE
-    )
+    assert sample.error is None and sample.limit.type == "turn"
+    original = Path(log.location).read_bytes()
+    with pytest.raises(BenchmarkInfrastructureError, match="source scans could not be completed"):
+        offline_batch(log, tmp_path / "scored")
+    scored = read_eval_log(tmp_path / "scored" / Path(log.location).name)
+    assert scored.status == "success"
+    assert scored.samples[0].limit == sample.limit
+    assert scored.samples[0].error and not scored.samples[0].scores
+    assert Path(log.location).read_bytes() == original
+    assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == SAFE_SOURCE
     assert SEMGREP_EVIDENCE_KEY not in sample.store
     assert not sample.scores
 
@@ -835,7 +875,7 @@ def test_bounded_generation_captures_then_propagates_unrelated_cancellation(
 ) -> None:
     exported = False
 
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         nonlocal exported
         exported = True
         return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
@@ -869,7 +909,7 @@ def test_bounded_generation_captures_then_propagates_unrelated_cancellation(
 def test_bounded_generation_captures_then_propagates_unrelated_error(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def export() -> ExportedSolution:
+    async def export(_filename: str = "solution.py") -> ExportedSolution:
         return ExportedSolution(ORIGINAL_SOURCE.encode(), None)
 
     monkeypatch.setattr(artifact_module, "export_solution", export)
@@ -901,30 +941,27 @@ def test_task_records_pinned_provenance(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _stub_loaders(monkeypatch)
-    monkeypatch.setattr(task_module, "codex_cli", lambda **kwargs: _fake_codex_agent())
+    monkeypatch.setattr(harness, "codex_cli", lambda **kwargs: _fake_codex_agent())
 
     task = task_module.securityeval_static_safety_codeguard()
 
     assert task.metadata == {
         "benchmark": "SecurityEval",
         "suite": "static_safety",
-        "condition": "codeguard",
+        "phase": "generation",
+        "condition": "skill",
         "agent": "codex-cli",
         "codex_version": CODEX_VERSION,
-        "inspect_swe_version": task_module.INSPECT_SWE_VERSION,
-        "python_version": task_module.PYTHON_VERSION,
+        "inspect_swe_version": harness.INSPECT_SWE_VERSION,
+        "python_version": harness.PYTHON_VERSION,
         "generation_limits": {
-            "output_tokens": task_module.OUTPUT_TOKEN_LIMIT,
+            "output_tokens": harness.OUTPUT_TOKEN_LIMIT,
             "turns": TURN_LIMIT,
             "agent_seconds": AGENT_TIME_LIMIT,
         },
         "skill_available": True,
-        "codeguard": {
-            "version": "1.4.0",
-            "content_sha256": codeguard_content_sha256(_codeguard_snapshot()),
-        },
+        "skill": _codeguard_variant(CODEGUARD_VARIANT)[1].model_dump(),
         "sandbox": "docker-compose",
-        "semgrep": task_module.semgrep_provenance(),
         "dataset": {
             "repository": SECURITYEVAL_REPO_ID,
             "filename": SECURITYEVAL_FILENAME,
@@ -934,3 +971,31 @@ def test_task_records_pinned_provenance(
             "selected_cases": 1,
         },
     }
+
+
+def test_new_attempts_select_codeguard_from_the_catalog(monkeypatch):
+    _stub_loaders(monkeypatch)
+    monkeypatch.setattr(harness, "codex_cli", lambda **kwargs: _fake_codex_agent())
+    with pytest.raises(ValueError, match="catalog entry"):
+        task_module.build_task("codeguard", agent_turn_limit=TURN_LIMIT)
+
+
+def test_standalone_skill_installation_preserves_bytes_and_protects_directory(catalog_skill, monkeypatch):
+    from codeguard_evals.skill_catalog import load_skill_variant
+    from codeguard_evals.metrics import skill_was_read
+    _, expected = catalog_skill("selected")
+    snapshot, identity = load_skill_variant("selected")
+    success = SimpleNamespace(success=True)
+    environment = FakeSandbox(success, success, success, success)
+    monkeypatch.setattr(harness, "sandbox", lambda _: environment)
+    state = _setup_state()
+    asyncio.run(harness.install_skill(snapshot)(state, cast(Generate, None)))
+    directory = f"{CODEX_SKILLS_DIR}/{identity.name}"
+    assert environment.calls[0][0] == ["/usr/bin/mkdir", "-p", directory]
+    command, arguments = environment.calls[1]
+    assert command == ["/usr/bin/dd", "of=SKILL.md", "status=none", "conv=excl"]
+    assert arguments["input"] == expected["SKILL.md"] and arguments["cwd"] == directory
+    assert all(args["user"] == SANDBOX_ROOT_USER for _, args in environment.calls)
+    assert environment.calls[-1][0] == ["/usr/bin/chmod", "0555", CODEX_SKILLS_DIR, directory]
+    assert state.store.get(SKILL_SNAPSHOT_KEY)["skill_name"] == identity.name
+    assert skill_was_read(state) == 0

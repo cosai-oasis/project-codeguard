@@ -1,74 +1,33 @@
 # Evaluation Results
 
-These pages publish results from the
-[CodeGuard evaluation harness](https://github.com/cosai-oasis/project-codeguard/tree/main/evaluations/codeguard-inspect),
-which compares Semgrep findings in code written by an AI coding agent and
-records model usage and available cost data. Results are exploratory.
+These reports compare security findings, token usage and costs across prompts
+and skills. Each report identifies the benchmark, model, selected examples and
+run settings.
 
-## How the evaluation works
+## Reading the results
 
-- **Tasks:** the 121 Python tasks of the
-  [SecurityEval](https://github.com/s2e-lab/SecurityEval) benchmark, each built
-  around a known weakness.
-- **Agent:** the Codex coding agent, working in an isolated container with no
-  network access. Each attempt has a turn and time limit.
-- **Conditions:** every model runs the same tasks three ways:
-    - **Baseline:** the standard task prompt.
-    - **Secure prompt:** the same prompt plus a one-sentence request to write
-      secure code.
-    - **CodeGuard:** the standard prompt with the CodeGuard skill installed. The
-      agent decides whether to use it.
-- **Scoring:** the harness keeps the final file, checks its Python syntax, and scans it with a pinned version of Semgrep and its public rules.
-  Generated code is never run.
+- **Findings:** We compare the same examples across runs for each model. If the
+  scanner cannot fully check an example in any compared run, we leave it out of
+  every run’s findings comparison.
+- **Costs:** Pages show totals and changes versus baseline. Token and per-case
+  averages are in the CSVs. Missing token counts are noted when present, and some
+  spending may be missing from estimates. Check each report's pricing note for
+  the rates used.
+- **Unfinished examples:** Generation stopped because of a time limit, turn limit
+  or error. Saved code may still have been scanned.
 
-## What the pages show
+Compare runs with matching models, examples and settings. Findings are potential
+issues, not confirmed vulnerabilities. A clean scan does not prove code is secure
+or works correctly. Reading a skill does not prove its guidance was followed.
+One pass through the examples does not show how results vary across repeated runs.
 
-- **Epochs:** each pass over the cases is reported separately.
-  For multi-epoch runs, token and cost totals use each case's final saved
-  attempt. Retry usage recorded only for the whole run is excluded.
-- **Limits:** recorded turn, generation-time, case-time, and output-token caps.
-  Shown on the report and in `results.csv`. Missing limits stay blank in the CSV.
-- **Findings:** Semgrep security findings at all confidence levels, counted on the shared cases,
-  where every run for a model produced changed, valid code. Unchanged or
-  invalid outputs are excluded. An attempt stopped by a limit can still
-  contribute findings if its output passes those checks, and also counts
-  as unfinished. Passing the checks does not establish functional correctness.
-- **Likely vulnerabilities:** findings from rules tagged `vuln`.
-  This is a rule category, not a confidence rating.
-- **High + Medium:** findings from rules rated High or Medium confidence.
-  The confidence chart shows High, Medium, and Low on the same shared cases.
-  Low-confidence findings remain in the total.
-- **Tokens per case:** recorded tokens divided by all attempted cases.
-  Includes cached input and retries. Token counts are not costs.
-- **Costs:** total USD and USD per case, using complete recorded costs or
-  estimates calculated from supplied model prices. When prices are supplied,
-  all runs use those rates. Per-case costs average all attempted cases,
-  including unfinished ones. Every run needs a complete recorded or estimated
-  cost.
-- **Total USD vs baseline:** percentage change in total USD cost from the same
-  model's baseline, calculated from unrounded amounts. Missing costs stay blank.
-- **Unfinished attempts:** attempts that hit any limit or ended with an error.
+## Benchmark guides
 
-## Limitations
+See [SecurityEval](../evaluations/securityeval.md) and
+[CyberSecEval](../evaluations/cyberseceval.md) for datasets, scoring, limitations
+and export commands. The [harness guide](../evaluations/index.md) explains how
+runs are generated and scanned.
 
-- **Static analysis only.** Findings are scanner results, not confirmed
-  vulnerabilities, and no findings does not mean the code is secure or even
-  correct. SecurityEval has no functional or exploit tests.
-- **Limited scanner coverage.** The pinned rules flag only 48 of the
-  benchmark's 121 known-insecure reference programs, so many weaknesses go
-  unseen.
-- **One benchmark, one language.** All tasks are Python.
-- **Small numbers.** Each epoch is one pass over 121 cases. A difference
-  of a few findings can be chance.
-- **Limits shape the results.** Attempts that hit a limit leave work unfinished.
-  Compare runs only when their settings match; each page warns when they do
-  not.
-- **Using the skill is up to the agent.** Reading CodeGuard does not prove the
-  agent followed it.
-
-## Result sets
-
-The [results exporter](https://github.com/cosai-oasis/project-codeguard/tree/main/evaluations/codeguard-inspect#export-results)
-creates the page, charts, and public CSVs together from completed harness logs.
+## Reports
 
 - [CodeGuard 1.4.0 on SecurityEval](2026-09-codeguard-1.4.0/index.md)

@@ -10,5 +10,11 @@
     "output": 1.2,
     "input_cache_read": 0.02,
     "input_cache_write": 0.25
+  },
+  "GPT-6.1 Sol": {
+    "input": 2.0,
+    "output": 10.0,
+    "input_cache_read": 0.1,
+    "input_cache_write": 2.5
   }
 }

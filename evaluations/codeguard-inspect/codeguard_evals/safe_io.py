@@ -15,24 +15,37 @@ from typing import Final
 READ_FLAGS: Final = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC
 
 
+class BoundedReadError(ValueError):
+    """A rejected file read, with its reason and observed byte count."""
+
+    def __init__(self, reason: str, size_bytes: int, *, path: Path | None = None) -> None:
+        super().__init__(f"{reason}: {path}" if path is not None else reason)
+        self.reason = reason
+        self.size_bytes = size_bytes
+
+
 def read_bounded(path: Path, maximum: int, *, label: str) -> bytes:
     """Read a stable regular file of at most ``maximum`` bytes."""
     descriptor = os.open(path, READ_FLAGS)
     try:
         before = os.fstat(descriptor)
         if not stat.S_ISREG(before.st_mode):
-            raise ValueError(f"{label} is not a regular file: {path}")
+            raise BoundedReadError(
+                f"{label} is not a regular file", before.st_size, path=path,
+            )
         if before.st_size > maximum:
-            raise ValueError(f"{label} exceeds {maximum} bytes")
+            raise BoundedReadError(f"{label} exceeds {maximum} bytes", before.st_size)
         with os.fdopen(descriptor, "rb", closefd=False) as source:
             raw = source.read(maximum + 1)
             after = os.fstat(source.fileno())
     finally:
         os.close(descriptor)
     if len(raw) > maximum:
-        raise ValueError(f"{label} exceeds {maximum} bytes")
+        raise BoundedReadError(f"{label} exceeds {maximum} bytes", len(raw))
     if len(raw) != before.st_size or stat_changed(before, after):
-        raise ValueError(f"{label} changed while being read: {path}")
+        raise BoundedReadError(
+            f"{label} changed while being read", len(raw), path=path,
+        )
     return raw
 
 
