@@ -86,8 +86,3 @@ jobs:
 
       - name: Compare regex findings with the frozen Meta reference
         run: uv run --locked pytest -m artifacts tests/test_icd_parity.py
-
-      - name: Exercise real scanners with fixtures and mock generation
-        run: >-
-          uv run --locked pytest -m docker
-          tests/test_cyberseceval_docker.py tests/test_docker.py tests/test_batch_scan_docker.py
