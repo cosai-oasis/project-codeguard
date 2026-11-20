@@ -1,0 +1,12 @@
+{
+  "codeguard-1.5": {
+    "label": "CodeGuard 1.5.0",
+    "path": "evaluations/codeguard-inspect/skill_snapshots/codeguard-1.5.0/codeguard",
+    "content_sha256": "b62779d8d138908a45872b7f6026a0979bc47415473b5896ad483e08ae3b3092"
+  },
+  "security-reminder-v1": {
+    "label": "Security reminder",
+    "path": "evaluations/codeguard-inspect/skill_snapshots/security-reminder-v1/codeguard",
+    "content_sha256": "2b59b4cd88caff306246559a04ed768d812be8d3565456fdc7cd5364eebb5c54"
+  }
+}

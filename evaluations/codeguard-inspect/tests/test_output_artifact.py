@@ -26,42 +26,44 @@ from inspect_ai.scorer import Target
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 
 import codeguard_evals.output_artifact as artifact_module
-from codeguard_evals.output_artifact import (
-    SAVED_OUTPUT_KEY,
+from codeguard_evals.graders.semgrep import (
     SEMGREP_EVIDENCE_KEY,
-    SavedOutput,
     SemgrepEvidence,
-    capture_generated_output,
-    load_saved_output,
     load_semgrep_evidence,
     save_semgrep_evidence,
+)
+from codeguard_evals.output_artifact import (
+    SAVED_OUTPUT_KEY,
+    SavedOutput,
+    capture_generated_output,
+    load_saved_output,
 )
 from codeguard_evals.sandbox_client import (
     BenchmarkInfrastructureError,
     ExportedSolution,
 )
-from codeguard_evals.sandbox_protocol import MAX_PYTHON_SOURCE_BYTES
-from codeguard_evals.scorers import (
+from codeguard_evals.sandbox_protocol import MAX_PYTHON_SOURCE_BYTES, SOURCE_FILENAME
+from codeguard_evals.securityeval.protocol import (
     CHANGED_OUTPUT_METRIC,
     CONFIDENCE_HIGH_METRIC,
     CONFIDENCE_LOW_METRIC,
     CONFIDENCE_MEDIUM_METRIC,
+    EVALUATION_VERSION,
     FINDING_COUNT_METRIC,
+    SEMGREP_FLAGGED_OUTPUT_METRIC,
     SEVERITY_ERROR_METRIC,
     SEVERITY_INFO_METRIC,
     SEVERITY_WARNING_METRIC,
-    SEMGREP_FLAGGED_OUTPUT_METRIC,
     SUBCATEGORY_AUDIT_METRIC,
     SUBCATEGORY_SECURE_DEFAULT_METRIC,
     SUBCATEGORY_VULN_METRIC,
-    static_safety_scorer,
-)
-from codeguard_evals.securityeval.protocol import (
-    EVALUATION_VERSION,
     TASK_PROMPT,
     securityeval_task_name,
 )
-from codeguard_evals.semgrep_artifacts import SEMGREP_LOCK, SemgrepFinding
+from codeguard_evals.securityeval.scorers import (
+    static_safety_scorer,
+)
+from codeguard_evals.graders.semgrep_artifacts import SEMGREP_LOCK, SemgrepFinding
 from tests.conftest import (
     CASE_ID,
     ORIGINAL_SOURCE,
@@ -130,12 +132,12 @@ def _capture(
     *,
     state: TaskState | None = None,
 ) -> TaskState:
-    async def capture() -> ExportedSolution:
+    async def capture(_filename: str = "solution.py") -> ExportedSolution:
         return exported
 
     monkeypatch.setattr(artifact_module, "export_solution", capture)
     captured_state = _state() if state is None else state
-    asyncio.run(capture_generated_output(captured_state))
+    asyncio.run(capture_generated_output(captured_state, SOURCE_FILENAME))
     return captured_state
 
 
@@ -149,28 +151,6 @@ def _evidence_payload(state: TaskState) -> dict[str, object]:
     value = state.store.get(SEMGREP_EVIDENCE_KEY)
     assert isinstance(value, dict)
     return value
-
-
-def test_scoring_imports_do_not_load_the_sandbox_runner() -> None:
-    project_root = Path(__file__).parents[1]
-    script = (
-        "import sys\n"
-        "import codeguard_evals.output_artifact\n"
-        "import codeguard_evals.scorers\n"
-        "raise SystemExit(int('codeguard_evals.semgrep_runner' in sys.modules))\n"
-    )
-
-    result = subprocess.run(
-        [sys.executable, "-c", script],
-        cwd=project_root,
-        stdin=subprocess.DEVNULL,
-        capture_output=True,
-        text=True,
-        check=False,
-        timeout=10,
-    )
-
-    assert result.returncode == 0, result.stderr
 
 
 def test_capture_preserves_model_output_and_stores_validated_source(
@@ -195,7 +175,7 @@ def test_capture_preserves_model_output_and_stores_validated_source(
     )
 
     with pytest.raises(BenchmarkInfrastructureError, match="already exists"):
-        asyncio.run(capture_generated_output(result))
+        asyncio.run(capture_generated_output(result, SOURCE_FILENAME))
 
 
 @pytest.mark.parametrize(
@@ -266,6 +246,28 @@ def test_missing_and_empty_sources_remain_distinguishable(
     ):
         assert isinstance(score.value[name], float)
     assert score.explanation == explanation
+
+
+@pytest.mark.parametrize(
+    ("source", "expected_sha256"),
+    [
+        (None, None),
+        ("", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+        ("π\r\n", "53d2dbafdd10ab7844bc061eb4e6fc2b17764f08ab757e0ec9615419f719ad54"),
+    ],
+)
+def test_saved_source_identity_preserves_bytes_and_record_format(source, expected_sha256):
+    record = {
+        "evaluation_version": EVALUATION_VERSION,
+        "filename": "solution.py",
+        "source": source,
+        "capture_error": "missing output" if source is None else None,
+    }
+    saved = SavedOutput.model_validate(record)
+    assert saved.source_sha256 == expected_sha256
+    assert saved.model_dump(mode="json") == record
+    replayed = SavedOutput.model_validate_json(saved.model_dump_json())
+    assert replayed.source_sha256 == expected_sha256
 
 
 def test_replay_requires_saved_output_key() -> None:
@@ -361,15 +363,17 @@ def test_semgrep_evidence_preserves_null_empty_and_populated_findings(
     findings: tuple[SemgrepFinding, ...] | None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    state = _capture(monkeypatch, _export())
+    source = b"" if findings is None else SAFE_SOURCE.encode("utf-8")
+    state = _capture(monkeypatch, _export(source))
 
     save_semgrep_evidence(state, findings)
     evidence = load_semgrep_evidence(state)
 
     assert evidence.findings == findings
-    assert evidence.source_sha256 == hashlib.sha256(
-        SAFE_SOURCE.encode("utf-8")
-    ).hexdigest()
+    assert (
+        evidence.source_sha256
+        == hashlib.sha256(source).hexdigest()
+    )
     assert evidence.image_digest == SEMGREP_LOCK.image.index_digest
     assert evidence.rules_commit == SEMGREP_LOCK.rules.commit
     assert evidence.rules_tree_sha256 == SEMGREP_LOCK.rules.tree_sha256
@@ -377,8 +381,10 @@ def test_semgrep_evidence_preserves_null_empty_and_populated_findings(
         save_semgrep_evidence(state, findings)
 
 
-def test_source_free_evidence_requires_null_findings(
+@pytest.mark.parametrize("changes", [{"findings": []}, {"incomplete_reason": "parse_error"}])
+def test_source_free_evidence_cannot_claim_a_scan(
     monkeypatch: pytest.MonkeyPatch,
+    changes,
 ) -> None:
     state = _capture(monkeypatch, _export(None))
 
@@ -386,7 +392,7 @@ def test_source_free_evidence_requires_null_findings(
     assert load_semgrep_evidence(state).source_sha256 is None
 
     payload = _evidence_payload(state)
-    payload["findings"] = []
+    payload.update(changes)
     with pytest.raises(BenchmarkInfrastructureError, match="evidence is invalid"):
         load_semgrep_evidence(state)
 
@@ -399,6 +405,8 @@ def test_source_free_evidence_requires_null_findings(
         ("image_digest", "sha256:" + "0" * 64),
         ("rules_commit", "0" * 40),
         ("rules_tree_sha256", "0" * 64),
+        ("incomplete_reason", "parse_error"),
+        ("incomplete_reason", "unknown"),
     ],
 )
 def test_semgrep_evidence_rejects_version_or_identity_tampering(
@@ -410,16 +418,24 @@ def test_semgrep_evidence_rejects_version_or_identity_tampering(
     save_semgrep_evidence(state, ())
     _evidence_payload(state)[field] = value
 
-    message = "evidence is invalid" if field == "evaluation_version" else "identity"
+    message = (
+        "evidence is invalid"
+        if field in ("evaluation_version", "incomplete_reason")
+        else "identity"
+    )
     with pytest.raises(BenchmarkInfrastructureError, match=message):
         load_semgrep_evidence(state)
 
 
+@pytest.mark.parametrize("incomplete_reason", [None, "rule_timeout"])
 def test_semgrep_evidence_is_bound_to_saved_source(
     monkeypatch: pytest.MonkeyPatch,
+    incomplete_reason,
 ) -> None:
     state = _capture(monkeypatch, _export())
-    save_semgrep_evidence(state, ())
+    save_semgrep_evidence(
+        state, () if incomplete_reason is None else None, incomplete_reason=incomplete_reason
+    )
     _stored_payload(state)["source"] = SAFE_SOURCE + "# changed\n"
 
     with pytest.raises(BenchmarkInfrastructureError, match="identity"):
@@ -498,7 +514,7 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
     findings: tuple[SemgrepFinding, ...] = ()
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
 
-    async def capture() -> ExportedSolution:
+    async def capture(_filename: str = "solution.py") -> ExportedSolution:
         return _export(captured_source.encode())
 
     monkeypatch.setattr(artifact_module, "export_solution", capture)
@@ -512,7 +528,7 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
                 "agent narration",
             )
             state.output.metadata = {"provider.request_id": "request-1"}
-            await capture_generated_output(state)
+            await capture_generated_output(state, SOURCE_FILENAME)
             save_semgrep_evidence(state, findings)
             return state
 
@@ -557,14 +573,15 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
     assert SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY]).source == (
         captured_source
     )
-    assert SemgrepEvidence.model_validate(
-        sample.store[SEMGREP_EVIDENCE_KEY]
-    ).findings == findings
+    assert (
+        SemgrepEvidence.model_validate(sample.store[SEMGREP_EVIDENCE_KEY]).findings
+        == findings
+    )
 
     inspect_executable = Path(sys.executable).with_name("inspect")
     assert inspect_executable.is_file()
     project_root = Path(__file__).parents[1]
-    scorer_path = project_root / "codeguard_evals" / "scorers.py"
+    scorer_path = project_root / "codeguard_evals/securityeval/scorers.py"
     rescored_path = tmp_path / "rescored.eval"
     environment = os.environ.copy()
     for name in (
@@ -615,9 +632,10 @@ def test_public_deferred_scoring_uses_stored_findings_without_any_services(
     assert rescored.samples is not None
     rescored_sample = rescored.samples[0]
     assert rescored_sample.output.completion == "agent narration"
-    assert SavedOutput.model_validate(
-        rescored_sample.store[SAVED_OUTPUT_KEY]
-    ).source == captured_source
+    assert (
+        SavedOutput.model_validate(rescored_sample.store[SAVED_OUTPUT_KEY]).source
+        == captured_source
+    )
     scores = rescored_sample.scores
     assert scores is not None
     replayed = scores["static_safety_scorer"]

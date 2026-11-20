@@ -2,31 +2,36 @@
 
 from __future__ import annotations
 
+import argparse
 import base64
 import errno
 import hashlib
 import json
-import os
-import stat
 import sys
 from pathlib import Path
 from typing import Final
 
-from codeguard_evals.safe_io import READ_FLAGS, stat_changed
+from codeguard_evals.safe_io import BoundedReadError, read_bounded
 from codeguard_evals.sandbox_protocol import (
     MAX_PYTHON_SOURCE_BYTES,
+    LANGUAGE_FILENAMES,
     SANDBOX_WORKDIR,
-    SOURCE_FILENAME,
 )
 
-SOLUTION_PATH: Final = Path(SANDBOX_WORKDIR) / SOURCE_FILENAME
 _NONREGULAR_FILE_ERRNOS: Final = frozenset({errno.ELOOP, errno.ENXIO})
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--filename",
+        choices=tuple(LANGUAGE_FILENAMES.values()),
+        required=True,
+    )
+    args = parser.parse_args(argv)
     sys.stdout.write(
         json.dumps(
-            export_solution(),
+            export_solution(Path(SANDBOX_WORKDIR) / args.filename),
             allow_nan=False,
             separators=(",", ":"),
             sort_keys=True,
@@ -35,9 +40,11 @@ def main() -> int:
     return 0
 
 
-def export_solution(path: Path = SOLUTION_PATH) -> dict[str, object]:
+def export_solution(path: Path) -> dict[str, object]:
     try:
-        descriptor = os.open(path, READ_FLAGS)
+        raw = read_bounded(path, MAX_PYTHON_SOURCE_BYTES, label="output")
+    except BoundedReadError as exc:
+        return _invalid(exc.reason, exc.size_bytes)
     except FileNotFoundError:
         return _invalid("missing output", 0)
     except PermissionError:
@@ -47,25 +54,6 @@ def export_solution(path: Path = SOLUTION_PATH) -> dict[str, object]:
             return _invalid("output is not a regular file", 0)
         raise
 
-    try:
-        before = os.fstat(descriptor)
-        if not stat.S_ISREG(before.st_mode):
-            return _invalid("output is not a regular file", before.st_size)
-        if before.st_size > MAX_PYTHON_SOURCE_BYTES:
-            return _invalid(
-                f"output exceeds {MAX_PYTHON_SOURCE_BYTES} bytes",
-                before.st_size,
-            )
-        with os.fdopen(descriptor, "rb", closefd=False) as source:
-            raw = source.read(MAX_PYTHON_SOURCE_BYTES + 1)
-            after = os.fstat(source.fileno())
-    finally:
-        os.close(descriptor)
-
-    if len(raw) > MAX_PYTHON_SOURCE_BYTES:
-        return _invalid(f"output exceeds {MAX_PYTHON_SOURCE_BYTES} bytes", len(raw))
-    if len(raw) != before.st_size or stat_changed(before, after):
-        return _invalid("output changed while being read", len(raw))
     try:
         raw.decode("utf-8")
     except UnicodeDecodeError:

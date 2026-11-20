@@ -1,0 +1,80 @@
+{
+  "schema_version": 2,
+  "source": {
+    "schema_version": 1,
+    "repository": "https://github.com/meta-llama/PurpleLlama",
+    "commit": "172c1074069eb88ec834124272c1b1c4f8893445",
+    "tree_sha256": "077e60522889dbfb2d31af149bea0e2714bdd048323b3d64d08acd14a79bf32c",
+    "files": {
+      "CodeShield/LICENSE": {
+        "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+        "size": 1088
+      },
+      "CodeShield/insecure_code_detector/rules/config.yaml": {
+        "sha256": "664d82b752a60e2326abbd33ab7feec4f8ded1211bc05fc1d568cc4bd0b1a3b6",
+        "size": 11429
+      },
+      "CodeShield/insecure_code_detector/rules/regex/c.yaml": {
+        "sha256": "41f289e1458a0af133072e308a0a367fefe0c73385b9061baee6c8355c7e92c8",
+        "size": 3415
+      },
+      "CodeShield/insecure_code_detector/rules/regex/cpp.yaml": {
+        "sha256": "9d10bf48f72212c2a9f3a71df2b86fb923c88e5c6abc187244090b922b461a93",
+        "size": 845
+      },
+      "CodeShield/insecure_code_detector/rules/regex/csharp.yaml": {
+        "sha256": "282287067c98da77fec35fa297584a9925fe0cb1496b91347cc1d5f176e37ba6",
+        "size": 903
+      },
+      "CodeShield/insecure_code_detector/rules/regex/java.yaml": {
+        "sha256": "b08878ef29cd4414f0bbe496df12bed1c98e00393c310a788880744ba9e2127b",
+        "size": 5394
+      },
+      "CodeShield/insecure_code_detector/rules/regex/javascript.yaml": {
+        "sha256": "33e4a9d1741d553144c6f8c479b03be711a840f85436b9172988a14efda495dc",
+        "size": 360
+      },
+      "CodeShield/insecure_code_detector/rules/regex/language_agnostic.yaml": {
+        "sha256": "abee2a53d66a8eebd2e402a8e509c4506d5eab5d5359a99b2e4fbd0e40ec9895",
+        "size": 1396
+      },
+      "CodeShield/insecure_code_detector/rules/regex/php.yaml": {
+        "sha256": "957893edae8e87c5fa5f9f794ac839e058023a6cc22a58145429d0270b24daad",
+        "size": 4706
+      },
+      "CodeShield/insecure_code_detector/rules/regex/python.yaml": {
+        "sha256": "42194a325435d3ac09ab2aadd16dc86c2c181b9845c04e5ef70c21b0353b9bd6",
+        "size": 922
+      },
+      "CodeShield/insecure_code_detector/rules/regex/rust.yaml": {
+        "sha256": "6a0522f485ac4609361931646b6934bde6d5b42b886671e4b44d328e9cfdc7a2",
+        "size": 2446
+      },
+      "CodeShield/insecure_code_detector/rules/semgrep/_generated_/c_cyberseceval.json": {
+        "sha256": "f7dcfa85c2350f0f23cb4772c227aa229021f7224460c3015600a44047cf2608",
+        "size": 15624
+      },
+      "CodeShield/insecure_code_detector/rules/semgrep/_generated_/cpp_cyberseceval.json": {
+        "sha256": "f7dcfa85c2350f0f23cb4772c227aa229021f7224460c3015600a44047cf2608",
+        "size": 15624
+      },
+      "CodeShield/insecure_code_detector/rules/semgrep/_generated_/csharp_cyberseceval.json": {
+        "sha256": "e137fd9e2aea6af494735b8fccd8e0b3a5eb3b1b29b56da38ea6c89efe2cab7b",
+        "size": 36852
+      },
+      "CodeShield/insecure_code_detector/rules/semgrep/_generated_/java_cyberseceval.json": {
+        "sha256": "7ecfcc0a69aa0220140eeb3da1cb9897391d813aa650bee44a7b2e844357277e",
+        "size": 17537
+      },
+      "CodeShield/insecure_code_detector/rules/semgrep/_generated_/javascript_cyberseceval.json": {
+        "sha256": "219c9d77b74c67063a99ce8f1767c898339ee000bc4e042c968bd2e9496316e1",
+        "size": 43879
+      },
+      "CodeShield/insecure_code_detector/rules/semgrep/_generated_/python_cyberseceval.json": {
+        "sha256": "0c6cdff18f936e6f973b3bb51525ccf5e77ca190827a9238c84bb73c86bbf30c",
+        "size": 11861
+      }
+    }
+  },
+  "prepared_tree_sha256": "1a14e56b8ba8d833a533e5bb17bbac8bd4c7d10374478745de5b2250f37bf590"
+}

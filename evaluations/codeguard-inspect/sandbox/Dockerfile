@@ -13,11 +13,13 @@ RUN groupadd --gid 65532 nonroot \
         /home/nonroot \
         /usr/local/lib/python3.13/site-packages/codeguard_evals
 
+# Extract trusted agent bundles without restoring ownership or adding CHOWN.
 ENV HOME=/home/nonroot \
     LANG=C.UTF-8 \
     PATH=/usr/local/bin:/usr/bin:/bin \
     PYTHONDONTWRITEBYTECODE=1 \
-    TMPDIR=/tmp
+    TMPDIR=/tmp \
+    TAR_OPTIONS=--no-same-owner
 
 # Python is pinned by the digest above, so site-packages is a known path.
 COPY --chmod=0444 codeguard_evals/__init__.py \

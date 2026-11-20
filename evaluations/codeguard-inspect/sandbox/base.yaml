@@ -1,0 +1,72 @@
+services:
+  default:
+    build:
+      context: ..
+      dockerfile: sandbox/Dockerfile
+      target: default
+    init: true
+    command:
+    - /usr/bin/tail
+    - -f
+    - /dev/null
+    # Inspect owns injected tooling; agent commands and exports run as nonroot.
+    user: 0:0
+    network_mode: none
+    read_only: true
+    working_dir: /workspace
+    cap_drop:
+    - ALL
+    cap_add:
+    # The trusted supervisor switches identity and terminates agent processes.
+    - KILL
+    - SETGID
+    - SETUID
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 768m
+    memswap_limit: 768m
+    cpus: 1.0
+    stop_grace_period: 2s
+    ulimits:
+      cpu:
+        soft: 300
+        hard: 310
+      nofile:
+        soft: 256
+        hard: 256
+    tmpfs:
+    - /workspace:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
+    - /home/nonroot/.codex:rw,nosuid,nodev,noexec,size=32m,uid=65532,gid=0,mode=0730
+    - /home/nonroot/.codex/skills:rw,nosuid,nodev,noexec,size=2m,uid=0,gid=0,mode=0755
+    - /tmp:rw,nosuid,nodev,noexec,size=16m,uid=0,gid=0,mode=1777
+    # The compressed Codex bundle and extracted files coexist during setup.
+    - /var/tmp:rw,nosuid,nodev,exec,size=768m,uid=0,gid=0,mode=1777
+  scanner:
+    init: true
+    command:
+    - /usr/bin/tail
+    - -f
+    - /dev/null
+    user: 1000:1000
+    network_mode: none
+    read_only: true
+    working_dir: /opt/codeguard
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 2g
+    memswap_limit: 2g
+    stop_grace_period: 2s
+    ulimits:
+      core:
+        soft: 0
+        hard: 0
+      nofile:
+        soft: 256
+        hard: 256
+    tmpfs:
+    - /tmp:rw,nosuid,nodev,noexec,size=64m,uid=1000,gid=1000,mode=1777
+    - /home/semgrep:rw,nosuid,nodev,noexec,size=16m,uid=1000,gid=1000,mode=0700

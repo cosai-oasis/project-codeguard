@@ -6,7 +6,7 @@ import pytest
 from inspect_ai.log import EvalError
 from inspect_ai.model import ModelUsage
 
-from codeguard_evals import export_results as exporter
+from codeguard_evals import export_results as exporter, results_costs as costs
 from codeguard_evals.export_results import ExportError, export_results
 from tests.synthetic_logs import CANARY, log_for, sample, save, offline, rows, repeated_log
 
@@ -137,7 +137,7 @@ def test_estimates_include_cached_usage_and_retries(tmp_path, save, offline):
     assert source.read_bytes() == before
     for path in (tmp_path / "export").iterdir():
         assert CANARY.encode() not in path.read_bytes()
-    assert exporter.DEFAULT_COST_NOTE in (tmp_path / "export/index.md").read_text()
+    assert costs.DEFAULT_COST_NOTE in (tmp_path / "export/index.md").read_text()
 
 
 @pytest.mark.parametrize("model,version,writes", [
@@ -204,17 +204,18 @@ def test_errored_attempt_usage_is_unknown_unless_zero_is_recorded(tmp_path, save
     source = save(log)
     output = tmp_path / "export"
     prices = cost_config(tmp_path)
+    export_results([("Model A", source)], output, prices=prices)
+    first, second = rows(output / "results.csv")
+    assert first["usage_missing_cases"] == ("0" if known_zero else "1")
+    assert first["unfinished"] == "1"
+    assert float(first["tokens_per_case"]) == 50
+    assert float(first["estimated_cost_usd"]) == pytest.approx(0.000117)
+    assert float(second["estimated_cost_usd"]) == pytest.approx(0.000468)
     if not known_zero:
-        with pytest.raises(ExportError, match="complete usage"):
-            export_results([("Model A", source)], output, prices=prices)
-        assert not output.exists()
-    else:
-        export_results([("Model A", source)], output, prices=prices)
-        first, second = rows(output / "results.csv")
-        assert first["unfinished"] == "1"
-        assert float(first["tokens_per_case"]) == 50
-        assert float(first["estimated_cost_usd"]) == pytest.approx(0.000117)
-        assert float(second["estimated_cost_usd"]) == pytest.approx(0.000468)
+        log.samples[1].model_usage = {}
+        with pytest.raises(ExportError, match="no recorded model usage"):
+            export_results([("Model A", save(log, "missing.eval"))], tmp_path / "missing", prices=prices)
+        assert not (tmp_path / "missing").exists()
 
 
 @pytest.mark.parametrize("epochs,version", [(1, "0.3.255"), (2, "0.3.255"), (1, None)])

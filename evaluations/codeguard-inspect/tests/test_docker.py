@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import importlib
 import json
 import re
@@ -11,18 +12,18 @@ from pathlib import Path
 import pytest
 from inspect_ai import Task, eval
 from inspect_ai.dataset import MemoryDataset, Sample
+from inspect_ai.log import EvalLog, read_eval_log
 from inspect_ai.model import ModelOutput, get_model
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util._sandbox._cli import SANDBOX_TOOLS_DIR
 
-from codeguard_evals.codeguard import load_codeguard
-from codeguard_evals.output_artifact import (
-    SAVED_OUTPUT_KEY,
+from codeguard_evals.graders.semgrep import (
     SEMGREP_EVIDENCE_KEY,
-    SavedOutput,
+    SANDBOX_CONFIG as SCANNER_CONFIG,
     SemgrepEvidence,
     save_semgrep_evidence,
 )
+from codeguard_evals.output_artifact import SAVED_OUTPUT_KEY, SavedOutput
 from codeguard_evals.sandbox_client import EXPORT_COMMAND
 from codeguard_evals.sandbox_protocol import (
     CODEX_HOME_DIR,
@@ -35,14 +36,12 @@ from codeguard_evals.sandbox_protocol import (
     SANDBOX_WORKDIR,
     SOURCE_FILENAME,
 )
-from codeguard_evals.scorers import static_safety_scorer
+from codeguard_evals.securityeval.scorers import static_safety_scorer
 from codeguard_evals.securityeval.dataset import SecurityEvalCase
 from codeguard_evals.securityeval.protocol import EVALUATION_VERSION, TASK_PROMPT
-from codeguard_evals.securityeval.securityeval import (
-    CODEGUARD_SKILL_DIR,
-    SANDBOX_CONFIG,
-)
-from codeguard_evals.semgrep_runner import scan_source
+from codeguard_evals.securityeval.securityeval import SANDBOX_CONFIG
+from codeguard_evals.graders.semgrep_runner import scan_sources
+from codeguard_evals.scan import scan_log
 from tests.conftest import ORIGINAL_SOURCE, assert_tmpfs_policy
 
 task_module = importlib.import_module("codeguard_evals.securityeval.securityeval")
@@ -50,8 +49,22 @@ task_module = importlib.import_module("codeguard_evals.securityeval.securityeval
 pytestmark = pytest.mark.docker
 
 PROJECT_NAME_PREFIX = "codeguard-eval-security-test"
-INSPECT_SANDBOX_STATE_DIR = "/tmp/sandbox-tools"
 SOLUTION_PATH = f"{SANDBOX_WORKDIR}/{SOURCE_FILENAME}"
+
+
+def _mock_eval_failure(log: EvalLog) -> str:
+    """Use fixed failure messages for public CI."""
+    errors = (log.error, *(sample.error for sample in log.samples or []))
+    for error in errors:
+        if (
+            error is not None
+            and error.message.startswith("HTTPStatusError(")
+            and "https://api.github.com/repos/openai/codex/releases/tags/" in error.message
+        ):
+            if "rate limit" in error.message.lower():
+                return "GitHub API rate limit hit during Codex release lookup."
+            return "GitHub API returned an HTTP error during Codex release lookup."
+    return "Inspect evaluation failed. See the local evaluation log for details."
 
 
 def _run(command: list[str], *, timeout: int = 60) -> subprocess.CompletedProcess[str]:
@@ -76,7 +89,12 @@ def _harness_container_ids() -> set[str]:
     return set(
         _checked(
             [
-                "docker", "ps", "--all", "--quiet", "--no-trunc", "--filter",
+                "docker",
+                "ps",
+                "--all",
+                "--quiet",
+                "--no-trunc",
+                "--filter",
                 f"label=com.docker.compose.project.working_dir={SANDBOX_CONFIG.parent}",
             ]
         ).splitlines()
@@ -112,9 +130,7 @@ def container() -> Iterator[str]:
             SANDBOX_NAME,
             timeout=600,
         )
-        container_id = _compose(
-            project_name, "ps", "--quiet", SANDBOX_NAME
-        ).strip()
+        container_id = _compose(project_name, "ps", "--quiet", SANDBOX_NAME).strip()
         assert re.fullmatch(r"[0-9a-f]{64}", container_id)
         yield container_id
     finally:
@@ -189,6 +205,7 @@ def _export(container: str) -> dict[str, object]:
     result = _exec(
         container,
         *EXPORT_COMMAND,
+        "--filename", SOURCE_FILENAME,
     )
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)
@@ -213,8 +230,7 @@ def test_live_container_enforces_outer_sandbox_policy(
     assert host["Init"] is True
     assert host["CapDrop"] == ["ALL"]
     assert {
-        capability.removeprefix("CAP_")
-        for capability in (host["CapAdd"] or [])
+        capability.removeprefix("CAP_") for capability in (host["CapAdd"] or [])
     } == {"KILL", "SETGID", "SETUID"}
     assert host["PidsLimit"] == 64
     assert host["Memory"] == 768 * 1024 * 1024
@@ -301,16 +317,19 @@ def test_live_container_enforces_outer_sandbox_policy(
     )
     assert host_paths.returncode == 0
 
+    # Docker Desktop can expose dormant tunnel devices; only loopback may be up.
     network = _exec(
         container,
         "/usr/local/bin/python",
         "-c",
         (
-            "import socket,sys; sock=socket.socket(); sock.settimeout(1); "
-            "sys.exit(sock.connect_ex(('1.1.1.1', 53)) == 0)"
+            "import socket; from pathlib import Path; "
+            "active = {name for _, name in socket.if_nameindex() "
+            "if int((Path('/sys/class/net') / name / 'flags').read_text(), 16) & 1}; "
+            "assert active == {'lo'}, active"
         ),
     )
-    assert network.returncode == 0
+    assert network.returncode == 0, network.stderr
 
 
 def test_temp_mounts_protect_root_owned_entries(
@@ -438,9 +457,7 @@ def test_temp_mounts_protect_root_owned_entries(
     assert verify.returncode == 0, verify.stderr
 
     cleanup_paths = tuple(
-        candidate
-        for path in paths
-        for candidate in (path, f"{path}-spoof")
+        candidate for path in paths for candidate in (path, f"{path}-spoof")
     )
     cleanup = _exec(
         container,
@@ -520,16 +537,18 @@ def test_malicious_outputs_are_bounded_and_never_executed(
     assert _export(container)["status"] == "invalid"
 
 
-def test_named_semgrep_service_detects_vulnerability_without_executing_source(
+def test_named_semgrep_service_detects_finding_without_executing_source(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
+    # Constructing a Request object performs no network I/O. Its literal URL
+    # matches a pinned audit rule without including an executable attack sample.
     source = (
-        "import subprocess\n"
+        "import urllib.request\n"
         'raise RuntimeError("GENERATED_SOURCE_EXECUTED")\n'
         "def generated(command):\n"
-        "    return subprocess.run(command, shell=True)\n"
+        '    return urllib.request.Request("http://example.invalid/fixture")\n'
     )
 
     @solver
@@ -543,12 +562,12 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
                 capture_error=None,
             )
             state.store.set(SAVED_OUTPUT_KEY, saved.model_dump(mode="json"))
-            save_semgrep_evidence(state, await scan_source(source))
+            save_semgrep_evidence(state, (await scan_sources([source]))[0])
             return state
 
         return solve
 
-    case_id = "CWE-078_semgrep_1.py"
+    case_id = "CWE-319_semgrep_1.py"
     task = Task(
         name="static_safety_named_semgrep_service",
         dataset=MemoryDataset(
@@ -559,7 +578,7 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
                     target=ORIGINAL_SOURCE,
                     metadata={
                         "case_id": case_id,
-                        "cwe": "CWE-78",
+                        "cwe": "CWE-319",
                         "condition": "baseline",
                     },
                 )
@@ -567,7 +586,7 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
         ),
         solver=collect_locked_scan(),
         scorer=static_safety_scorer(),
-        sandbox=("docker", str(SANDBOX_CONFIG)),
+        sandbox=("docker", str(SCANNER_CONFIG)),
         version=EVALUATION_VERSION,
     )
     containers_before = _harness_container_ids()
@@ -588,12 +607,10 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
     assert containers_after == containers_before
     assert log.samples is not None and len(log.samples) == 1
     sample = log.samples[0]
-    evidence = SemgrepEvidence.model_validate(
-        sample.store[SEMGREP_EVIDENCE_KEY]
-    )
+    evidence = SemgrepEvidence.model_validate(sample.store[SEMGREP_EVIDENCE_KEY])
     assert evidence.findings is not None
     assert any(
-        finding.rule_id.endswith("subprocess-shell-true")
+        finding.rule_id.endswith("insecure-request-object")
         for finding in evidence.findings
     )
     assert sample.scores is not None
@@ -601,8 +618,8 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
     assert score.answer == source
     assert score.value["finding_count"] >= 1
     assert score.value["semgrep_flagged_output"] == 1
-    assert score.value["subcategory_secure_default"] >= 1
-    assert score.value["severity_error"] >= 1
+    assert score.value["subcategory_audit"] >= 1
+    assert score.value["severity_warning"] >= 1
     assert score.value["finding_count"] == sum(
         score.value[name]
         for name in ("confidence_high", "confidence_medium", "confidence_low")
@@ -612,14 +629,26 @@ def test_named_semgrep_service_detects_vulnerability_without_executing_source(
     assert "Severity:" in score.explanation
 
 
+@pytest.mark.parametrize(
+    "variant",
+    [None, "standalone", "security-reminder-v1"],
+    ids=["repository", "standalone", "reminder"],
+)
 def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    variant: str | None,
+    request: pytest.FixtureRequest,
 ) -> None:
+    from codeguard_evals.skill_catalog import CODEGUARD_VARIANT, load_skill_variant
+    from codeguard_evals.experiments import skill
     monkeypatch.setenv("INSPECT_TRACE_FILE", str(tmp_path / "trace.log"))
-    snapshot = load_codeguard()
+    # Exercise the released skill, a standalone skill and the pinned reminder.
+    if variant == "standalone":
+        request.getfixturevalue("catalog_skill")(variant, name="security-reminder")
+    snapshot, identity = load_skill_variant(variant or CODEGUARD_VARIANT)
+    skill_dir = f"{CODEX_SKILLS_DIR}/{identity.name}"
     case_id = "CWE-078_integration_1.py"
-    monkeypatch.setattr(task_module, "load_codeguard", lambda: snapshot)
     monkeypatch.setattr(
         task_module,
         "load_securityeval_cases",
@@ -627,14 +656,14 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     )
     # The seventh model response crosses this limit after the sixth response
     # has written solution.py. This exercises Inspect's real bridge-cancel path.
-    guidance_path = next(path for path in sorted(snapshot) if path != "SKILL.md")
+    guidance_path = next((path for path in sorted(snapshot) if path != "SKILL.md"), "SKILL.md")
     outputs = [
         ModelOutput.for_tool_call(
             "mockllm/model",
             "exec_command",
             {
                 "cmd": (
-                    "/usr/local/bin/python -I -c \"import os; "
+                    '/usr/local/bin/python -I -c "import os; '
                     "from pathlib import Path; "
                     "from urllib.parse import urlsplit; "
                     "assert os.environ.get('OPENAI_API_KEY')=='api-key'; "
@@ -657,7 +686,7 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
         ModelOutput.for_tool_call(
             "mockllm/model",
             "exec_command",
-            {"cmd": f"sed -n '1,160p' {CODEGUARD_SKILL_DIR}/SKILL.md"},
+            {"cmd": f"sed -n '1,160p' {skill_dir}/SKILL.md"},
             tool_call_id="read-skill",
         ),
         ModelOutput.for_tool_call(
@@ -667,14 +696,15 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
                 "cmd": (
                     "set -eu; "
                     f"test ! -w {CODEX_SKILLS_DIR}; "
-                    f"test ! -w {CODEGUARD_SKILL_DIR}; "
-                    f"test ! -w {CODEGUARD_SKILL_DIR}/{guidance_path}; "
+                    f"test ! -w {skill_dir}; "
+                    f"test ! -w {skill_dir}/SKILL.md; "
+                    f"test ! -w {skill_dir}/{guidance_path}; "
                     f"! printf 'tampered\\n' > "
-                    f"{CODEGUARD_SKILL_DIR}/{guidance_path}; "
-                    f"! mv {CODEGUARD_SKILL_DIR} "
-                    f"{CODEGUARD_SKILL_DIR}-agent-moved; "
+                    f"{skill_dir}/{guidance_path}; "
+                    f"! mv {skill_dir} "
+                    f"{skill_dir}-agent-moved; "
                     "sed -n '1,160p' "
-                    f"{CODEGUARD_SKILL_DIR}/{guidance_path}"
+                    f"{skill_dir}/{guidance_path}"
                 )
             },
             tool_call_id="read-rule",
@@ -686,10 +716,10 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
                 "cmd": (
                     "set -eu; "
                     f"test -f {SANDBOX_WORKDIR}/agent-is-unprivileged; "
-                    f"test -d {INSPECT_SANDBOX_STATE_DIR}; "
                     f"test -d {SANDBOX_TOOLS_DIR}; "
-                    f"! mv {INSPECT_SANDBOX_STATE_DIR} "
-                    f"{INSPECT_SANDBOX_STATE_DIR}-agent-moved; "
+                    f"test ! -r {SANDBOX_TOOLS_DIR}; "
+                    f"test ! -w {SANDBOX_TOOLS_DIR}; "
+                    f"test ! -x {SANDBOX_TOOLS_DIR}; "
                     f"! mv {SANDBOX_TOOLS_DIR} "
                     f"{SANDBOX_TOOLS_DIR}-agent-moved; "
                     f"touch {SANDBOX_WORKDIR}/temp-paths-protected"
@@ -737,7 +767,8 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     ]
     last_completed_output = outputs[-2].completion
     model = get_model("mockllm/model", custom_outputs=outputs)
-    task = task_module.securityeval_static_safety_codeguard(agent_turn_limit=6)
+    task = (task_module.securityeval_static_safety_codeguard(agent_turn_limit=6) if variant is None
+            else skill("securityeval", variant, agent_turn_limit=6))
     containers_before = _harness_container_ids()
 
     log = eval(
@@ -752,27 +783,33 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     )[0]
     containers_after = _harness_container_ids()
 
-    assert log.status == "success", log.error
+    if log.status != "success":
+        pytest.fail(_mock_eval_failure(log), pytrace=False)
     assert containers_after == containers_before
     assert log.samples is not None and len(log.samples) == 1
     sample = log.samples[0]
     assert sample.input == TASK_PROMPT
-    assert log.eval.task_display_name == "SecurityEval — CodeGuard"
-    assert set(log.eval.tags or []) == {"securityeval", "static-safety", "codeguard"}
+    assert log.eval.task_display_name == f"SecurityEval — Skill — {identity.label}"
+    assert log.eval.metadata["skill"] == identity.model_dump()
+    assert set(log.eval.tags or []) == {"securityeval", "static-safety", "skill"}
     assert log.eval.viewer == task.viewer
     assert any(
         message.role == "system"
         and "### Available skills" in message.text
-        and f"(file: {CODEGUARD_SKILL_DIR}/SKILL.md)" in message.text
+        and f"(file: {skill_dir}/SKILL.md)" in message.text
         for message in sample.messages
     )
     assert sample.output.completion == last_completed_output
     saved = SavedOutput.model_validate(sample.store[SAVED_OUTPUT_KEY])
     assert saved.source == "def generated(command):\n    return str(command)\n"
     assert "HOSTILE_EXPORTER" not in saved.source
-    evidence = SemgrepEvidence.model_validate(
-        sample.store[SEMGREP_EVIDENCE_KEY]
-    )
+    assert SEMGREP_EVIDENCE_KEY not in sample.store and not sample.scores
+    original = Path(log.location).read_bytes()
+    scored_path = asyncio.run(scan_log(Path(log.location), tmp_path / "scored"))
+    assert Path(log.location).read_bytes() == original
+    assert _harness_container_ids() == containers_before
+    sample = read_eval_log(scored_path).samples[0]
+    evidence = SemgrepEvidence.model_validate(sample.store[SEMGREP_EVIDENCE_KEY])
     assert evidence.findings == ()
     assert sample.limit is not None
     assert sample.limit.type == "turn"

@@ -4,8 +4,9 @@ import os
 import re
 from pathlib import Path
 
+import pytest
 import yaml
-
+from codeguard_evals.graders.semgrep import SANDBOX_CONFIG as SCANNER_CONFIG
 from codeguard_evals.sandbox_protocol import (
     CODEX_HOME_DIR,
     SANDBOX_NAME,
@@ -15,25 +16,52 @@ from codeguard_evals.sandbox_protocol import (
     SEMGREP_SANDBOX_NAME,
     SEMGREP_SANDBOX_USER,
 )
+from codeguard_evals.graders.scanner_worker import SEMGREP_JOBS
 from codeguard_evals.securityeval.securityeval import SANDBOX_CONFIG
-from codeguard_evals.semgrep_artifacts import (
+from codeguard_evals.graders.semgrep_artifacts import (
     SEMGREP_IMAGE_REFERENCE,
     SEMGREP_LOCK,
     semgrep_rules_checkout_path,
 )
-from codeguard_evals.semgrep_runner import SEMGREP_JOBS
-from tests.conftest import assert_tmpfs_policy
+
+from tests.conftest import assert_tmpfs_policy, compose_config
 
 DOCKERFILE = SANDBOX_CONFIG.with_name("Dockerfile")
 DOCKERIGNORE = SANDBOX_CONFIG.parent.parent / ".dockerignore"
 EXPECTED_SANDBOX_ID = 65_532
 
 
+@pytest.mark.parametrize(
+    "key,base,override",
+    [
+        ("cap_add", ["NET_ADMIN"], []),
+        ("environment", {"UNSAFE": "1"}, {"SAFE": "1"}),
+    ],
+)
+def test_compose_helper_refuses_to_hide_inherited_configuration(tmp_path, key, base, override):
+    (tmp_path / "base.yaml").write_text(yaml.safe_dump({"services": {"base": {key: base}}}))
+    path = tmp_path / "child.yaml"
+    path.write_text(
+        yaml.safe_dump(
+            {
+                "services": {
+                    "scanner": {
+                        "extends": {"file": "base.yaml", "service": "base"},
+                        key: override,
+                    }
+                }
+            }
+        )
+    )
+    with pytest.raises(ValueError, match="require validation with Docker Compose"):
+        compose_config(path)
+
+
 def test_agent_container_is_isolated_with_a_bounded_root_supervisor() -> None:
-    compose = yaml.safe_load(SANDBOX_CONFIG.read_text(encoding="utf-8"))
+    compose = compose_config(SANDBOX_CONFIG)
 
     assert set(compose) == {"services"}
-    assert set(compose["services"]) == {SANDBOX_NAME, SEMGREP_SANDBOX_NAME}
+    assert set(compose["services"]) == {SANDBOX_NAME}
     service = compose["services"][SANDBOX_NAME]
 
     assert service["working_dir"] == SANDBOX_WORKDIR
@@ -78,7 +106,8 @@ def test_agent_container_is_isolated_with_a_bounded_root_supervisor() -> None:
 
 
 def test_semgrep_container_is_a_locked_read_only_named_environment() -> None:
-    compose = yaml.safe_load(SANDBOX_CONFIG.read_text(encoding="utf-8"))
+    compose = compose_config(SCANNER_CONFIG)
+    assert set(compose["services"]) == {SEMGREP_SANDBOX_NAME}
     service = compose["services"][SEMGREP_SANDBOX_NAME]
     rules_source = Path(
         os.path.relpath(
@@ -87,10 +116,12 @@ def test_semgrep_container_is_a_locked_read_only_named_environment() -> None:
         )
     ).as_posix()
 
-    assert service["image"] == SEMGREP_IMAGE_REFERENCE
-    assert service["pull_policy"] == "missing"
+    assert service["build"] == {"context": "..", "dockerfile": "sandbox/Dockerfile.semgrep"}
+    worker_image = (SCANNER_CONFIG.parent / "Dockerfile.semgrep").read_text()
+    assert worker_image.startswith(f"FROM {SEMGREP_IMAGE_REFERENCE}\n")
+    assert "USER 1000:1000" in worker_image
     assert service["command"] == ["/usr/bin/tail", "-f", "/dev/null"]
-    assert service["working_dir"] == "/tmp"
+    assert service["working_dir"] == "/opt/codeguard"
     assert service["user"] == SEMGREP_SANDBOX_USER
     assert service["network_mode"] == "none"
     assert service["read_only"] is True
@@ -99,8 +130,8 @@ def test_semgrep_container_is_a_locked_read_only_named_environment() -> None:
     assert service["security_opt"] == ["no-new-privileges:true"]
     assert service["init"] is True
     assert service["pids_limit"] == 128
-    assert SEMGREP_JOBS == 4
-    assert service["cpus"] == float(SEMGREP_JOBS)
+    assert SEMGREP_JOBS == 1
+    assert service["cpus"] == "${SAMPLE_METADATA_SCANNER_CPUS:-${CODEGUARD_SCANNER_CPUS:-4.0}}"
     assert service["mem_limit"] == "2g"
     assert service["memswap_limit"] == "2g"
     assert service["stop_grace_period"] == "2s"
@@ -168,16 +199,13 @@ def test_semgrep_container_is_a_locked_read_only_named_environment() -> None:
 
 
 def test_dockerfile_pins_its_base_and_creates_the_nonroot_identity() -> None:
-    dockerfile = DOCKERFILE.read_text(encoding="utf-8")
+    dockerfile = DOCKERFILE.read_text(encoding="utf-8").split("\nFROM ", 1)[0]
 
     base = re.search(r"^FROM\s+(\S+)", dockerfile, re.MULTILINE)
     assert base is not None
     assert re.fullmatch(r"[^\s]+@sha256:[0-9a-f]{64}", base.group(1))
     assert f"groupadd --gid {EXPECTED_SANDBOX_ID} nonroot" in dockerfile
-    assert (
-        f"useradd --uid {EXPECTED_SANDBOX_ID} --gid {EXPECTED_SANDBOX_ID}"
-        in dockerfile
-    )
+    assert f"useradd --uid {EXPECTED_SANDBOX_ID} --gid {EXPECTED_SANDBOX_ID}" in dockerfile
     assert f"--home-dir {SANDBOX_USER_HOME}" in dockerfile
     assert "--no-create-home" in dockerfile
     assert "--no-log-init" in dockerfile
@@ -213,11 +241,21 @@ def test_docker_context_is_default_deny_with_narrow_reincludes() -> None:
 
     reincluded = {entry[1:] for entry in entries if entry.startswith("!")}
     assert reincluded == {
+        "icd.lock.json",
         "sandbox/",
         "sandbox/Dockerfile",
+        "sandbox/Dockerfile.icd",
+        "sandbox/Dockerfile.semgrep",
+        "codeguard_evals/graders/",
+        "codeguard_evals/graders/__init__.py",
+        "codeguard_evals/graders/icd_worker.py",
+        "codeguard_evals/graders/semgrep_worker.py",
         "codeguard_evals/",
         "codeguard_evals/__init__.py",
         "codeguard_evals/export_solution.py",
         "codeguard_evals/safe_io.py",
+        "codeguard_evals/artifacts.py",
         "codeguard_evals/sandbox_protocol.py",
+        "codeguard_evals/graders/semgrep_protocol.py",
+        "codeguard_evals/graders/scanner_worker.py",
     }

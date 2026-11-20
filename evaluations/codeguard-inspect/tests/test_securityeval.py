@@ -22,7 +22,7 @@ from codeguard_evals.securityeval.protocol import (
     SECURE_TASK_PROMPT,
     TASK_PROMPT,
     Condition,
-    condition_skill_name,
+    condition_has_skill,
     securityeval_sample_id,
     securityeval_task_name,
 )
@@ -78,7 +78,7 @@ def test_securityeval_protocol_contract_is_stable(
 ) -> None:
     assert securityeval_task_name(condition) == expected_task_name
     assert securityeval_sample_id(condition, "case.py") == expected_sample_id
-    assert condition_skill_name(condition) == expected_skill_name
+    assert condition_has_skill(condition) is (expected_skill_name is not None)
 
 
 def test_load_rows_validates_schema_ids_python_and_duplicates() -> None:
@@ -316,6 +316,12 @@ def test_samples_reject_unsupported_conditions() -> None:
             [SecurityEvalCase("case.py", "CWE-79", PROMPT)],
             condition="unknown",  # type: ignore[arg-type]
         )
+
+
+@pytest.mark.parametrize("condition", [None, ["skill"], {"skill": True}])
+def test_saved_conditions_of_the_wrong_type_are_unsupported(condition) -> None:
+    with pytest.raises(ValueError, match="Unsupported condition"):
+        condition_has_skill(condition)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="cases must not be empty"):
         securityeval_samples([], condition="baseline")

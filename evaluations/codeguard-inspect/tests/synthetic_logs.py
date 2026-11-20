@@ -30,12 +30,19 @@ from inspect_ai.log import (
 from inspect_ai.model import ChatMessageUser, GenerateConfig, ModelUsage
 from inspect_ai.scorer import Score
 
-from codeguard_evals.export_results import METRICS, SCORER
+from codeguard_evals.securityeval.reporting import METRICS as REPORT_METRICS, SCORER
+
+METRICS = tuple(REPORT_METRICS.values())
 
 CANARY = "DO_NOT_EXPORT_SYNTHETIC_PRIVATE_VALUE"
 START = "2026-01-01T12:00:00+00:00"
 END = "2026-01-01T12:00:30+00:00"
 SKILL_SHA256 = "a" * 64
+SCANNER_SETTINGS = {
+    "version": "1.173.0", "rules_tree_sha256": "d" * 64,
+    "image_digest": "sha256:" + "f" * 64,
+    "measured_severities": ["CRITICAL", "ERROR", "HIGH", "INFO", "LOW", "MEDIUM", "WARNING"],
+}
 
 
 def values(findings: int = 0, changed: int = 1, valid: int = 1) -> dict[str, float]:
@@ -57,11 +64,16 @@ def values(findings: int = 0, changed: int = 1, valid: int = 1) -> dict[str, flo
 def sample(
     index: int, scores=None, *, condition: str = "codeguard", **kwargs
 ) -> EvalSample:
+    scores = scores if scores is not None else values()
+    count = scores.get("finding_count", 0)
+    findings = [dict(private=CANARY, severity="WARNING")] * int(count) if isinstance(count, (int, float)) and math.isfinite(count) and count >= 0 else []
     score = Score(
-        value=scores if scores is not None else values(),
+        value=scores,
         answer=CANARY,
         explanation=CANARY,
-        metadata={"private": CANARY},
+        metadata={"private": CANARY, "case_id": f"CWE-020_author_{index}.py",
+                  "condition": condition, "cwe": "CWE-20", "findings": findings,
+                  "semgrep": dict(SCANNER_SETTINGS)},
     )
     usage = ModelUsage(
         input_tokens=70,
@@ -133,9 +145,11 @@ def log_for(
         "python_version": "3.13.14",
         "dataset": {"revision": "b" * 40, "sha256": "c" * 64},
         "semgrep": {
-            "version": "1.173.0",
-            "rules_tree_sha256": "d" * 64,
-            "image_digest": "sha256:" + "f" * 64,
+            **SCANNER_SETTINGS,
+            "collector_sha256": "e" * 64,
+            "command": ["python3", "-m", "scanner", "--batch"],
+            "environment": {"HOME": "/home/semgrep", "TMPDIR": "/tmp"},
+            "timeout_seconds": 120,
         },
         "generation_limits": {
             "turns": 16,
@@ -148,6 +162,7 @@ def log_for(
         eval=EvalSpec(
             created=START,
             task="synthetic",
+            task_version="0.1.0",
             task_id=task_id,
             model=CANARY,
             dataset=EvalDataset(samples=len(samples), location=CANARY),

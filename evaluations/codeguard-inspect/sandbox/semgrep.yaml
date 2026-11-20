@@ -1,0 +1,18 @@
+services:
+  semgrep:
+    x-default: true
+    # Inspect supplies the recorded quota through sample metadata.
+    cpus: ${SAMPLE_METADATA_SCANNER_CPUS:-${CODEGUARD_SCANNER_CPUS:-4.0}}
+    extends:
+      file: base.yaml
+      service: scanner
+    build:
+      context: ..
+      dockerfile: sandbox/Dockerfile.semgrep
+    volumes:
+    - type: bind
+      source: ../.cache/codeguard-evals/semgrep-rules-only/40b8c63f75dc7c22c8a77482d73bfb864b146f7e/python
+      target: /rules/python
+      read_only: true
+      bind:
+        create_host_path: false

@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "image": {
     "repository": "docker.io/semgrep/semgrep",
     "version": "1.173.0",
@@ -10,6 +10,1361 @@
     "commit": "40b8c63f75dc7c22c8a77482d73bfb864b146f7e",
     "subdirectory": "python",
     "finding_category": "security",
-    "tree_sha256": "defc43c66fd02d51057745f530f2c181a796f69f4c29bb887c28abcb984e13c6"
+    "tree_sha256": "412d075726808b10d1a78f194006dbe03ceb62b1a4fa734640a82c70b8f7b4b8",
+    "schema_version": 1,
+    "files": {
+      "LICENSE": {
+        "size": 92,
+        "sha256": "1a6466ae5f1c68631bbd13e3f1aa8f380d84219853c08f0456b853fccfacee1d"
+      },
+      "python/airflow/security/audit/formatted-string-bashoperator.yaml": {
+        "size": 1860,
+        "sha256": "e6747b1202af9dbe9822d87540c4c55c950c478e38628f12257eaa2cacf489a8"
+      },
+      "python/attr/correctness/mutable-initializer.yaml": {
+        "size": 1143,
+        "sha256": "e4dd9ec8be8e93d683d5207783e705216b67b992acc9fe7781f4e294ef6ff7f9"
+      },
+      "python/aws-lambda/security/dangerous-asyncio-create-exec.yaml": {
+        "size": 2356,
+        "sha256": "e8fcadea3b52c5919f71d84ef5bfeaf04e5c6c79c9308071801abed0094c1b3c"
+      },
+      "python/aws-lambda/security/dangerous-asyncio-exec.yaml": {
+        "size": 1931,
+        "sha256": "4bfc28fcb7ee869e3c064f43fda622c685862b032f33df8931dd034779fcaa03"
+      },
+      "python/aws-lambda/security/dangerous-asyncio-shell.yaml": {
+        "size": 1718,
+        "sha256": "14716d804a70c270db0ab280b5fd2d8f98746fa1346d8e766c508903d12efc37"
+      },
+      "python/aws-lambda/security/dangerous-spawn-process.yaml": {
+        "size": 2409,
+        "sha256": "565b3e4c7fbdaaa1cb36d03245e774c6f1ee8101247f2a51ff90493eb0867f28"
+      },
+      "python/aws-lambda/security/dangerous-subprocess-use.yaml": {
+        "size": 1833,
+        "sha256": "a676443184e01212736ebcbb89f80f39eabad307f8e077a57910d9d143f29e26"
+      },
+      "python/aws-lambda/security/dangerous-system-call.yaml": {
+        "size": 1742,
+        "sha256": "a0a120234857a5253a0a3c99352391ff89bdf0c3f5b14b5b24457285cdad7ff0"
+      },
+      "python/aws-lambda/security/dynamodb-filter-injection.yaml": {
+        "size": 1510,
+        "sha256": "16057c624430b1fcf63f9b6afb38c65789d341d034c1ce149511b18bd4ef1f54"
+      },
+      "python/aws-lambda/security/mysql-sqli.yaml": {
+        "size": 1589,
+        "sha256": "51fceaf5274e3a53251c8b34b83769a226731e1d59cf6965b87d45387788e8b3"
+      },
+      "python/aws-lambda/security/psycopg-sqli.yaml": {
+        "size": 1545,
+        "sha256": "43e79434cf6a3953e2de443b506c751246cf0bc637b54e0b174f40c13e726d3c"
+      },
+      "python/aws-lambda/security/pymssql-sqli.yaml": {
+        "size": 1261,
+        "sha256": "d5bd71e7f762cbeb41e787f1bdf73efc5d4be183b08de23c159a070bc58d6659"
+      },
+      "python/aws-lambda/security/pymysql-sqli.yaml": {
+        "size": 1368,
+        "sha256": "836301d9b00f13b25d47d07b1a3fc2dae0a078c66375d664d03a5dfaaaf796ed"
+      },
+      "python/aws-lambda/security/sqlalchemy-sqli.yaml": {
+        "size": 1328,
+        "sha256": "d42f3f0e1b45f89cf54243dfa0de30d811d996a70f7e73cedf290a28692415b8"
+      },
+      "python/aws-lambda/security/tainted-code-exec.yaml": {
+        "size": 1349,
+        "sha256": "6ffdf9d4cf4509b4fb5fc85e42d60b0009f6df98382304a801c67966577171ba"
+      },
+      "python/aws-lambda/security/tainted-html-response.yaml": {
+        "size": 1168,
+        "sha256": "0b3ee41786fa5294598cf06559a36b49d364bae1a7f738fb23b44ba13a8e56d9"
+      },
+      "python/aws-lambda/security/tainted-html-string.yaml": {
+        "size": 1809,
+        "sha256": "ad1ac363e8408001cd17c7794d19a8a8f4428908ac9c4e22ddc3b41f29bea334"
+      },
+      "python/aws-lambda/security/tainted-pickle-deserialization.yaml": {
+        "size": 1550,
+        "sha256": "f5d3bf911160d1b8e60313366877438772be8a12ceff32d232b8044a8d5f54d1"
+      },
+      "python/aws-lambda/security/tainted-sql-string.yaml": {
+        "size": 1614,
+        "sha256": "6c28ef216e3aba3b69849cb2862af72553f6e5c6335706354d475d1f4debb56b"
+      },
+      "python/bokeh/maintainability/deprecated/deprecated_apis.yaml": {
+        "size": 443,
+        "sha256": "eddfb2d7bfbd8df8f9bdaa773bc90b5146a548a086b6f764bc1c7c4c2653743d"
+      },
+      "python/boto3/security/hardcoded-token.yaml": {
+        "size": 1744,
+        "sha256": "9291d15d22fb2aec6b17f9bb96f564867d72de7a47561b40ade02c4cab1d4c7b"
+      },
+      "python/click/best-practice/echo-style.yaml": {
+        "size": 287,
+        "sha256": "70134f36036ceef18cea5b48996a1088c55698734675605b10574dbe9b8e1a44"
+      },
+      "python/correctness/check-is-none-explicitly.yaml": {
+        "size": 637,
+        "sha256": "6a4aa3ce792d017054ad1e41471cabb248eb64055d4c769490f852181987ac71"
+      },
+      "python/correctness/socket-shutdown-close.yaml": {
+        "size": 923,
+        "sha256": "540c7f5305b531a3089c12ee3c98caa01ef11df600059cfb62b19de52a28ebd9"
+      },
+      "python/correctness/suppressed-exception-handling-finally-break.yaml": {
+        "size": 1094,
+        "sha256": "ec1b1cf673d53f35807a2083b8f9285827c82a37a9a325c992a05b39e44f3672"
+      },
+      "python/cryptography/security/empty-aes-key.yaml": {
+        "size": 942,
+        "sha256": "29dea86db0008409ebfac10104ddee707fad0278c6009908c20603cb7669355c"
+      },
+      "python/cryptography/security/insecure-cipher-algorithms-arc4.yaml": {
+        "size": 1588,
+        "sha256": "6792b660fc336607067a0df7e27bf248a837981bc814586a2391d6814d3efbb5"
+      },
+      "python/cryptography/security/insecure-cipher-algorithms-blowfish.yaml": {
+        "size": 1563,
+        "sha256": "9153112fb209530b27211fc91d6b5c42bf18d6c06df7c534c9d7e3db4283fddf"
+      },
+      "python/cryptography/security/insecure-cipher-algorithms.yaml": {
+        "size": 1704,
+        "sha256": "16aa9e5856317a6db914c95cf69b88edfc6a6bf346a22a0b916cc23b803e46ea"
+      },
+      "python/cryptography/security/insecure-cipher-mode-ecb.yaml": {
+        "size": 1365,
+        "sha256": "323e88e423b48dc5ebf95d8c237201c2898122d20151bacc9a11028388f859cd"
+      },
+      "python/cryptography/security/insecure-hash-algorithms-md5.yaml": {
+        "size": 1526,
+        "sha256": "fce7bd18f03f7571c51b71535769e49764a472ee765856ed78db2415fef5a5e9"
+      },
+      "python/cryptography/security/insecure-hash-algorithms.yaml": {
+        "size": 1554,
+        "sha256": "97b7cd515d236b35321846c9ffa9637998c3eb0227583269b7af5a9822f10816"
+      },
+      "python/cryptography/security/insufficient-dsa-key-size.yaml": {
+        "size": 1389,
+        "sha256": "ddf91f3e23404f4c7919cb0796a02ae4cb6287c87fbace1b89e5000f2b1eb1d4"
+      },
+      "python/cryptography/security/insufficient-ec-key-size.yaml": {
+        "size": 1382,
+        "sha256": "965b82cea356460852e8de04862df72a8fbbb384d14ccc040671eed09ab82b08"
+      },
+      "python/cryptography/security/insufficient-rsa-key-size.yaml": {
+        "size": 1318,
+        "sha256": "9a82087ba0f68b392310223e6204be86b90c2d2ce46efcd11d6c28f761c7960e"
+      },
+      "python/cryptography/security/mode-without-authentication.yaml": {
+        "size": 1340,
+        "sha256": "72e998851a3e25c3fd353025a091220bb2d5b7ad66573de957cc40dae24b89cb"
+      },
+      "python/distributed/security.yaml": {
+        "size": 944,
+        "sha256": "6efff1002c3d637eb6faedc1789b3351d5ab2a6ad5c473531402ca0cf73a4217"
+      },
+      "python/django/best-practice/json_response.yaml": {
+        "size": 381,
+        "sha256": "2f648a49d71e383ef12c61f348eb9095adc1b8a8888ffd710e94e29c471b8621"
+      },
+      "python/django/best-practice/upsell_django_environ.yaml": {
+        "size": 692,
+        "sha256": "f7adfaedd740ca6cf625b8780337dc8e5f16b009eda45bfb7d0f0880210a741d"
+      },
+      "python/django/best-practice/use-onetoonefield.yaml": {
+        "size": 479,
+        "sha256": "d435bda64b64906081448f5d883ea4b2bd241d4368b46eed28be064b691de0c9"
+      },
+      "python/django/compatibility/django-2_0-compat.yaml": {
+        "size": 2093,
+        "sha256": "cb82c72a4cf52c0d108c13448fff9990285942136d59593d484bf1fa37ea652a"
+      },
+      "python/django/correctness/model-save.yaml": {
+        "size": 652,
+        "sha256": "4acb671a2259941b82f7b492e667eba7c7b0fc2cffbf302e543ae895bcdaf23f"
+      },
+      "python/django/correctness/nontext-field-must-set-null-true.yaml": {
+        "size": 1333,
+        "sha256": "2ae4375672578da63713ba06f01367d118ad54121d9adbedc1c50da475345493"
+      },
+      "python/django/correctness/string-field-null-checks.yaml": {
+        "size": 1807,
+        "sha256": "497ba8604a0b4f7d5e6d2f4a3e006f779228928ebaec8b8be976f5608f4b26c7"
+      },
+      "python/django/correctness/use-decimalfield-for-money.yaml": {
+        "size": 675,
+        "sha256": "75eddcb17b27e356e56f3d49cab5f85c1ccc346f247345beaab550b6fc9e3d59"
+      },
+      "python/django/maintainability/duplicate-path-assignment.yaml": {
+        "size": 3007,
+        "sha256": "e7e34616394b84cb281414cc41d8d9e03747b4fc34c77f217bcda373d533ed8c"
+      },
+      "python/django/performance/access-foreign-keys.yaml": {
+        "size": 688,
+        "sha256": "6134f669ee64388cf583b1af0ddf8dd4a8a8018b0afcc5acc8b4ce8e8deb557e"
+      },
+      "python/django/performance/upsell-count.yaml": {
+        "size": 558,
+        "sha256": "2ba72513bef7c2abae35278c9eb5c3589024e91ac702e75395747c835dac2e10"
+      },
+      "python/django/performance/upsell_earliest_latest.yaml": {
+        "size": 589,
+        "sha256": "6b91d2642e314a6145975dae2656d683b75471f913f31cbbb24f37c90e5e9f38"
+      },
+      "python/django/security/audit/avoid-insecure-deserialization.yaml": {
+        "size": 2100,
+        "sha256": "675310ab530114c1c197f7aa5c7c09583434daf0e92d2ade8824e464fc0ac8d6"
+      },
+      "python/django/security/audit/avoid-mark-safe.yaml": {
+        "size": 1207,
+        "sha256": "a24af26efb6274b33a07f4dce36200a1c8373971f04588ceac2e6536551a774a"
+      },
+      "python/django/security/audit/csrf-exempt.yaml": {
+        "size": 844,
+        "sha256": "b47ee2693d0173bd53ca66fb036def96fc118c305962b58f7d4f668524a3031f"
+      },
+      "python/django/security/audit/custom-expression-as-sql.yaml": {
+        "size": 996,
+        "sha256": "516a9d1d0c84701e3aa92a202c9ca8b9596f6b98de022c0c01c1135ef12fb3ab"
+      },
+      "python/django/security/audit/django-rest-framework/missing-throttle-config.yaml": {
+        "size": 1085,
+        "sha256": "1483d544c0b84081be0c6fa527f6c0fdfc4437bbfcef374739c78f45fa6e3e8a"
+      },
+      "python/django/security/audit/extends-custom-expression.yaml": {
+        "size": 4496,
+        "sha256": "271b0932608afa83aa83b5f08051b0da7ec1d835a1438beadf6ad7ada9a32088"
+      },
+      "python/django/security/audit/query-set-extra.yaml": {
+        "size": 1201,
+        "sha256": "ba41654546f12eec37271071181b6833908c1342b05d7e47af916a59275d8266"
+      },
+      "python/django/security/audit/raw-query.yaml": {
+        "size": 1357,
+        "sha256": "3ed9f9713f2928257c648cf4c5c20fda908f17c07eea153f243c9950c34a1d10"
+      },
+      "python/django/security/audit/secure-cookies.yaml": {
+        "size": 2471,
+        "sha256": "7949ce241ad33a1bca83375099ca9a5cdb20c4cf4409ca7c97e6e521a67b9e63"
+      },
+      "python/django/security/audit/templates/debug-template-tag.yaml": {
+        "size": 924,
+        "sha256": "d260201145515bd39489acc2d4f11356fcd585803b1b40379bed523eb794f422"
+      },
+      "python/django/security/audit/unvalidated-password.yaml": {
+        "size": 1632,
+        "sha256": "3d9895493c64bba96cdd87fd232c8a81267bb4dba2e1b6f899b3a0ca2b6cc9cc"
+      },
+      "python/django/security/audit/xss/class-extends-safestring.yaml": {
+        "size": 1390,
+        "sha256": "046fe8cddbb50d72bd37bd33ba68e36f89853c6b2a806c0c6f37c87b0bfca6c1"
+      },
+      "python/django/security/audit/xss/context-autoescape-off.yaml": {
+        "size": 1223,
+        "sha256": "5382a7dbe2c19595bd4752a008fd71a913f241db60fadd2faa3909682f5c6a71"
+      },
+      "python/django/security/audit/xss/direct-use-of-httpresponse.yaml": {
+        "size": 2440,
+        "sha256": "1460e96307c4a9c910de6aa40c039b991c2fbf72497ac0f137afd428f063df06"
+      },
+      "python/django/security/audit/xss/filter-with-is-safe.yaml": {
+        "size": 1375,
+        "sha256": "8e684ca36ce8f39588536946170947c3f03dd5a0661c2c4fd871d978bc72b6fa"
+      },
+      "python/django/security/audit/xss/formathtml-fstring-parameter.yaml": {
+        "size": 1180,
+        "sha256": "bb3fe6bd344ff9311213641dfa44f02e6c86183b5ee2cc07ffeb5c0ec4345390"
+      },
+      "python/django/security/audit/xss/global-autoescape-off.yaml": {
+        "size": 1197,
+        "sha256": "e7c265529d1b80a610c1fc864f6010b03b510823e62d1e41fba041612992b1a2"
+      },
+      "python/django/security/audit/xss/html-magic-method.yaml": {
+        "size": 1251,
+        "sha256": "abc639e9560b5d2c687b9599ca44edb3c687b62dbae07d3fc61610e870c607c7"
+      },
+      "python/django/security/audit/xss/html-safe.yaml": {
+        "size": 1335,
+        "sha256": "7073f9aa524874503eee7a9394a156e066bc588a6caba16535d8cc9c61c13158"
+      },
+      "python/django/security/audit/xss/template-autoescape-off.yaml": {
+        "size": 988,
+        "sha256": "53b06ddbc2b30b6f25e7e54470bedd56f38aafece9c2dff5e37480736ec01d04"
+      },
+      "python/django/security/audit/xss/template-blocktranslate-no-escape.yaml": {
+        "size": 1388,
+        "sha256": "a111af4f317d25ea6534e0c903f54b43fbbcfb711ca45405ef1edcfe2b7564ae"
+      },
+      "python/django/security/audit/xss/template-translate-as-no-escape.yaml": {
+        "size": 2562,
+        "sha256": "91e0608b7e47b6cf2a099d695b1769c295fbd9fe497d73e53eae6dd171450cf5"
+      },
+      "python/django/security/audit/xss/template-var-unescaped-with-safeseq.yaml": {
+        "size": 1024,
+        "sha256": "96ec796d23994f85b65f7a90b92ecb60f0709083b7175022114c59ccb4726ac4"
+      },
+      "python/django/security/django-no-csrf-token.yaml": {
+        "size": 1109,
+        "sha256": "868cb317e55896b4b24b033873a8531eb56cc0afda5c776aeefd50622176ad05"
+      },
+      "python/django/security/django-using-request-post-after-is-valid.yaml": {
+        "size": 829,
+        "sha256": "72d79451a45886f217e3b2f06632a47e329bb2d8d185269fa15366b484316811"
+      },
+      "python/django/security/globals-as-template-context.yaml": {
+        "size": 1587,
+        "sha256": "23b27734c61b376c25025ec15132d73a1c9d31fbfb5ed34dc182f5c549c88e84"
+      },
+      "python/django/security/hashids-with-django-secret.yaml": {
+        "size": 962,
+        "sha256": "24bebbe0b49d320b786a1c67e7578668d082cc6dc068a2053f4463526ef36c3e"
+      },
+      "python/django/security/injection/code/globals-misuse-code-execution.yaml": {
+        "size": 5477,
+        "sha256": "3081de53a8476de45b270f08bd247b4ad61f4dfdcb50895dcd967ad77fcabf46"
+      },
+      "python/django/security/injection/code/user-eval-format-string.yaml": {
+        "size": 3249,
+        "sha256": "cc9fc5d1c9aca20e8d87d735067f1f594c31da1dc2f748fd82f1514aefed36c0"
+      },
+      "python/django/security/injection/code/user-eval.yaml": {
+        "size": 1332,
+        "sha256": "174360fda70438e284336bac5cf01a8ab6a625eaaae6adb9072fea29cc2e4a97"
+      },
+      "python/django/security/injection/code/user-exec-format-string.yaml": {
+        "size": 6315,
+        "sha256": "3476476d13e1e298d643b6e286c8b5f35722a78c4bbf555c06957cfbcfaaf39b"
+      },
+      "python/django/security/injection/code/user-exec.yaml": {
+        "size": 1862,
+        "sha256": "1911ed2407df6f38a9a9d18848c7926bfa49d91fb28d368839c7bc7d8edf5f27"
+      },
+      "python/django/security/injection/command/command-injection-os-system.yaml": {
+        "size": 9056,
+        "sha256": "25656d77c95f6414ac7b98528b8d75b912fbb1f4a51be32db2c8fe77ad0d9fbc"
+      },
+      "python/django/security/injection/command/subprocess-injection.yaml": {
+        "size": 2282,
+        "sha256": "9c65b291fbeb40f3f9abb6b236e34a9ea8ac2364cabfdf66c02aa78e313439a5"
+      },
+      "python/django/security/injection/csv-writer-injection.yaml": {
+        "size": 1839,
+        "sha256": "7abeda96f1bda851eb8cf1e200022e411b502741080cdacfc69de3eaddf799a9"
+      },
+      "python/django/security/injection/email/xss-html-email-body.yaml": {
+        "size": 6445,
+        "sha256": "5a1ea0eea1067be5d3af0794d786cdec47aaeba1c9b2269921b59f3bc1075285"
+      },
+      "python/django/security/injection/email/xss-send-mail-html-message.yaml": {
+        "size": 8016,
+        "sha256": "e8ef7013b18417c860f9e771e438af5f00e76699f779a783e9cac4b2bbc885d0"
+      },
+      "python/django/security/injection/mass-assignment.yaml": {
+        "size": 1120,
+        "sha256": "08639f707285c1afb9804360c97a76ac95206b00b022f3a1e1873dc3a76ecb71"
+      },
+      "python/django/security/injection/open-redirect.yaml": {
+        "size": 21210,
+        "sha256": "0241d11e8d6ddcb12adab3a5d0817becd3912ec85026dae3f9c83b477712c7cb"
+      },
+      "python/django/security/injection/path-traversal/path-traversal-file-name.yaml": {
+        "size": 1962,
+        "sha256": "493bc2593442867c3e7fead54f55d2a66bd9e7cb4d7a2307bb71021942c23cdc"
+      },
+      "python/django/security/injection/path-traversal/path-traversal-join.yaml": {
+        "size": 2735,
+        "sha256": "d7be8e97db324d5b1614ae087c4bf530d74d8b698bdb2ebd10c7836443d83aa4"
+      },
+      "python/django/security/injection/path-traversal/path-traversal-open.yaml": {
+        "size": 12413,
+        "sha256": "31601c492e870d65642111f2336aa04d138ef2fe9281f3eb3a38884b9cf889b7"
+      },
+      "python/django/security/injection/raw-html-format.yaml": {
+        "size": 1936,
+        "sha256": "59465ba48caec7dc076d9e0a8db66e9654758bf9fdb6bdd03047cce052721628"
+      },
+      "python/django/security/injection/reflected-data-httpresponse.yaml": {
+        "size": 8484,
+        "sha256": "c9c8f2f34556b4f5c68e0e1685c5d6471fd73a6364318e0b244e0cb55b30ae56"
+      },
+      "python/django/security/injection/reflected-data-httpresponsebadrequest.yaml": {
+        "size": 8987,
+        "sha256": "d800c6d0ebb750dcd4448d48a6177a3320f0f575c04a303d99baa1d6bf71e09d"
+      },
+      "python/django/security/injection/request-data-fileresponse.yaml": {
+        "size": 3070,
+        "sha256": "930ab3468f045b2d73ac113dd9b89c4613ae17620d95b5f5c51fc1c20aad6371"
+      },
+      "python/django/security/injection/request-data-write.yaml": {
+        "size": 5090,
+        "sha256": "a3f1c8c952d54ef07939a19a8032285f5aa71bbda0b06200c51c7dcbe01b755d"
+      },
+      "python/django/security/injection/sql/sql-injection-extra.yaml": {
+        "size": 10556,
+        "sha256": "c100c7f70353217bdb26bd0292bb908e0e708e63f5ea52fdce88ebc5ffd0f802"
+      },
+      "python/django/security/injection/sql/sql-injection-rawsql.yaml": {
+        "size": 10315,
+        "sha256": "1cffd4593ed3a1304931f687fcd6e87a803d90a74a598c41bf52e5b26eaf8b2f"
+      },
+      "python/django/security/injection/sql/sql-injection-using-db-cursor-execute.yaml": {
+        "size": 8914,
+        "sha256": "e4f74b36aa657c91def7eaea4ea545e046d63be195eb05d99de9ed6e20de1ef4"
+      },
+      "python/django/security/injection/sql/sql-injection-using-raw.yaml": {
+        "size": 9143,
+        "sha256": "d632bb390c6bf5e477b38d49562c94eb3acba460fd8a3073c564dd3903d7bed2"
+      },
+      "python/django/security/injection/ssrf/ssrf-injection-requests.yaml": {
+        "size": 7965,
+        "sha256": "ea10312bd2a8005370bb1207dad399a49f4a5baf176a99b67012184db69ff86a"
+      },
+      "python/django/security/injection/ssrf/ssrf-injection-urllib.yaml": {
+        "size": 8302,
+        "sha256": "a1450533c03650942eab034d5e6a2fc55a2bbcf133bc4fd9ab72bcd2f27c5945"
+      },
+      "python/django/security/injection/tainted-sql-string.yaml": {
+        "size": 1526,
+        "sha256": "43e19cfec1bef17a4efd9490a2359383e8ba67ac6335de9114c655ffbec24300"
+      },
+      "python/django/security/injection/tainted-url-host.yaml": {
+        "size": 2258,
+        "sha256": "e7a0710acbed5525e6481a0bb3985cda96fb9846b56db1ec98da5d6a92f49cf7"
+      },
+      "python/django/security/locals-as-template-context.yaml": {
+        "size": 1581,
+        "sha256": "20ecddd34fcc5a1adbbb1d1193c133be523a517a2b1b56ee870e9cf14ddf690a"
+      },
+      "python/django/security/nan-injection.yaml": {
+        "size": 1329,
+        "sha256": "4b49df5b787b7af44346017faace82f5ad0b0407ccc5003cb717bb4d91f70175"
+      },
+      "python/django/security/passwords/password-empty-string.yaml": {
+        "size": 1037,
+        "sha256": "b9e01ca7e30f5353f53858fd1f2c680b3f6c625f160f00167cbdb18ebfa43229"
+      },
+      "python/django/security/passwords/use-none-for-password-default.yaml": {
+        "size": 1214,
+        "sha256": "6d25c4932d1a5bee307ebcecc5777e4dc73ce814088b37a6fd77823affe7ce95"
+      },
+      "python/docker/security/audit/docker-arbitrary-container-run.yaml": {
+        "size": 936,
+        "sha256": "bc376f61c5da091997e2b813ffd233acf2af7301439e1ce1e194a95567b653df"
+      },
+      "python/fastapi/security/wildcard-cors.yaml": {
+        "size": 1073,
+        "sha256": "e41efd2194f440eda19e8e77b0e99b7eaac5a06ec9ba9fbc4ed3f27154fee5b6"
+      },
+      "python/flask/best-practice/get-class-method-with-side-effects.yaml": {
+        "size": 607,
+        "sha256": "57100461aac99187eb1db4a35ed243d7e8a36f5cb778403851bf9305bb69580b"
+      },
+      "python/flask/best-practice/use-jsonify.yaml": {
+        "size": 911,
+        "sha256": "2a1527ad692b62f50c87f40bd4a5423bc4286b4fd8810607822b9b423a61a0c5"
+      },
+      "python/flask/caching/query-string.yaml": {
+        "size": 1404,
+        "sha256": "9f87d273e99967c12105a370fe7096003edc2134b15eb898cdbeb65abcf53732"
+      },
+      "python/flask/correctness/access-request-in-wrong-handler.yaml": {
+        "size": 625,
+        "sha256": "0d416c469b7a96c2cb7c7a57c814d8aeed4eefaeeded65a0d1b63f433bbad0fc"
+      },
+      "python/flask/correctness/same-handler-name.yaml": {
+        "size": 457,
+        "sha256": "3cdd50221dad8fcaf5b15a75a299c01c8fd0ef9d60f34b8113f996799323315f"
+      },
+      "python/flask/maintainability/deprecated/deprecated-apis.yaml": {
+        "size": 1210,
+        "sha256": "4e4d0fb0a23fafa8ed28abc1c0fc5b6556f9392810484cc8332dac28a78f9862"
+      },
+      "python/flask/security/audit/app-run-param-config.yaml": {
+        "size": 652,
+        "sha256": "d585cf29c2d5165038793d1f407ffb82be5703f295a60cee798fe4b8e761ab8a"
+      },
+      "python/flask/security/audit/app-run-security-config.yaml": {
+        "size": 760,
+        "sha256": "9fc9f62ab0dea0218a0162d761171bc9439826e3b1ea1b772ac1d5b1924a33b8"
+      },
+      "python/flask/security/audit/debug-enabled.yaml": {
+        "size": 804,
+        "sha256": "3d5a239402b422a1c24be1bc69e45fb852d94526ef2df57aabddf222a79ca4ff"
+      },
+      "python/flask/security/audit/directly-returned-format-string.yaml": {
+        "size": 1986,
+        "sha256": "f355c84b3611f96724110b484fd818bbb65237f8b99772031aef516fdd648496"
+      },
+      "python/flask/security/audit/flask-cors-misconfiguration.yaml": {
+        "size": 1506,
+        "sha256": "1d63b1e41a49eceed682cdd58abe583732c0b54b90226607e8151458cada2a86"
+      },
+      "python/flask/security/audit/flask-url-for-external-true.yaml": {
+        "size": 1106,
+        "sha256": "499bd24df16b70abf46b2ca6584fd806f08ecfb05eacbf6be15c4bc6ea019c28"
+      },
+      "python/flask/security/audit/hardcoded-config.yaml": {
+        "size": 3671,
+        "sha256": "14edcbaf8a2a3d1bc51b0c4624645ffdaf85b248deb9b3680f84d8525993764b"
+      },
+      "python/flask/security/audit/host-header-injection-python.yaml": {
+        "size": 1536,
+        "sha256": "7e03d546123e65257aaf02b198875e90c3e39fcbf8e9e04070f14a16b4d29b18"
+      },
+      "python/flask/security/audit/render-template-string.yaml": {
+        "size": 699,
+        "sha256": "020b3a53631fd12068282b671b5b9f18d790d309105addb1b84547a204abe443"
+      },
+      "python/flask/security/audit/secure-set-cookie.yaml": {
+        "size": 1556,
+        "sha256": "962741930c1fde701e01463967cf157bba50c4936a18dfb6a57cc78bd8725e4b"
+      },
+      "python/flask/security/audit/wtf-csrf-disabled.yaml": {
+        "size": 1972,
+        "sha256": "204e1817ff3131172eb312a39a17ebe40f8a72fd988293bf96ec40fe4618c192"
+      },
+      "python/flask/security/audit/xss/make-response-with-unknown-content.yaml": {
+        "size": 2073,
+        "sha256": "5679618b627b0356c09ee93ac60471abfc9b6f771136665af81c55a02efec477"
+      },
+      "python/flask/security/dangerous-template-string.yaml": {
+        "size": 1596,
+        "sha256": "4c7dd55cfc00b1bf44e9fd4d60daaaaba25979f98eec75357f7344c0e08c4e28"
+      },
+      "python/flask/security/flask-api-method-string-format.yaml": {
+        "size": 920,
+        "sha256": "6432a5244e2c9b21382b45645b3928c889e6327fc08fd0ba4524c452b4797ad1"
+      },
+      "python/flask/security/hashids-with-flask-secret.yaml": {
+        "size": 1203,
+        "sha256": "420cf776d6ae34b05e3b764efa931f3803b0ad3820419d659a4bdf04f51c724c"
+      },
+      "python/flask/security/injection/csv-writer-injection.yaml": {
+        "size": 2658,
+        "sha256": "24de788d06a07673333edfb1ae08e71e210901fbdf6bf1e29665c20c82ec903d"
+      },
+      "python/flask/security/injection/nan-injection.yaml": {
+        "size": 1311,
+        "sha256": "6d1c233a71d4b50954642121b80e2dcbddf407fee8150439923a699e595f8117"
+      },
+      "python/flask/security/injection/os-system-injection.yaml": {
+        "size": 2202,
+        "sha256": "1d03d3a2b623500ebdaef23f57e4037ab434165ebc0240f1ceeaec3ee2fbe480"
+      },
+      "python/flask/security/injection/path-traversal-open.yaml": {
+        "size": 3065,
+        "sha256": "6334bed72d7dc051b208c0d0a44c7f492110f31e89b48afe43e486d0dc49ebe1"
+      },
+      "python/flask/security/injection/raw-html-concat.yaml": {
+        "size": 2172,
+        "sha256": "51617bcbaa7e85c2e7754a3acbe2306d2e45abb9a3cb873a5481913e9c3b1252"
+      },
+      "python/flask/security/injection/ssrf-requests.yaml": {
+        "size": 2641,
+        "sha256": "b58b26365b07722e9408f38956365fa6b3a1a7351ad2b4a9c98a00d796f42452"
+      },
+      "python/flask/security/injection/subprocess-injection.yaml": {
+        "size": 3034,
+        "sha256": "3999fd54bda682edd0391678e362cd8c70b313d4aeb24252179f374604c73d66"
+      },
+      "python/flask/security/injection/tainted-sql-string.yaml": {
+        "size": 1850,
+        "sha256": "d9b562b5eb8bd7efaaa696ebd0db97e47fc498edeec094c6956ba3567bbddd77"
+      },
+      "python/flask/security/injection/tainted-url-host.yaml": {
+        "size": 2424,
+        "sha256": "d284c85c11b117bc8b0a4a6ac3c95012ec2b4933241387fa84fb34d37e64a422"
+      },
+      "python/flask/security/injection/user-eval.yaml": {
+        "size": 1967,
+        "sha256": "1b264b83aca5b0cb5f6bda721cef7f6f97ba6733cbab89471fa9d98875bb67e5"
+      },
+      "python/flask/security/injection/user-exec.yaml": {
+        "size": 1965,
+        "sha256": "6baf6b2cf08d10ca11aec05db52e13ca9b8002166cc997ef270343becb38c583"
+      },
+      "python/flask/security/insecure-deserialization.yaml": {
+        "size": 1271,
+        "sha256": "bd53d297cfc842c23b289f6d15b2a98847b626d9e8fd71b71da794891a4aca34"
+      },
+      "python/flask/security/open-redirect.yaml": {
+        "size": 2182,
+        "sha256": "b70c080ef6b0e12b7954be9bd1bea7520767bf48bf13eb9a85773554497a2d9b"
+      },
+      "python/flask/security/secure-static-file-serve.yaml": {
+        "size": 876,
+        "sha256": "8abec107beb2158d160dd343fa2565295b028c436a956dc0a88e609dea1400bc"
+      },
+      "python/flask/security/unescaped-template-extension.yaml": {
+        "size": 2486,
+        "sha256": "77c34356cb37fedae15aedb4ea7091298b179a665ea197e7595cdd0a1c197148"
+      },
+      "python/flask/security/unsanitized-input.yaml": {
+        "size": 1510,
+        "sha256": "7931f883ecffdb50052d4ae1aaf311d936727ddbc5278b45ddab2b3ddb16536c"
+      },
+      "python/flask/security/xss/audit/direct-use-of-jinja2.yaml": {
+        "size": 1237,
+        "sha256": "c0d8f1c486b3f53578957396f267e9b60fd64fd3d2c8283ed254f44bde94bc4f"
+      },
+      "python/flask/security/xss/audit/explicit-unescape-with-markup.yaml": {
+        "size": 1180,
+        "sha256": "9f9ad4dd5ee90df6814b1aca6765079c0969e683160c03dd6bce6c2033b7aa5f"
+      },
+      "python/flask/security/xss/audit/template-autoescape-off.yaml": {
+        "size": 1072,
+        "sha256": "088424b42cca78a77ae60f67c4747f72e581b3d4548573b84796c4656387ccf5"
+      },
+      "python/flask/security/xss/audit/template-unescaped-with-safe.yaml": {
+        "size": 966,
+        "sha256": "c262490901ebd84eebd855a2c083acc16101a641e4dda85e6b16abff3ed4b7fa"
+      },
+      "python/flask/security/xss/audit/template-unquoted-attribute-var.yaml": {
+        "size": 1516,
+        "sha256": "c6a704c4df9518b9f8e396c908a2ece9a9b90257afd0f1ac102c8b0392f774ff"
+      },
+      "python/jinja2/security/audit/autoescape-disabled-false.yaml": {
+        "size": 1229,
+        "sha256": "e19b9eaff222cc59de68f08af660094b165ce8ff02f577b5d82c81be9f427e2f"
+      },
+      "python/jinja2/security/audit/missing-autoescape-disabled.yaml": {
+        "size": 1166,
+        "sha256": "01e001ea92a1955e3ff857f1d7e5a55fc2f703e32631cf06e5dd1508bd12eaa4"
+      },
+      "python/jwt/security/audit/jwt-exposed-data.yaml": {
+        "size": 891,
+        "sha256": "52d62992ca311d270de14b943149a429008a59c778fdc497b934f55f01784950"
+      },
+      "python/jwt/security/jwt-exposed-credentials.yaml": {
+        "size": 970,
+        "sha256": "c378d31d55ad8e84ee2e361d3f4a27d7a78db7a6bd32078f35edc0d01a16dda1"
+      },
+      "python/jwt/security/jwt-hardcode.yaml": {
+        "size": 917,
+        "sha256": "19bc9e5c38aa7516619747064d158dfbfb7acc5428d55bdafb6a15b62400ea65"
+      },
+      "python/jwt/security/jwt-none-alg.yaml": {
+        "size": 1126,
+        "sha256": "c18dd17b792204e1b5ff85ccefdf2d25662a14ee9bc7c09b1778bf2268fed27c"
+      },
+      "python/jwt/security/unverified-jwt-decode.yaml": {
+        "size": 1509,
+        "sha256": "a205f87a1cc121ff00331805e55a6c8bbfbd82e1a3913c246d6725dd91945f4a"
+      },
+      "python/lang/best-practice/hardcoded-tmp-path.yaml": {
+        "size": 409,
+        "sha256": "ca70a7de76cbcf102c8f04f6a6c4ac4d2de3833ec44cf54c82103f7628ee1f6f"
+      },
+      "python/lang/best-practice/logging-error-without-handling.yaml": {
+        "size": 872,
+        "sha256": "e94023fa7f546b10669ac29353a88fda83b63271f64593b6a13ec2da5206710f"
+      },
+      "python/lang/best-practice/manual-collections-create.yaml": {
+        "size": 2599,
+        "sha256": "e45971c84c5d075fae590be7f556f14f3d4fdcdb2cde7768fc6e0100354ac329"
+      },
+      "python/lang/best-practice/missing-hash-with-eq.yaml": {
+        "size": 592,
+        "sha256": "1fdb7c0e9800c6f9fecc9427e16fb5bda564a70b55f17e9003b2f685fa56f398"
+      },
+      "python/lang/best-practice/open-never-closed.yaml": {
+        "size": 2413,
+        "sha256": "794b28286b736ceff3a2e00d5d4b6e70fac6fb75ece989c8a4b5c08b6f653b4f"
+      },
+      "python/lang/best-practice/pass-body.yaml": {
+        "size": 824,
+        "sha256": "13e8f634e89b635d910176a86fa9fdfb2a1b8adfdd6b952bbd7130a9747146aa"
+      },
+      "python/lang/best-practice/pdb.yaml": {
+        "size": 324,
+        "sha256": "e515cf541b365bad7f50145de5f57e9bfe64845a2b67d938e050926d7805814e"
+      },
+      "python/lang/best-practice/sleep.yaml": {
+        "size": 412,
+        "sha256": "2563a71f0b1ad2457742b098c80ed1d1a32a1a5b488e4a1bdc72953a3abd2511"
+      },
+      "python/lang/best-practice/unspecified-open-encoding.yaml": {
+        "size": 1328,
+        "sha256": "4174ff27080cb33e9fa00200e4c96da659e9da5f43cbb3992fd571d62e2168a8"
+      },
+      "python/lang/compatibility/python36.yaml": {
+        "size": 828,
+        "sha256": "c44a700deca397f3c1637eb92fd3f96f81790c9da10b5f5e898f348a336eec47"
+      },
+      "python/lang/compatibility/python37.yaml": {
+        "size": 6887,
+        "sha256": "cc868ab5982ae6db7327d4b160a504188e72f64975eac8b7bd40bfc6d1e78b0c"
+      },
+      "python/lang/correctness/baseclass-attribute-override.yaml": {
+        "size": 893,
+        "sha256": "7b558a9193ea36613ab6e85ff23fba60adcb8c7512ed6942d2036b34af47c6cb"
+      },
+      "python/lang/correctness/cannot-cache-generators.yaml": {
+        "size": 469,
+        "sha256": "90d520695f421444595eb071063ed6c3eb22cb5daac8de9a4ebc991e40739945"
+      },
+      "python/lang/correctness/common-mistakes/default-mutable-dict.yaml": {
+        "size": 1979,
+        "sha256": "0152390a63d97d53d9e537e27534717a65faad03fe1620cab6aeda1f614bdc5e"
+      },
+      "python/lang/correctness/common-mistakes/default-mutable-list.yaml": {
+        "size": 2023,
+        "sha256": "c0c8f57ea349a845aa3097bc2ecdc77842d02316b89ca817a328a7e87175ff35"
+      },
+      "python/lang/correctness/common-mistakes/is-comparison-string.yaml": {
+        "size": 1055,
+        "sha256": "7a3e833a6c87c529065ef7d9c39b4ce033a82aae580152fdf0db8f610a64e9bd"
+      },
+      "python/lang/correctness/common-mistakes/is-not-is-not.yaml": {
+        "size": 332,
+        "sha256": "0f4ac1735e9cced71b386c0dea02343df90f11b6523c58ee99be995fe3c816e8"
+      },
+      "python/lang/correctness/common-mistakes/string-concat-in-list.yaml": {
+        "size": 627,
+        "sha256": "916965eefaf365c487889da5ab3d6fef39030e6e019f549a677cb823c9514929"
+      },
+      "python/lang/correctness/concurrent.yaml": {
+        "size": 995,
+        "sha256": "bc358a0a4ec310e2ec7da3137640350540e737c5f70d6fa2303303bfeffdb89e"
+      },
+      "python/lang/correctness/dict-modify-iterating.yaml": {
+        "size": 717,
+        "sha256": "43716de4cab37c1b6eea33f4d7d58a47ac6abeac85f3d871ac933d4cc3dc3568"
+      },
+      "python/lang/correctness/exceptions/exceptions.yaml": {
+        "size": 608,
+        "sha256": "71b8024580300934ea164df0b6e1d482c70ed4125b3a52483bfd1114383cf235"
+      },
+      "python/lang/correctness/exit.yaml": {
+        "size": 583,
+        "sha256": "16d9f9fe52672c41b3f79a323a3ed33cce40f323eecca09c693d66fa9daadf73"
+      },
+      "python/lang/correctness/file-object-redefined-before-close.yaml": {
+        "size": 572,
+        "sha256": "6b8a77f9d82091e54279caf461d6df563b440389c3ee5db0db283ae8458fbc87"
+      },
+      "python/lang/correctness/list-modify-iterating.yaml": {
+        "size": 953,
+        "sha256": "e5a407285dc36a2654484eed9579468907aff5d1ee5a1ffdf0166fc8d2322257"
+      },
+      "python/lang/correctness/pdb.yaml": {
+        "size": 364,
+        "sha256": "642adcbffeea8babf3436d0e0a3fa4676242a3b118927be241fa263043315772"
+      },
+      "python/lang/correctness/pytest-assert_match-after-path-patch.yaml": {
+        "size": 817,
+        "sha256": "47a58c4411953176325d38ab281d4f8f5584a2d2a5c7fb2d9e4640b2ce4d40ad"
+      },
+      "python/lang/correctness/return-in-init.yaml": {
+        "size": 1280,
+        "sha256": "c87d11c8487d5c796fe734fe804a121053ff0f83c0d16a5873242bb94c6e93bb"
+      },
+      "python/lang/correctness/sync-sleep-in-async-code.yaml": {
+        "size": 532,
+        "sha256": "3b70dbfd3420c50cde8ff6aba559eb238c08ac9653814052b53b3cfb586774a3"
+      },
+      "python/lang/correctness/tempfile/flush.yaml": {
+        "size": 2355,
+        "sha256": "5933ea35191b7166bf82b8f2ad30aab1a618bda6bf1e5ec5a5c8c1d2f05b7a16"
+      },
+      "python/lang/correctness/tempfile/mktemp.yaml": {
+        "size": 512,
+        "sha256": "ce94d06a2e826a738aecb09b468ea32310dea6857a4b4a614fcf410e3c0b46e5"
+      },
+      "python/lang/correctness/test-is-missing-assert.yaml": {
+        "size": 1095,
+        "sha256": "5e0c33b2bbee77916a615537db626bcb3a3eb7dd5f45054d72f00941b1042141"
+      },
+      "python/lang/correctness/unchecked-returns.yaml": {
+        "size": 794,
+        "sha256": "a80f6ce396167ab9e29d6d9bb40793f204d9c9e4ecff0d6db80be6ebbf0ffd7f"
+      },
+      "python/lang/correctness/useless-comparison.yaml": {
+        "size": 755,
+        "sha256": "538fa14a445bc28a504b187b0d1e772de01ed69a48743e9b8e4ef0789bae2d43"
+      },
+      "python/lang/correctness/useless-eqeq.yaml": {
+        "size": 794,
+        "sha256": "27006f69de3b1a42045c4e82abeefeb9af420018c653327d74d6c17b82744194"
+      },
+      "python/lang/correctness/writing-to-file-in-read-mode.yaml": {
+        "size": 754,
+        "sha256": "cfea9ad20ed7fac2efd24232226f54a8dab6be994d630c5d917fafb77c5479a3"
+      },
+      "python/lang/maintainability/improper-list-concat.yaml": {
+        "size": 677,
+        "sha256": "01ba0aa03cb2a9bb7baa18bb0397d41bb8f66246c093f27b3f961c468c7d1500"
+      },
+      "python/lang/maintainability/is-function-without-parentheses.yaml": {
+        "size": 491,
+        "sha256": "bcecf4f46f6e87b049bfe79784aacdcb627eff6622c4916be6400072019dd281"
+      },
+      "python/lang/maintainability/return.yaml": {
+        "size": 760,
+        "sha256": "d1b7a05811649bbeb6c570899ce46d5cdf46ed834441be4ab2a49a8fef16b5d3"
+      },
+      "python/lang/maintainability/useless-assign-keyed.yaml": {
+        "size": 403,
+        "sha256": "9f5a5cd8e78880fa53b8b08606d3aa01f5bb440337ed2efc1e08ff338bde39f1"
+      },
+      "python/lang/maintainability/useless-ifelse.yaml": {
+        "size": 755,
+        "sha256": "767a31f661376c99a98b04d2380b14476b544d8f8fc2dfcc4f06fd0bc4422576"
+      },
+      "python/lang/maintainability/useless-innerfunction.yaml": {
+        "size": 815,
+        "sha256": "f22a8ee4d89c21937e619f41378195c7579b85bbccc16e9405c4dd2ce84de7a3"
+      },
+      "python/lang/maintainability/useless-literal-set.yaml": {
+        "size": 452,
+        "sha256": "854142e5afaafb21702644e04cc851dcbf3ab6650d97cebe4b02165f12c0bdde"
+      },
+      "python/lang/maintainability/useless-literal.yaml": {
+        "size": 518,
+        "sha256": "535a4dfae62e84a0db6739865d209bfe8e9742932814c0c233626d59cf09a0e7"
+      },
+      "python/lang/security/audit/conn_recv.yaml": {
+        "size": 1338,
+        "sha256": "30d4c0fd0fbdd599ddd9261a7c96435427bd4885dde4c5561fbe45b5f9ebe0ca"
+      },
+      "python/lang/security/audit/dangerous-annotations-usage.yaml": {
+        "size": 1067,
+        "sha256": "de2894f025419bcc1753dde0bec8948a64aa3409d7733fcc4819d04ee6429cb0"
+      },
+      "python/lang/security/audit/dangerous-asyncio-create-exec-audit.yaml": {
+        "size": 2844,
+        "sha256": "9308083dcaae7882f3fb4f26b0f400cca7dd79c49cb85d72b8ed5de1cacad2ce"
+      },
+      "python/lang/security/audit/dangerous-asyncio-create-exec-tainted-env-args.yaml": {
+        "size": 4310,
+        "sha256": "81dccef20c6ab71757629dc002f90401e0744ccb7866896573ea81c5bb84e8cf"
+      },
+      "python/lang/security/audit/dangerous-asyncio-exec-audit.yaml": {
+        "size": 2032,
+        "sha256": "ae753d565762477200ab6a16d2127b455f5af988e925d76dcb550b3559b85efc"
+      },
+      "python/lang/security/audit/dangerous-asyncio-exec-tainted-env-args.yaml": {
+        "size": 3464,
+        "sha256": "c6e42f7c3f7ce43318c08c8d8f856f7e4d332754c483c66478407bb2cd196584"
+      },
+      "python/lang/security/audit/dangerous-asyncio-shell-audit.yaml": {
+        "size": 1800,
+        "sha256": "e81ed31c802114fe7ccc523b6b554611044cc0a69e13daacea93fa080d28cfe9"
+      },
+      "python/lang/security/audit/dangerous-asyncio-shell-tainted-env-args.yaml": {
+        "size": 3282,
+        "sha256": "59f1f227a3bc52469a328cc9bac7989242b3816faac9e6e999db723bbab8062d"
+      },
+      "python/lang/security/audit/dangerous-code-run-audit.yaml": {
+        "size": 1534,
+        "sha256": "888280b79addb2c06f664c324cfc9c9da7b571b6bc6d1991b813677e16c77ce8"
+      },
+      "python/lang/security/audit/dangerous-code-run-tainted-env-args.yaml": {
+        "size": 3207,
+        "sha256": "e50fede75b329941c32e89a4dcda0dc664f0b70b3f00e42873aa412237f09efb"
+      },
+      "python/lang/security/audit/dangerous-os-exec-audit.yaml": {
+        "size": 2037,
+        "sha256": "d7aa77c8ae62e4f6d0d3cc97a363406c819c657e3b9b5ed95030a4c7ce21febc"
+      },
+      "python/lang/security/audit/dangerous-os-exec-tainted-env-args.yaml": {
+        "size": 3733,
+        "sha256": "593edc8b93d10cfdc478070dc30a9acc74d27d47d03fa883c0aa9b7351f8e219"
+      },
+      "python/lang/security/audit/dangerous-spawn-process-audit.yaml": {
+        "size": 2253,
+        "sha256": "6ee93ba0c11e3fe0ef11ba3b43c7632c03176bf0e480c090e78fd543e0e1291e"
+      },
+      "python/lang/security/audit/dangerous-spawn-process-tainted-env-args.yaml": {
+        "size": 3997,
+        "sha256": "1d391dbfea8ee1dc0ad5e6cf762cae0ad36a8dcee923cac4212239852b3e988f"
+      },
+      "python/lang/security/audit/dangerous-subinterpreters-run-string-audit.yaml": {
+        "size": 946,
+        "sha256": "04c785a1716eadb808d767d1c84d18538390caae5c43e20d971e9dffcafb4237"
+      },
+      "python/lang/security/audit/dangerous-subinterpreters-run-string-tainted-env-args.yaml": {
+        "size": 2503,
+        "sha256": "0d29a1b663d5c8a3675af995c9ed1e401d46261146cb0dff698b2e4e24ad9b1d"
+      },
+      "python/lang/security/audit/dangerous-subprocess-use-audit.yaml": {
+        "size": 3189,
+        "sha256": "50f69dc35f47e405633559f54fc2b3bd344707221742400e74b1c902c1f76faa"
+      },
+      "python/lang/security/audit/dangerous-subprocess-use-tainted-env-args.yaml": {
+        "size": 4436,
+        "sha256": "0f3f3f8fafef5b828a15253585e4c6648c46c6fd1cca4b0ae8c70a9399def44d"
+      },
+      "python/lang/security/audit/dangerous-system-call-audit.yaml": {
+        "size": 2063,
+        "sha256": "279e17c553ccfae54e058f02b5ed59e7c50665b49d4eb57f767b4aa1e6d818e6"
+      },
+      "python/lang/security/audit/dangerous-system-call-tainted-env-args.yaml": {
+        "size": 3513,
+        "sha256": "51a6fb4d788c62a22670956868c7702e286e41da0961cb6cedcbf5d9c5f03dea"
+      },
+      "python/lang/security/audit/dangerous-testcapi-run-in-subinterp-audit.yaml": {
+        "size": 1055,
+        "sha256": "870cd92a77bfc42b00a7d8dad44b4e733fcb416c93d43886004b0af3c49833b1"
+      },
+      "python/lang/security/audit/dangerous-testcapi-run-in-subinterp-tainted-env-args.yaml": {
+        "size": 2629,
+        "sha256": "0f042c7f448008974fb1325148c5368887e8ddf83f88f721e1c3cbbb8eae5c01"
+      },
+      "python/lang/security/audit/dynamic-urllib-use-detected.yaml": {
+        "size": 2056,
+        "sha256": "02473766fa7c92a516db26d5dd0881f9dcc62ef10b0804565a0e5af2c9c5568a"
+      },
+      "python/lang/security/audit/eval-detected.yaml": {
+        "size": 1263,
+        "sha256": "4a7d2769392c93fecb74a76b313b36b499c0ca22b42966d48f174761d85a5eec"
+      },
+      "python/lang/security/audit/exec-detected.yaml": {
+        "size": 1222,
+        "sha256": "4f104a4f848ec09d02ec1317458572a6f581aba21bc884f2ea07503a1478095f"
+      },
+      "python/lang/security/audit/formatted-sql-query.yaml": {
+        "size": 1079,
+        "sha256": "3543d454e520952116963c7913a2c2bad9bf9192b6c8c80be91ab7529a88ff09"
+      },
+      "python/lang/security/audit/hardcoded-password-default-argument.yaml": {
+        "size": 869,
+        "sha256": "9570d458ae16dce2e3119691d005e4ff50fc3effabdb83797dbf29acf15fa0ed"
+      },
+      "python/lang/security/audit/httpsconnection-detected.yaml": {
+        "size": 1083,
+        "sha256": "5918e45c3d8db0ada0f6db2d90f9805abb01ec4e5e69b398d31eff531bbbb831"
+      },
+      "python/lang/security/audit/insecure-file-permissions.yaml": {
+        "size": 1939,
+        "sha256": "33ce6040a85aa8a61e2bd005da9f9623c666eafd8afe31e4ada44d74d57b9bc2"
+      },
+      "python/lang/security/audit/insecure-transport/ftplib/use-ftp-tls.yaml": {
+        "size": 1348,
+        "sha256": "608f71c3b8a8976095f5043a9a5b24ff7c2d07d8e3a761b4d163b806ad0fbde6"
+      },
+      "python/lang/security/audit/insecure-transport/requests/request-session-http-in-with-context.yaml": {
+        "size": 1692,
+        "sha256": "1a9c2d732913027a6df531c7a312b65141aa92382e48d27ea6fac826d25c96ba"
+      },
+      "python/lang/security/audit/insecure-transport/requests/request-session-with-http.yaml": {
+        "size": 1745,
+        "sha256": "9113bafd2b90ea21eb3baf2cc53bfbdd498a5abc19b1011d8bbb5a356e1844fa"
+      },
+      "python/lang/security/audit/insecure-transport/requests/request-with-http.yaml": {
+        "size": 1769,
+        "sha256": "27ae0f8d40740a62ba94e0ab28200740865eacf2331f5c3825bb14c85cf6e65e"
+      },
+      "python/lang/security/audit/insecure-transport/ssl/no-set-ciphers.yaml": {
+        "size": 1111,
+        "sha256": "4422724b857bd8f0355c011c0d9ed40e1225886f4cc7dc20eebb127de0732785"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-openerdirector-open-ftp.yaml": {
+        "size": 1847,
+        "sha256": "59a521c3acec2bf10faff77d048849a052160e2950086fececd991fcce6df841"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-openerdirector-open.yaml": {
+        "size": 1821,
+        "sha256": "5a07f8239423e1f2de0dd635da882f7bb17c85a10b0934c91fe669fceb7a79b1"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-request-object-ftp.yaml": {
+        "size": 1134,
+        "sha256": "2f735c4cdf4e9d28e76ab128bc554e717ea15fb7c629db1405edf8dba1445c78"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-request-object.yaml": {
+        "size": 1127,
+        "sha256": "0e08a07f40e99e50bb16fc4454a6d11a3d57a452c6a00c9857bb619af5131806"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlopen-ftp.yaml": {
+        "size": 1069,
+        "sha256": "f69a48018746c8e3f499ea7126932672102f3a79b6bb213b7fc627025a00c8b0"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlopen.yaml": {
+        "size": 1051,
+        "sha256": "91c210c4af9b0b6eb912aab44a82b91b01a79c01cf2306678dc1027b90643ce9"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlopener-open-ftp.yaml": {
+        "size": 1728,
+        "sha256": "61da67c959a0230c34d5f920eec0294628610e99c09da14da9d080807f24bb3f"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlopener-open.yaml": {
+        "size": 1776,
+        "sha256": "bd047835550b793f6453e9a6f73502f6002802c2bd40fda78cf410a939790900"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlopener-retrieve-ftp.yaml": {
+        "size": 1764,
+        "sha256": "83aafb1e6706f07142ba0ed84b3bdacfae054a9bb4c9a2dd48131db19225d396"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlopener-retrieve.yaml": {
+        "size": 1812,
+        "sha256": "26c59a53e985b128f31035c660b04036b4fab1ff4f094e82a3d07531e757b57f"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlretrieve-ftp.yaml": {
+        "size": 1082,
+        "sha256": "7fcb94a91340e9a8060b7b50e2a68d946f0244cb5696e535cdc739c8773d3382"
+      },
+      "python/lang/security/audit/insecure-transport/urllib/insecure-urlretrieve.yaml": {
+        "size": 1075,
+        "sha256": "50022b6544a10fc905e54a1415d492c72041800a83333d217540a7fa500d99ab"
+      },
+      "python/lang/security/audit/logging/listeneval.yaml": {
+        "size": 1058,
+        "sha256": "eb966b0faac60a0f2a96dc1147c9da504b9654ccd1faad655fae578dceb5b665"
+      },
+      "python/lang/security/audit/logging/logger-credential-leak.yaml": {
+        "size": 1211,
+        "sha256": "dfe640eaa2e1a219d438ce96ceff05e2f7e730c4858a9f49ac228c073db4eac9"
+      },
+      "python/lang/security/audit/mako-templates-detected.yaml": {
+        "size": 1150,
+        "sha256": "0208e1d18cef98c22617ae21e0e1e0230b6ba35a344b6e9d43b3a3f204e21d05"
+      },
+      "python/lang/security/audit/marshal.yaml": {
+        "size": 1011,
+        "sha256": "cb4911c37ef771abd07e45d4fff72a8f0919ab8ee850f6bbebf4e201a3aaca84"
+      },
+      "python/lang/security/audit/md5-used-as-password.yaml": {
+        "size": 1637,
+        "sha256": "51ddd2ba3ea8fdb9da5ff75b567d1a18f58e7c51a375bc5e73752a409cd86951"
+      },
+      "python/lang/security/audit/network/bind.yaml": {
+        "size": 1036,
+        "sha256": "0fa514e0a7190eaa1a3dacab29509b4ac3d8480403ba545c104e7e4aabbbae9c"
+      },
+      "python/lang/security/audit/network/disabled-cert-validation.yaml": {
+        "size": 1369,
+        "sha256": "6b3c74d269a97818065d42d916c748b2b01f5f85c81d877b85f8908fd923247f"
+      },
+      "python/lang/security/audit/network/http-not-https-connection.yaml": {
+        "size": 859,
+        "sha256": "a687d760cd55747ee465a820a9ca19ca693eeac51d3058defe1d6c47c87b2b67"
+      },
+      "python/lang/security/audit/non-literal-import.yaml": {
+        "size": 834,
+        "sha256": "056752dd8dfb6a695e4c9cd6ff64ebf8ff63bfc519d2ee1729f636b77c620497"
+      },
+      "python/lang/security/audit/paramiko-implicit-trust-host-key.yaml": {
+        "size": 1140,
+        "sha256": "bdb1944f2623df900a774e6996d1d8ef6fab84f4fafcf1d278fae3f54f48368f"
+      },
+      "python/lang/security/audit/paramiko/paramiko-exec-command.yaml": {
+        "size": 1211,
+        "sha256": "f673c9f0dcbcb52461548a2d3b9988390d5660cf54a0cec6d27936f40ddd5a99"
+      },
+      "python/lang/security/audit/python-reverse-shell.yaml": {
+        "size": 791,
+        "sha256": "136686a48ef85b43429e1d6850a94c01856ccbe130bc2a14bd844c41f745c060"
+      },
+      "python/lang/security/audit/regex-dos.yaml": {
+        "size": 909,
+        "sha256": "8fa43155c3c4dea97922b451f8f51957a15fefeabd3bc8f4a939e5112f7910ca"
+      },
+      "python/lang/security/audit/sha224-hash.yaml": {
+        "size": 996,
+        "sha256": "3dfae9ce892bebd33f4f0dc15179e4dbd2233fba426af0acef92faaac4481b1a"
+      },
+      "python/lang/security/audit/sqli/aiopg-sqli.yaml": {
+        "size": 3007,
+        "sha256": "a7687e9f25881204de6d5f5087d76ccf61b361b715c95d9e1af9be4139f44fcd"
+      },
+      "python/lang/security/audit/sqli/asyncpg-sqli.yaml": {
+        "size": 3087,
+        "sha256": "c5c56307c0128f47e4aae85ea2b5ab5834ce47c35690863370d010d6fbd47300"
+      },
+      "python/lang/security/audit/sqli/pg8000-sqli.yaml": {
+        "size": 2722,
+        "sha256": "70658799eacf63fadffe5bb79969acb7133daaf50058af627e1dfd9041628a77"
+      },
+      "python/lang/security/audit/sqli/psycopg-sqli.yaml": {
+        "size": 2626,
+        "sha256": "22f640c86a6e4d594b8193dd40a99830e211c4af46e526306dc261f0c1a334a0"
+      },
+      "python/lang/security/audit/ssl-wrap-socket-is-deprecated.yaml": {
+        "size": 859,
+        "sha256": "ca94c95d22f5c229d036097019cdd14ea88bff7e1e3c8a5f485627b0cc7615ef"
+      },
+      "python/lang/security/audit/subprocess-list-passed-as-string.yaml": {
+        "size": 1348,
+        "sha256": "3e85d8148402dd3fd437afda07afc1aeff3fdbe395073d968cc01dfaa80e638d"
+      },
+      "python/lang/security/audit/subprocess-shell-true.yaml": {
+        "size": 1364,
+        "sha256": "753ba9d29d592b3d7f5086e671e424ee05138acbf75a39b663d92aa3275f5380"
+      },
+      "python/lang/security/audit/system-wildcard-detected.yaml": {
+        "size": 1370,
+        "sha256": "c0d7b35194f88bb0517f53ae54a91a2324e48c6872353dcdf55226b81d5c00aa"
+      },
+      "python/lang/security/audit/telnetlib.yaml": {
+        "size": 757,
+        "sha256": "48034e8afb1dc6e5af48c5f1c41a0c3899d6c91601373a8dff5aa59de0be74a3"
+      },
+      "python/lang/security/audit/weak-ssl-version.yaml": {
+        "size": 1570,
+        "sha256": "f11866fe7c8c8918606516e84fee31450f06dd54ed0643e18aa7dc4b25b08b8e"
+      },
+      "python/lang/security/dangerous-code-run.yaml": {
+        "size": 5282,
+        "sha256": "81fd7a70282b7b7ae5299e6e921979bbf28634298222c442c44174170b02fb9f"
+      },
+      "python/lang/security/dangerous-globals-use.yaml": {
+        "size": 1688,
+        "sha256": "dce3952d4d8fc0ca78bc0454858c1c163d6d10c4f72afd83191493027ed70e27"
+      },
+      "python/lang/security/dangerous-os-exec.yaml": {
+        "size": 5827,
+        "sha256": "5b9a82be39e56c73bd90f376bf33843350a47f7906f68985ad09abacb83add94"
+      },
+      "python/lang/security/dangerous-spawn-process.yaml": {
+        "size": 7572,
+        "sha256": "c6e7a2c8dcdebafa48327a455927ce1e373255f3462bd026078f10f772db141a"
+      },
+      "python/lang/security/dangerous-subinterpreters-run-string.yaml": {
+        "size": 4599,
+        "sha256": "37eb195d8b74030c637089adbb9162ae82bc22df947bf0e662435f2d4bca14b0"
+      },
+      "python/lang/security/dangerous-subprocess-use.yaml": {
+        "size": 6473,
+        "sha256": "9aaf4e9fcb13afed4e60c04def4132f9f7f2baac3414dc1d7bbd5dcb29db0586"
+      },
+      "python/lang/security/dangerous-system-call.yaml": {
+        "size": 5751,
+        "sha256": "07337088f457e2a1c96ca707bb598ad0676a53290ee5f19d82105fe87e10bf43"
+      },
+      "python/lang/security/dangerous-testcapi-run-in-subinterp.yaml": {
+        "size": 4716,
+        "sha256": "d0a9df085aee306a9c5a95226154820ed9cdb05208dc06f0536bc524cbcc5e5f"
+      },
+      "python/lang/security/deserialization/avoid-jsonpickle.yaml": {
+        "size": 997,
+        "sha256": "eca03a7a1c56b032a96e490a313fec29d3d77bd6d62210d9f339d1e820e59b41"
+      },
+      "python/lang/security/deserialization/avoid-pyyaml-load.yaml": {
+        "size": 1785,
+        "sha256": "a1ae4abf7e9476d4a440236d2d8743263e7fb39e1c68f2680467cbc66b3f7431"
+      },
+      "python/lang/security/deserialization/avoid-unsafe-ruamel.yaml": {
+        "size": 954,
+        "sha256": "9e043aba05d3aaad64d19a56221ed0598c08deb10f1f7f609543fbd4e997d5c2"
+      },
+      "python/lang/security/deserialization/pickle.yaml": {
+        "size": 3811,
+        "sha256": "ef221e31f87f24b5889c08e22e80ae176e0209c4099e822120904ed99d61a7e7"
+      },
+      "python/lang/security/insecure-hash-algorithms-md5.yaml": {
+        "size": 1518,
+        "sha256": "e8a898841202c02d986b4931e3f4550fced6056f310e6069bf41720a96937580"
+      },
+      "python/lang/security/insecure-hash-algorithms.yaml": {
+        "size": 1495,
+        "sha256": "6adf7bcd537f1374955ccbdea68cef115482238f2b11e8d931497cc0afcb859e"
+      },
+      "python/lang/security/insecure-hash-function.yaml": {
+        "size": 1508,
+        "sha256": "47481a289f0191dbd7a316ec3129ab8503560440e3ba471ca2f42a18f484935d"
+      },
+      "python/lang/security/insecure-uuid-version.yaml": {
+        "size": 1170,
+        "sha256": "54a4bfe4ecb648dbe9116ff8a1525b79a9e4d30199e9cbb5ba4c72f1822eb767"
+      },
+      "python/lang/security/unverified-ssl-context.yaml": {
+        "size": 1038,
+        "sha256": "ff0e5b9f6cd95f5247a9242d16a398162b18945f4cda11587ed965e3c663abfe"
+      },
+      "python/lang/security/use-defused-xml-parse.yaml": {
+        "size": 1184,
+        "sha256": "e472066cad14b0703b69a7d4e67a34273edbbe859a4f7ff99cad8fbeaeb9aae4"
+      },
+      "python/lang/security/use-defused-xml.yaml": {
+        "size": 987,
+        "sha256": "3c737ef0e249ae72b4f365d877aa4d11f1ced44f2e63ae48ff75dee6340e2837"
+      },
+      "python/lang/security/use-defused-xmlrpc.yaml": {
+        "size": 983,
+        "sha256": "652c86c4617bf593aff9210cc3b1cc13deb04ee102c700a1074ba3a76d303030"
+      },
+      "python/lang/security/use-defusedcsv.yaml": {
+        "size": 1358,
+        "sha256": "0fdc77dc97e3b2007025bd9db8f3389d68ca0eda6872e5323e7108bfd44c355a"
+      },
+      "python/pycryptodome/security/insecure-cipher-algorithm-blowfish.yaml": {
+        "size": 1458,
+        "sha256": "7300c4ef1d06be941b40f6863317d0e08ace1dd5b8c2ce2cf40e94c483ed545d"
+      },
+      "python/pycryptodome/security/insecure-cipher-algorithm-des.yaml": {
+        "size": 1577,
+        "sha256": "91e84e099d637426020ce1e8a32490a374fffc39362b95756ed5070e5f244c41"
+      },
+      "python/pycryptodome/security/insecure-cipher-algorithm-rc2.yaml": {
+        "size": 1412,
+        "sha256": "c1f1999bd463bf469aad23c38a379427635add546251352686896a7ce136ae22"
+      },
+      "python/pycryptodome/security/insecure-cipher-algorithm-rc4.yaml": {
+        "size": 1371,
+        "sha256": "45512ae77aeb1f82e2de0a73948119cc189ed4e6baee19705f35a39de41522d4"
+      },
+      "python/pycryptodome/security/insecure-cipher-algorithm.yaml": {
+        "size": 980,
+        "sha256": "98947debfb0856493a997b3d507c5b9d7175302d65653909707caba39ff7003c"
+      },
+      "python/pycryptodome/security/insecure-hash-algorithm-md2.yaml": {
+        "size": 1539,
+        "sha256": "d5c2f6ed65f615fc4e7602f963588d83a9bb6ee8fa5af4299a6383f28d1c4376"
+      },
+      "python/pycryptodome/security/insecure-hash-algorithm-md4.yaml": {
+        "size": 1538,
+        "sha256": "503952fb65385e2eae9a1929e3c28103eec9fc14732752582c303f67a3f11ca6"
+      },
+      "python/pycryptodome/security/insecure-hash-algorithm-md5.yaml": {
+        "size": 1539,
+        "sha256": "d651ca61d5ca0bbc21d2ab3c73730aaadf57b60f4bf2a988adc54fc1bc142107"
+      },
+      "python/pycryptodome/security/insecure-hash-algorithm.yaml": {
+        "size": 1246,
+        "sha256": "cf74196e5f6ff137898762d1f054f7993fc7c550acddfd153b05f15ccb399fb1"
+      },
+      "python/pycryptodome/security/insufficient-dsa-key-size.yaml": {
+        "size": 1375,
+        "sha256": "55728d8c0f5f3501e0474e27599b7483d620360efc59bb396c8bc47c8438c2ba"
+      },
+      "python/pycryptodome/security/insufficient-rsa-key-size.yaml": {
+        "size": 1379,
+        "sha256": "f729be9a81738c4097ab146b6eae4fbd0a27b129877d91a14aa01d12268a19c0"
+      },
+      "python/pycryptodome/security/mode-without-authentication.yaml": {
+        "size": 1298,
+        "sha256": "3714abccf20deb36cc93226bbb72e508507111dcf1c3e1ab06a20beda7bb50cc"
+      },
+      "python/pymongo/security/mongodb.yaml": {
+        "size": 705,
+        "sha256": "185e7adf44687edaab768d671a35ca4d00397aa81322245f72a36d1903e0f701"
+      },
+      "python/pyramid/audit/authtkt-cookie-httponly-unsafe-default.yaml": {
+        "size": 1293,
+        "sha256": "7f81e8e493b977f4d53ad957309a3eb8a02dcb69286af8fb5a68440470d8db09"
+      },
+      "python/pyramid/audit/authtkt-cookie-httponly-unsafe-value.yaml": {
+        "size": 1360,
+        "sha256": "418d8480c6625f25a884cccdd5077aa65c1f5022d3c184d3b2cf6bf7de86e6ce"
+      },
+      "python/pyramid/audit/authtkt-cookie-samesite.yaml": {
+        "size": 1125,
+        "sha256": "be503c3e50d3b4ac4ddaf505ce4956121c4c53c2e5f158a1d6d07747b7680456"
+      },
+      "python/pyramid/audit/authtkt-cookie-secure-unsafe-default.yaml": {
+        "size": 1456,
+        "sha256": "a293c0f1b23bde8a78c7e493d1c3a8073b571bc0ba700831bbbcdd0201aece55"
+      },
+      "python/pyramid/audit/authtkt-cookie-secure-unsafe-value.yaml": {
+        "size": 1361,
+        "sha256": "b59c7c743145ffef40f9eeea9be4764975400a18257f8ef2a21e60ea144d8bd6"
+      },
+      "python/pyramid/audit/csrf-check-disabled.yaml": {
+        "size": 1135,
+        "sha256": "346fdb51a0f80d86de18972190e5f151db06a991e167743616c5e311bb66cf98"
+      },
+      "python/pyramid/audit/csrf-origin-check-disabled-globally.yaml": {
+        "size": 1149,
+        "sha256": "7c1652c986a8a84ddbe2c66722532dca81cea4ee3d2a1719b9e9206e7c5c507f"
+      },
+      "python/pyramid/audit/csrf-origin-check-disabled.yaml": {
+        "size": 1237,
+        "sha256": "d385e2ec4ea2efdd03913658b9b61be379baeb751c8667db1e0462d645d30956"
+      },
+      "python/pyramid/audit/set-cookie-httponly-unsafe-default.yaml": {
+        "size": 1390,
+        "sha256": "43eb209e68f4961119568d0eb30bcdc03d600d0a0db07ed05efedbaaa1f303ff"
+      },
+      "python/pyramid/audit/set-cookie-httponly-unsafe-value.yaml": {
+        "size": 1559,
+        "sha256": "b01b67a1aeedd7f60fdd4ec98c1ae62acba0b7cda6e1322fae400567a69070b0"
+      },
+      "python/pyramid/audit/set-cookie-samesite-unsafe-default.yaml": {
+        "size": 1387,
+        "sha256": "212c368fdc1b9d6b734f46120baaf25320e8d01dc3b3198a125d77f657c3a280"
+      },
+      "python/pyramid/audit/set-cookie-samesite-unsafe-value.yaml": {
+        "size": 1389,
+        "sha256": "eb6845f90a56c640c7df9319f6112065fe2387c7a7034e120c8f2df372961f0b"
+      },
+      "python/pyramid/audit/set-cookie-secure-unsafe-default.yaml": {
+        "size": 1397,
+        "sha256": "82e24f37740c9e291eaf7a00944cbc879a0e6d74424782bdb34b6a62939c1d96"
+      },
+      "python/pyramid/audit/set-cookie-secure-unsafe-value.yaml": {
+        "size": 1405,
+        "sha256": "b69d37ebe40128ec8a3bdbf9c3450c80027c9e6893a91f682cfcb274eabde327"
+      },
+      "python/pyramid/security/csrf-check-disabled-globally.yaml": {
+        "size": 1079,
+        "sha256": "478f587b1dbb650d20fa7d849644658708a05be8c5f9424b4f3ce0d119c8f705"
+      },
+      "python/pyramid/security/direct-use-of-response.yaml": {
+        "size": 1481,
+        "sha256": "0a083e1ac206c3cdff93d4cfe5857a51f7150877bdafb003455c3191583a01ec"
+      },
+      "python/pyramid/security/sqlalchemy-sql-injection.yaml": {
+        "size": 1922,
+        "sha256": "1e9cde186df20ed004805d57bee487f4424a629082b227e33da3e2936b74b1e6"
+      },
+      "python/requests/best-practice/use-raise-for-status.yaml": {
+        "size": 1959,
+        "sha256": "662e37a5eb81a75dad98af800a3fb4c7c27a5dc0d0ba9d811b7629cbfd2782c7"
+      },
+      "python/requests/best-practice/use-request-json-shortcut.yaml": {
+        "size": 723,
+        "sha256": "81ab915a48eb2d023f4f4c077a71c093e007ecab53377d3db5b717c1734579ac"
+      },
+      "python/requests/best-practice/use-response-json-shortcut.yaml": {
+        "size": 710,
+        "sha256": "c0a69e2580f386b69e94cb2ac4c3da8c479d97ea9d291b21be7de1ed86d7cfbe"
+      },
+      "python/requests/best-practice/use-timeout.yaml": {
+        "size": 1741,
+        "sha256": "759b343b66133e36efab9e2c0a60c3f56f0b181c69e7cba4747f1fe6db2c11a6"
+      },
+      "python/requests/security/disabled-cert-validation.yaml": {
+        "size": 1264,
+        "sha256": "e45747042526cfc8e4240e0534878d91a94b604ece9821ab91a81bb1d8e574ef"
+      },
+      "python/requests/security/no-auth-over-http.yaml": {
+        "size": 1108,
+        "sha256": "6925079505cdc17ada015028ee28042862e097c3f59fab890cac03bc55c11470"
+      },
+      "python/sh/security/string-concat.yaml": {
+        "size": 883,
+        "sha256": "312a078510ee3f9a8d6ac59c9dea3d1a3bc17bb0220b533ae73c9949469db072"
+      },
+      "python/sqlalchemy/correctness/bad-operator-in-filter.yaml": {
+        "size": 986,
+        "sha256": "13b1549cbe2eb09ae86e1aa23f31f3a2f5e1a6b3ae5fa0f95422e32f9b5b14fc"
+      },
+      "python/sqlalchemy/correctness/delete-where.yaml": {
+        "size": 469,
+        "sha256": "03d4b0b8fe63012cc85db61cd678d11fc428ff7b3b92cdb774cb52ab6b95c2cd"
+      },
+      "python/sqlalchemy/performance/performance-improvements.yaml": {
+        "size": 652,
+        "sha256": "334d139432cd589def132087403a209db2b47aaff6b607af6f3e2ee43716ba5a"
+      },
+      "python/sqlalchemy/security/audit/avoid-sqlalchemy-text.yaml": {
+        "size": 1636,
+        "sha256": "bbb930c18dd59b667200a23eb658fb665b87bd698c674e38b0f75069e84244cb"
+      },
+      "python/sqlalchemy/security/sqlalchemy-execute-raw-query.yaml": {
+        "size": 2081,
+        "sha256": "ad1a0cdc4622c4031d8a43796d66a4ed89778a1ebd9d8140d42ef81e857bda3d"
+      },
+      "python/sqlalchemy/security/sqlalchemy-sql-injection.yaml": {
+        "size": 1845,
+        "sha256": "94efc2a706da4cc0fce95cf50e8ea65e0a0480503cd7d55c7841ed34905350de"
+      },
+      "python/twilio/security/twiml-injection.yaml": {
+        "size": 1160,
+        "sha256": "99d038f4603949d477cf04d9020a88909e88c1dd9704fb17f93e0225cb57536e"
+      }
+    }
   }
 }

@@ -1,0 +1,14 @@
+services:
+  icd:
+    x-default: true
+    # Inspect supplies the recorded quota through sample metadata.
+    cpus: ${SAMPLE_METADATA_SCANNER_CPUS:-${CODEGUARD_SCANNER_CPUS:-4.0}}
+    extends:
+      file: base.yaml
+      service: scanner
+    build:
+      context: ..
+      dockerfile: sandbox/Dockerfile.icd
+      additional_contexts:
+        icd_rules: ../.cache/codeguard-evals/meta-icd-json/1a14e56b8ba8d833a533e5bb17bbac8bd4c7d10374478745de5b2250f37bf590
+    entrypoint: []
