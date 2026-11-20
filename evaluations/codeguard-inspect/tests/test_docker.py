@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 from inspect_ai import Task, eval
 from inspect_ai.dataset import MemoryDataset, Sample
-from inspect_ai.log import read_eval_log
+from inspect_ai.log import EvalLog, read_eval_log
 from inspect_ai.model import ModelOutput, get_model
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util._sandbox._cli import SANDBOX_TOOLS_DIR
@@ -50,6 +50,21 @@ pytestmark = pytest.mark.docker
 
 PROJECT_NAME_PREFIX = "codeguard-eval-security-test"
 SOLUTION_PATH = f"{SANDBOX_WORKDIR}/{SOURCE_FILENAME}"
+
+
+def _mock_eval_failure(log: EvalLog) -> str:
+    """Use fixed failure messages for public CI."""
+    errors = (log.error, *(sample.error for sample in log.samples or []))
+    for error in errors:
+        if (
+            error is not None
+            and error.message.startswith("HTTPStatusError(")
+            and "https://api.github.com/repos/openai/codex/releases/tags/" in error.message
+        ):
+            if "rate limit" in error.message.lower():
+                return "GitHub API rate limit hit during Codex release lookup."
+            return "GitHub API returned an HTTP error during Codex release lookup."
+    return "Inspect evaluation failed. See the local evaluation log for details."
 
 
 def _run(command: list[str], *, timeout: int = 60) -> subprocess.CompletedProcess[str]:
@@ -768,7 +783,8 @@ def test_public_codeguard_task_records_automatic_loading_after_a_real_turn_limit
     )[0]
     containers_after = _harness_container_ids()
 
-    assert log.status == "success", log.error
+    if log.status != "success":
+        pytest.fail(_mock_eval_failure(log), pytrace=False)
     assert containers_after == containers_before
     assert log.samples is not None and len(log.samples) == 1
     sample = log.samples[0]
