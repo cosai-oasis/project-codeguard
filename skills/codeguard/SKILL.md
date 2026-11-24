@@ -55,7 +55,7 @@ Read every reference whose security boundary the task touches; several may apply
 
 ## Security Report
 
-ALWAYS report all vulnerabilities and security issues remediated, prevented, or mitigated. Unless the response itself must follow a fixed format (see the last bullet), append the report after the response to the original task, using this format for each issue:
+ALWAYS report all vulnerabilities and security issues identified, remediated, prevented, or mitigated. Unless the response itself must follow a fixed format (see the last bullet), append the report after the response to the original task, using this format for each issue:
 
 ```markdown
 ### Security Report
@@ -64,12 +64,13 @@ ALWAYS report all vulnerabilities and security issues remediated, prevented, or 
 - **Issue**: [Vulnerability class and CWE ID if known, e.g., SQL injection (CWE-89)]
 - **Location**: [file:line, function, or component]
 - **Severity**: [Critical | High | Medium | Low | Informational]
-- **Status**: [Remediated | Prevented | Mitigated]
-- **Action**: [What was changed, or what insecure approach was avoided and why]
+- **Status**: [Identified | Remediated | Prevented | Mitigated]
+- **Action**: [What was changed, or what insecure approach was avoided and why; if no changes were made, state that and recommend remediation]
 - **Residual risk**: [Anything the user must still do, such as rotating an exposed secret or configuring a server setting, or "None"]
 ```
 
 - Order issues by severity, highest first.
+- Use **Identified** when a vulnerability was found and remains unresolved, including during a read-only review. State "No changes made" in the action and describe the recommended remediation and remaining risk.
 - Use **Prevented** when the insecure pattern was never written (e.g., parameterized the query instead of concatenating), **Remediated** when existing vulnerable code was fixed, and **Mitigated** when risk was reduced but not eliminated.
 - Name the reference(s) that applied, e.g., "Guided by: input-validation-injection".
 - If no security issues apply, write "Security Report: No security issues identified." and list which security boundaries were considered.

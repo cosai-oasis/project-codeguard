@@ -35,5 +35,8 @@ jobs:
       - name: Validate versions
         run: uv run --locked python src/validate_versions.py "$(uv version --short)"
 
+      - name: Test version validation
+        run: uv run --locked python -m unittest discover -s tests -v
+
       - name: Build documentation
         run: uv run --locked mkdocs build --strict
