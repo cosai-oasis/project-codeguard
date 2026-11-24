@@ -16,12 +16,12 @@ Produce structured, privacy‑aware telemetry that supports detection, response,
 
 ### What to Log
 - Authn/authz events; admin actions; config changes; sensitive data access; input validation failures; security errors.
-- Include correlation/request IDs, user/session IDs (non‑PII), source IP, user agent, timestamps (UTC, RFC3339).
+- Include correlation/request IDs, user IDs and hashed session IDs (non‑PII), source IP, user agent, timestamps (UTC, RFC3339).
 
 ### How to Log
 - Structured logs (JSON) with stable field names; avoid free‑form text for critical signals.
 - Sanitize all log inputs to prevent log injection (strip CR/LF/delimiters); validate data from other trust zones.
-- Redact/tokenize secrets and sensitive fields; never log credentials, tokens, recovery codes, or raw session IDs.
+- Redact/tokenize secrets and sensitive fields; never log credentials, tokens, recovery codes, or raw session IDs, including via whole request objects or `Authorization`/`Cookie` headers.
 - Ensure integrity: append‑only or WORM storage; tamper detection; centralized aggregation; access controls and retention policies.
 
 ### Detection & Alerting

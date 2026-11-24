@@ -136,25 +136,71 @@ def test_codeguard_does_not_infer_a_missing_version(codeguard_source: Path) -> N
     assert frozen == original
 
 
-@pytest.mark.parametrize("version", ["1.4.0", "9.8.7"])
+@pytest.mark.parametrize("version", ["1.4.0", "2.0.0", "9.8.7"])
+@pytest.mark.parametrize("layout", ["legacy", "nested", "nested-with-context"])
 def test_codeguard_preserves_the_declared_version(
     codeguard_source: Path,
     version: str,
+    layout: str,
 ) -> None:
     frozen = load_codeguard(codeguard_source)
-    frozen["SKILL.md"] = SKILL.replace(
-        b"---\n# CodeGuard\n",
-        (
+    if layout == "legacy":
+        metadata = (
             f'codeguard-version: "{version}"\n'
             "framework: Project CodeGuard\n"
             "purpose: Secure code generation guidance\n"
-            "---\n# CodeGuard\n"
-        ).encode(),
+        )
+    else:
+        metadata = f'metadata:\n  codeguard-version: "{version}"\n'
+        if layout == "nested-with-context":
+            metadata += (
+                "  framework: Project CodeGuard\n"
+                "  purpose: Secure code generation guidance\n"
+            )
+    frozen["SKILL.md"] = SKILL.replace(
+        b"---\n# CodeGuard\n",
+        (metadata + "---\n# CodeGuard\n").encode(),
     )
     original = dict(frozen)
 
     assert codeguard_version(frozen) == version
     assert frozen == original
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        "metadata: null\n",
+        "metadata: []\n",
+        "metadata: text\n",
+        "metadata: {}\n",
+        "metadata:\n  framework: Project CodeGuard\n",
+        'metadata:\n  codeguard-version: ""\n',
+        "metadata:\n  codeguard-version: null\n",
+        "metadata:\n  codeguard-version: 2.0\n",
+        "metadata:\n  codeguard-version: true\n",
+        'metadata:\n  codeguard-version: "2.0.0"\n  unexpected: value\n',
+        'metadata:\n  codeguard-version: "2.0.0"\n  purpose: []\n',
+        (
+            'codeguard-version: "1.4.0"\n'
+            "framework: Project CodeGuard\n"
+            "purpose: Secure code generation guidance\n"
+            'metadata:\n  codeguard-version: "2.0.0"\n'
+        ),
+    ],
+)
+def test_codeguard_rejects_invalid_or_mixed_nested_metadata(
+    codeguard_source: Path,
+    metadata: str,
+) -> None:
+    frozen = load_codeguard(codeguard_source)
+    frozen["SKILL.md"] = SKILL.replace(
+        b"---\n# CodeGuard\n",
+        (metadata + "---\n# CodeGuard\n").encode(),
+    )
+
+    with pytest.raises(ValueError, match="unexpected|non-empty strings"):
+        codeguard_version(frozen)
 
 
 def test_codeguard_validation_rejects_nonstandard_front_matter(

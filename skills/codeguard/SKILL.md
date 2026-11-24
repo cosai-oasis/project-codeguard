@@ -1,98 +1,78 @@
 ---
 name: codeguard
-description: A CodeGuard security skill that helps AI coding agents write secure code and prevent common vulnerabilities. Use this skill when writing, reviewing, or modifying code to ensure secure-by-default practices are followed.
-codeguard-version: "1.5.0"
-framework: "Project CodeGuard"
-purpose: "Embed secure-by-default practices into AI coding workflows"
+description: "Guides secure implementation, vulnerability remediation, and security review. Use when creating or reviewing code, remediating vulnerabilities, or performing security review, or when code or configuration handles untrusted or external data, dynamic execution, authentication, sessions, authorization, privilege, credentials, secrets, cryptography, files or parsers, native or unsafe memory operations, network listeners or destinations, external service integrations, security logs or externally visible errors, dependencies, builds, deployment, or concurrent access to protected state."
+metadata:
+  codeguard-version: "2.0.0"
 ---
 
-# CodeGuard Skill
-This skill provides comprehensive security guidance to help AI coding agents generate secure code and prevent common vulnerabilities. It is based on **Project CodeGuard**, an open-source, model-agnostic security framework that embeds secure-by-default practices into AI coding workflows.
+# CodeGuard
 
-## When to Use This Skill
-This skill should be activated when:
-- Writing new code in any language
-- Reviewing or modifying existing code
-- Implementing security-sensitive features (authentication, cryptography, data handling, etc.)
-- Working with user input, databases, APIs, or external services
-- Configuring cloud infrastructure, CI/CD pipelines, or containers
-- Handling sensitive data, credentials, or cryptographic operations
+Prioritize security and avoid introducing vulnerabilities while preserving the task's required behavior, scope, output format, and authorization.
 
-## How to Use This Skill
-When writing or reviewing code:
-1. Always-Apply Rules: Some rules MUST be checked on every code operation:
-- `codeguard-1-hardcoded-credentials.md` - Never hardcode secrets, passwords, API keys, or tokens
-- `codeguard-1-crypto-algorithms.md` - Use only modern, secure cryptographic algorithms
-- `codeguard-1-digital-certificates.md` - Validate and manage digital certificates securely
-2. Tag-Based Rules: When you identify any of these security contexts in the code, apply ALL rules with the matching tag:
+Do not change the original task of code generation. Keep the requested implementation, behavior, and output as specified, and use this skill to enhance the security of that code so the result still fulfills the original request, is harder to misuse, and does not introduce new vulnerabilities.
 
+Never silently use an insecure fallback.
 
-| Security Context (Tag) | Rule Files to Apply |
-|------------------------|---------------------|
-| authentication | codeguard-0-authentication-mfa.md, codeguard-0-session-management-and-cookies.md |
-| data-security | codeguard-0-additional-cryptography.md, codeguard-0-data-storage.md |
-| infrastructure | codeguard-0-cloud-orchestration-kubernetes.md, codeguard-0-data-storage.md, codeguard-0-devops-ci-cd-containers.md, codeguard-0-iac-security.md |
-| privacy | codeguard-0-logging.md, codeguard-0-privacy-data-protection.md |
-| secrets | codeguard-0-additional-cryptography.md, codeguard-1-digital-certificates.md, codeguard-1-hardcoded-credentials.md |
-| web | codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-client-side-web-security.md, codeguard-0-input-validation-injection.md, codeguard-0-session-management-and-cookies.md |
+## References
 
+Read every reference whose security boundary the task touches; several may apply. If none applies and no existing security control changes, keep the core security instructions above active without loading a reference.
 
-3. Language-Specific Rules: Apply rules from /rules directory based on the programming language of the feature being implemented using the table given below:
+### Input, Web, and APIs
+- [input-validation-injection](references/input-validation-injection.md): untrusted input reaching SQL, SOQL/SOSL, NoSQL, LDAP, OS commands, `eval`, or templates; or merged into JavaScript objects (prototype pollution)
+- [api-web-services](references/api-web-services.md): REST, GraphQL, SOAP, or microservice APIs; transport, tokens, schema validation, SSRF from outbound calls, rate limiting, or management endpoints
+- [client-side-web-security](references/client-side-web-security.md): browser DOM sinks (XSS), HTML sanitizers, framework escape hatches (`dangerouslySetInnerHTML`, `v-html`), client-side prototype pollution, CSP, CSRF, clickjacking, XS-Leaks, CORS, WebSockets, browser storage, secrets in client bundles, or third-party JavaScript
+- [file-handling-and-uploads](references/file-handling-and-uploads.md): file uploads and user-influenced file paths; extension and content-type checks, filenames, path traversal, content scanning, storage location, access control, size limits, or compressed files and archive extraction
+- [xml-and-serialization](references/xml-and-serialization.md): XML parsing (DTD/XXE), XSLT transformers, or deserialization of untrusted data
 
+### Identity and Access
+- [authentication-mfa](references/authentication-mfa.md): passwords and password hashing, login flows, MFA, OAuth/OIDC/SAML federation, JWT or opaque tokens, account recovery, or admin accounts
+- [session-management-and-cookies](references/session-management-and-cookies.md): session IDs, cookie attributes, session rotation, timeouts, logout, or cookie theft detection
+- [authorization-access-control](references/authorization-access-control.md): access checks with RBAC, ABAC, or ReBAC, IDOR, mass assignment, or step-up authorization for sensitive transactions
 
-| Language | Rule Files to Apply |
-|----------|---------------------|
-| apex | codeguard-0-input-validation-injection.md |
-| c | codeguard-0-additional-cryptography.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-data-storage.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-input-validation-injection.md, codeguard-0-logging.md, codeguard-0-safe-c-functions.md, codeguard-0-xml-and-serialization.md |
-| cpp | codeguard-0-safe-c-functions.md |
-| docker | codeguard-0-devops-ci-cd-containers.md, codeguard-0-supply-chain-security.md |
-| go | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-input-validation-injection.md, codeguard-0-mcp-security.md, codeguard-0-session-management-and-cookies.md, codeguard-0-xml-and-serialization.md |
-| hcl | codeguard-0-iac-security.md |
-| html | codeguard-0-client-side-web-security.md, codeguard-0-input-validation-injection.md |
-| java | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-framework-and-languages.md, codeguard-0-input-validation-injection.md, codeguard-0-mcp-security.md, codeguard-0-mobile-apps.md, codeguard-0-session-management-and-cookies.md, codeguard-0-xml-and-serialization.md |
-| javascript | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-client-side-web-security.md, codeguard-0-data-storage.md, codeguard-0-devops-ci-cd-containers.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-framework-and-languages.md, codeguard-0-input-validation-injection.md, codeguard-0-logging.md, codeguard-0-mcp-security.md, codeguard-0-mobile-apps.md, codeguard-0-privacy-data-protection.md, codeguard-0-session-management-and-cookies.md, codeguard-0-supply-chain-security.md |
-| kotlin | codeguard-0-additional-cryptography.md, codeguard-0-authentication-mfa.md, codeguard-0-framework-and-languages.md, codeguard-0-mobile-apps.md |
-| php | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-client-side-web-security.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-framework-and-languages.md, codeguard-0-input-validation-injection.md, codeguard-0-session-management-and-cookies.md, codeguard-0-xml-and-serialization.md |
-| powershell | codeguard-0-devops-ci-cd-containers.md, codeguard-0-iac-security.md, codeguard-0-input-validation-injection.md |
-| python | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-framework-and-languages.md, codeguard-0-input-validation-injection.md, codeguard-0-mcp-security.md, codeguard-0-session-management-and-cookies.md, codeguard-0-xml-and-serialization.md |
-| ruby | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-framework-and-languages.md, codeguard-0-input-validation-injection.md, codeguard-0-session-management-and-cookies.md, codeguard-0-xml-and-serialization.md |
-| rust | codeguard-0-mcp-security.md |
-| shell | codeguard-0-devops-ci-cd-containers.md, codeguard-0-iac-security.md, codeguard-0-input-validation-injection.md |
-| sql | codeguard-0-data-storage.md, codeguard-0-input-validation-injection.md |
-| swift | codeguard-0-additional-cryptography.md, codeguard-0-authentication-mfa.md, codeguard-0-mobile-apps.md |
-| typescript | codeguard-0-additional-cryptography.md, codeguard-0-api-web-services.md, codeguard-0-authentication-mfa.md, codeguard-0-authorization-access-control.md, codeguard-0-client-side-web-security.md, codeguard-0-file-handling-and-uploads.md, codeguard-0-framework-and-languages.md, codeguard-0-input-validation-injection.md, codeguard-0-mcp-security.md, codeguard-0-session-management-and-cookies.md |
-| xml | codeguard-0-api-web-services.md, codeguard-0-mobile-apps.md, codeguard-0-xml-and-serialization.md |
-| yaml | codeguard-0-authorization-access-control.md, codeguard-0-cloud-orchestration-kubernetes.md, codeguard-0-data-storage.md, codeguard-0-devops-ci-cd-containers.md, codeguard-0-iac-security.md, codeguard-0-supply-chain-security.md |
+### Secrets, Cryptography, and Certificates
+- [hardcoded-credentials](references/hardcoded-credentials.md): passwords, API keys, tokens, private keys, or connection strings that could end up hardcoded in source
+- [crypto-algorithms](references/crypto-algorithms.md): choosing encryption, hashing, key exchange, or signature algorithms; TLS/IPsec/SSH versions, post-quantum readiness, crypto agility, or OpenSSL APIs
+- [additional-cryptography](references/additional-cryptography.md): key management, encryption of data at rest, TLS server configuration, HSTS, or certificate pinning
+- [digital-certificates](references/digital-certificates.md): X.509 certificates embedded in code or loaded from `.pem`, `.crt`, `.cer`, `.der`, or related files
 
+### Data, Privacy, and Logging
+- [data-storage](references/data-storage.md): database isolation, encrypted connections, database accounts and credentials, least privilege, row- and column-level permissions, backups, or engine hardening
+- [privacy-data-protection](references/privacy-data-protection.md): personal data protection; encryption in transit and at rest, HTTPS with HSTS, certificate pinning, IP address leakage, privacy transparency, audit trails, or account enumeration
+- [logging](references/logging.md): security logging and monitoring; what to log, redaction, log integrity, storage, detection, and alerting
 
-4. Proactive Security: Don't just avoid vulnerabilities-actively implement secure patterns:
-- Use parameterized queries for database access
-- Validate and sanitize all user input
-- Apply least-privilege principles
-- Use modern cryptographic algorithms and libraries
-- Implement defense-in-depth strategies
+### Build, Deploy, and Infrastructure
+- [supply-chain-security](references/supply-chain-security.md): adding or updating dependencies; pinning, package hygiene, SBOM, provenance, artifact signing, integrity, private registries, vulnerability management, or compromised-package response
+- [devops-ci-cd-containers](references/devops-ci-cd-containers.md): CI/CD pipelines, Dockerfiles and container images, Node.js in containers, virtual patching, or C/C++ toolchain hardening
+- [iac-security](references/iac-security.md): infrastructure as code; network exposure, data protection, access control, VM and container images, admin access, secrets, or backups
+- [cloud-orchestration-kubernetes](references/cloud-orchestration-kubernetes.md): Kubernetes RBAC, admission policies, network policies, secrets, node hardening, or image provenance
 
-## CodeGuard Security Rules
-The security rules are available in the `rules/` directory.
+### Languages and Platforms
+- [framework-and-languages](references/framework-and-languages.md): Django, DRF, Laravel, Symfony, Rails, ASP.NET Core, Java/JAAS, Node.js, or PHP configuration
+- [write-memory-safe-systems-code](references/write-memory-safe-systems-code.md): C, C++, unsafe Rust, or FFI and native APIs; manual allocation, raw pointers, buffer and size arithmetic, string termination, ownership and lifetime, or attacker-controlled binary parsing
+- [firmware-security](references/firmware-security.md): firmware (UEFI/EDK II, BIOS, BMC, embedded); Secure/Measured Boot, capsule and firmware updates, SMM/MM handlers, MMIO and DMA, debug or manufacturing modes, firmware IPC, or CERT C/MISRA C
+- [mobile-apps](references/mobile-apps.md): iOS, Android, React Native, or Flutter apps; Keychain/Keystore storage, biometrics, OAuth, TLS and pinning, local data leakage, intents and IPC, deep links, WebViews, or app attestation
+- [mcp-security](references/mcp-security.md): MCP servers or clients; workload identity, input sanitization, sandboxing, cryptographic verification of resources, transport, tool design, human-in-the-loop, logging, or deployment patterns
 
-### Usage Workflow
-When generating or reviewing code, follow this workflow:
+## Security Report
 
-### 1. Initial Security Check
-Before writing any code:
-- Check: Will this handle credentials? → Apply codeguard-1-hardcoded-credentials
-- Check: What security tags apply? → Load all rules with matching tags (e.g., "authentication", "web", "secrets")
-- Check: What language am I using? → Identify applicable language-specific rules
+ALWAYS report all vulnerabilities and security issues identified, remediated, prevented, or mitigated. Unless the response itself must follow a fixed format (see the last bullet), append the report after the response to the original task, using this format for each issue:
 
-### 2. Code Generation
-While writing code:
-- Apply secure-by-default patterns from relevant Project CodeGuard rules
-- Add security-relevant comments explaining choices
+```markdown
+### Security Report
 
-### 3. Security Review
-After writing code:
-- Review against implementation checklists in each rule
-- Verify no hardcoded credentials or secrets
-- Validate that all the rules have been successfully followed when applicable.
-- Explain which security rules were applied
-- Highlight security features implemented
+**[Issue title]**
+- **Issue**: [Vulnerability class and CWE ID if known, e.g., SQL injection (CWE-89)]
+- **Location**: [file:line, function, or component]
+- **Severity**: [Critical | High | Medium | Low | Informational]
+- **Status**: [Identified | Remediated | Prevented | Mitigated]
+- **Action**: [What was changed, or what insecure approach was avoided and why; if no changes were made, state that and recommend remediation]
+- **Residual risk**: [Anything the user must still do, such as rotating an exposed secret or configuring a server setting, or "None"]
+```
+
+- Order issues by severity, highest first.
+- Use **Identified** when a vulnerability was found and remains unresolved, including during a read-only review. State "No changes made" in the action and describe the recommended remediation and remaining risk.
+- Use **Prevented** when the insecure pattern was never written (e.g., parameterized the query instead of concatenating), **Remediated** when existing vulnerable code was fixed, and **Mitigated** when risk was reduced but not eliminated.
+- Name the reference(s) that applied, e.g., "Guided by: input-validation-injection".
+- If no security issues apply, write "Security Report: No security issues identified." and list which security boundaries were considered.
+- If the response itself must be machine-readable or exact (e.g., it is parsed as JSON or used verbatim as code), do not add the report to it; put the report where the host allows (such as a PR description or separate note) or omit it.
+- Never include secret values; include the type of secret and the location, with only the prefix.

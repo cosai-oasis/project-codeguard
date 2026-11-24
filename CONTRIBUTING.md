@@ -52,6 +52,8 @@ The repository keeps optional workflows and supporting tooling separate from the
 | `docs/`, `mkdocs.yml`, and top-level Markdown files | Project documentation and site configuration. |
 | `.github/workflows/` and `.github/ISSUE_TEMPLATE/` | CI workflows and issue templates. |
 
+Maintain detailed guidance in `skills/codeguard/references/<topic>.md` and link each topic from `skills/codeguard/SKILL.md` with the conditions for reading it. Use relative links between reference files. Keep `metadata.codeguard-version` in the skill aligned with the project and plugin versions when preparing a release.
+
 ## Validation
 
 Before submitting changes to CodeGuard, version metadata, packaging, or documentation, run the following commands from the repository root. They check version consistency and build the documentation with strict validation.
@@ -59,10 +61,11 @@ Before submitting changes to CodeGuard, version metadata, packaging, or document
 ```bash
 uv sync --locked
 uv run --locked python src/validate_versions.py "$(uv version --short)"
+uv run --locked python -m unittest discover -s tests -v
 uv run --locked mkdocs build --strict
 ```
 
-The `Validate Skills` workflow runs these version and documentation checks in CI. When a release is published, a separate workflow packages the tagged CodeGuard skill and license as `codeguard-skill.zip` and creates its `SHA256SUMS` file. The `security-review` and `memory-safe-migration` skills are still included in the Claude Code plugin. Their files remain in `sources/skills/`.
+The `Validate Skills` workflow runs these version, version-parser regression, and documentation checks in CI. When a release is published, a separate workflow packages the tagged CodeGuard skill and license as `codeguard-skill.zip` and creates its `SHA256SUMS` file. The `security-review` and `memory-safe-migration` skills are still included in the Claude Code plugin. Their files remain in `sources/skills/`.
 
 Changes to an auxiliary skill should also be checked against its referenced files and any affected scripts. Changes to the evaluation harness follow its own [validation instructions](evaluations/codeguard-inspect/README.md) and CI workflow.
 

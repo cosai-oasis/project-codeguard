@@ -65,7 +65,7 @@ The repository also contains the [security-review and memory-safe-migration work
 
 ## Previous native integrations
 
-Native rule bundles and the MCP server remain available in the [v1.5.0 release and source](https://github.com/cosai-oasis/project-codeguard/releases/tag/v1.5.0). Follow the [tagged installation guide](https://github.com/cosai-oasis/project-codeguard/blob/v1.5.0/docs/getting-started.md) for those assets. Existing `security-review` users should update their installed copy so its core-guidance links point to `skills/codeguard/rules/`.
+Native rule bundles and the MCP server remain available in the [v1.5.0 release and source](https://github.com/cosai-oasis/project-codeguard/releases/tag/v1.5.0). Follow the [tagged installation guide](https://github.com/cosai-oasis/project-codeguard/blob/v1.5.0/docs/getting-started.md) for those assets. Existing `security-review` users should update their installed copy so its core-guidance links point to `skills/codeguard/references/`.
 
 ## Getting Help
 

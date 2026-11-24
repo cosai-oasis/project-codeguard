@@ -17,6 +17,8 @@ import tomllib
 from pathlib import Path
 from typing import NamedTuple
 
+import yaml
+
 
 class VersionCheck(NamedTuple):
     """Result of a version check."""
@@ -60,24 +62,36 @@ def get_marketplace_version(root: Path) -> str:
 
 
 def _read_front_matter_value(path: Path, key: str) -> str:
-    """Read a YAML front-matter value from a markdown file."""
+    """Read a metadata field, falling back to the legacy top-level field."""
     content = path.read_text(encoding="utf-8")
-    front_matter_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
+    front_matter_match = re.match(
+        r"^---[ \t]*\n(.*?)\n---[ \t]*(?:\n|$)", content, re.DOTALL
+    )
     if not front_matter_match:
         raise ValueError(f"Missing front matter in {path}")
-    front_matter = front_matter_match.group(1)
-    value_match = re.search(
-        rf'^{re.escape(key)}:\s*"([^"]+)"\s*$',
-        front_matter,
-        re.MULTILINE,
-    )
-    if not value_match:
+    try:
+        front_matter = yaml.safe_load(front_matter_match.group(1))
+    except yaml.YAMLError as exc:
+        raise ValueError(f"Invalid YAML front matter in {path}") from exc
+    if not isinstance(front_matter, dict):
+        raise ValueError(f"Front matter must be a YAML mapping in {path}")
+
+    metadata = front_matter.get("metadata", {})
+    if not isinstance(metadata, dict):
+        raise ValueError(f"metadata must be a YAML mapping in {path}")
+    if key in metadata:
+        value = metadata[key]
+    elif key in front_matter:
+        value = front_matter[key]
+    else:
         raise ValueError(f"Missing {key} in front matter for {path}")
-    return value_match.group(1)
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{key} must be a non-empty string in {path}")
+    return value
 
 
 def get_skill_codeguard_version(root: Path) -> str:
-    """Get codeguard-version from skills/codeguard/SKILL.md."""
+    """Read metadata.codeguard-version (also accepts the legacy top-level key)."""
     skill_path = root / "skills" / "codeguard" / "SKILL.md"
     return _read_front_matter_value(skill_path, "codeguard-version")
 
